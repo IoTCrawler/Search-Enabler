@@ -1,0 +1,14 @@
+{
+  sensor(id: "iotc:Sensor_FIBARO+System+FGWPE%2FF+Wall+Plug+Gen5_CurrentEnergyUse") {
+    id,
+    label,
+    observes {
+        id,
+        label
+    },
+    isHostedBy{
+                id,
+                label
+              }
+  }
+}

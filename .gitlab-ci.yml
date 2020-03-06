@@ -1,0 +1,27 @@
+image: alpine:latest
+
+
+build:
+  stage: build
+  tags:
+    - java_maven
+  script:
+    - sh make.sh install
+
+#test:
+#  stage: test
+#  tags:
+#    - java_maven
+#  before_script:
+#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#    - docker ps
+#    #- less /proc/meminfo
+#    - cd $CI_PROJECT_DIR/orchestrator && make start-containers
+#    - docker ps
+#  script:
+#    - less /proc/meminfo
+#    - echo $IOTCRAWLER_RABBIT_HOST
+#    - cd $CI_PROJECT_DIR/orchestrator && sh make.sh rest-client-test
+#    #- cd $CI_PROJECT_DIR/orchestrator && make rpc-client-test
+#  after_script:
+#    - cd $CI_PROJECT_DIR/orchestrator && make stop-containers

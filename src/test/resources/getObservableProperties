@@ -1,0 +1,10 @@
+{
+  observableProperties{
+    id,
+    label,
+    isObservedBy {
+        id,
+        label
+    }
+  }
+}

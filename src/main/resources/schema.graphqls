@@ -1,0 +1,89 @@
+scalar Object
+
+schema {
+    query: Query
+}
+
+type Query {
+    stream(id: String): IoTStream
+    sensor(id: String): Sensor
+    platform(id: String): Platform
+    observableProperty(id: String): ObservableProperty
+    #streams(query: String, madeBySensor: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
+    streams(madeBySensor: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
+    sensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
+    platforms(hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
+    observableProperties(query: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
+
+    observations(streamId: String!): [Observation]
+    entities(type: String, query: String, offset: Int = 0, limit: Int = 0): [Entity]
+}
+
+
+input SensorInput {
+    id: String
+    label: String
+    location: String
+    isHostedBy: PlatformInput
+    observes: ObservablePropertyInput
+}
+
+input PlatformInput {
+    id: String
+    label: String
+    hosts: SensorInput
+    #hosts: [Sensor]
+    location: String
+}
+
+input ObservablePropertyInput {
+    id: String
+    label: String
+    isObservedBy: SensorInput
+}
+
+type IoTStream {
+    id: String!
+    madeBySensor: Sensor!
+}
+
+type Sensor {
+    id: String!
+    label: String
+    isHostedBy: Platform!
+    observes: ObservableProperty!
+    location: String
+}
+
+type Platform {
+    id: String!
+    label: String!
+    hosts: [Sensor]!
+    location: String
+}
+
+type ObservableProperty {
+    id: String!
+    label: String!
+    isObservedBy: [Sensor]!
+}
+
+type Entity {
+    id: String!
+    type: String!
+    attributes: [Attribute]
+}
+
+type Attribute {
+    id: String!
+    #type: String!
+}
+
+type Observation {
+    id: String!
+    toJsonLDString: String
+}
+
+
+
+

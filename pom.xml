@@ -1,0 +1,328 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.agtinternational.iotcrawler</groupId>
+  <artifactId>graphql-enabler</artifactId>
+  <packaging>war</packaging>
+  <version>1.0-SNAPSHOT</version>
+
+  <organization>
+    <name>AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)</name>
+    <url>https://www.agtinternational.com/</url>
+  </organization>
+  <inceptionYear>2019</inceptionYear>
+
+  <properties>
+    <iotcrawler.core.version>1.0.0</iotcrawler.core.version>
+    <fiware.models.version>1.0.0</fiware.models.version>
+    <ngsi.api.version>7.1-SNAPSHOT</ngsi.api.version>
+    <iotcrawler.orchestrator.version>1.0.7</iotcrawler.orchestrator.version>
+    <fiware.clients.version>1.0.8</fiware.clients.version>
+    <junit.version>4.11</junit.version>
+    <slf4j.version>1.7.15</slf4j.version>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>com.agtinternational.iotcrawler</groupId>
+      <artifactId>fiware-models</artifactId>
+      <version>${fiware.models.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.agtinternational.iotcrawler</groupId>
+      <artifactId>core</artifactId>
+      <version>${iotcrawler.core.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>net.minidev</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ops4j.pax.logging</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+<!--    <dependency>-->
+<!--      <groupId>com.agtinternational.iotcrawler</groupId>-->
+<!--      <artifactId>fiware-clients</artifactId>-->
+<!--      <version>${fiware.clients.version}</version>-->
+<!--      <exclusions>-->
+<!--        <exclusion>-->
+<!--          <groupId>com.agtinternational.iotcrawler</groupId>-->
+<!--          <artifactId>fiware-models</artifactId>-->
+<!--        </exclusion>-->
+<!--        <exclusion>-->
+<!--          <groupId>com.agtinternational.iotcrawler</groupId>-->
+<!--          <artifactId>core</artifactId>-->
+<!--        </exclusion>-->
+<!--        &lt;!&ndash;<exclusion>&ndash;&gt;-->
+<!--        &lt;!&ndash;<groupId>org.apache.httpcomponents</groupId>&ndash;&gt;-->
+<!--        &lt;!&ndash;<artifactId>httpclient-osgi</artifactId>&ndash;&gt;-->
+<!--        &lt;!&ndash;</exclusion>&ndash;&gt;-->
+<!--        &lt;!&ndash;<exclusion>&ndash;&gt;-->
+<!--        &lt;!&ndash;<groupId>org.apache.httpcomponents</groupId>&ndash;&gt;-->
+<!--        &lt;!&ndash;<artifactId>httpasyncclient</artifactId>&ndash;&gt;-->
+<!--        &lt;!&ndash;</exclusion>&ndash;&gt;-->
+<!--      </exclusions>-->
+<!--      &lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
+<!--    </dependency>-->
+
+    <!--<dependency>-->
+      <!--<groupId>com.agtinternational.iotcrawler</groupId>-->
+      <!--<artifactId>orchestrator</artifactId>-->
+      <!--<version>${iotcrawler.orchestrator.version}</version>-->
+      <!--<exclusions>-->
+        <!--<exclusion>-->
+          <!--<groupId>org.objectweb</groupId>-->
+          <!--<artifactId>asm</artifactId>-->
+        <!--</exclusion>-->
+      <!--</exclusions>-->
+    <!--</dependency>-->
+
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-graphql-java</artifactId>
+      <version>1.0.0-M03</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/net.minidev/asm -->
+    <dependency>
+      <groupId>net.minidev</groupId>
+      <artifactId>asm</artifactId>
+      <version>1.0.2</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.graphql-java</groupId>
+      <artifactId>graphql-java-extended-scalars</artifactId>
+      <version>1.0</version>
+    </dependency>
+
+
+
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.graphql-java</groupId>
+      <artifactId>graphql-java</artifactId>
+      <version>10.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.graphql-java</groupId>
+      <artifactId>graphql-java-tools</artifactId>
+      <version>3.2.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.graphql-java</groupId>
+      <artifactId>graphql-java-servlet</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>5.2.1.RELEASE</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.springframework/spring-web -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <version>5.2.1.RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>2.2.1.RELEASE</version>
+      <exclusions>
+
+<!--        <exclusion>-->
+<!--          <groupId>ch.qos.logback</groupId>-->
+<!--          <artifactId>logback-classic</artifactId>-->
+<!--        </exclusion>-->
+      </exclusions>
+      <!--<scope>test</scope>-->
+    </dependency>
+
+
+    <dependency>
+      <groupId>eu.neclab.iotplatform</groupId>
+      <artifactId>ngsi.api</artifactId>
+      <version>7.1-SNAPSHOT</version>
+      <!--            <scope>provided</scope>-->
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>net.minidev</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ops4j.pax.logging</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+
+
+    <!--<dependency>-->
+      <!--<groupId>com.graphql-java</groupId>-->
+      <!--<artifactId>graphql-java-extended-scalars</artifactId>-->
+      <!--<version>1.0</version>-->
+    <!--</dependency>-->
+
+    <!--<dependency>-->
+      <!--<groupId>com.zhokhov.graphql</groupId>-->
+      <!--<artifactId>graphql-datetime-spring-boot-starter</artifactId>-->
+      <!--<version>1.5.1</version>-->
+      <!--<exclusions>-->
+        <!--<exclusion>-->
+          <!--<groupId>org.springframework.boot</groupId>-->
+          <!--<artifactId>spring-boot-starter-websocket</artifactId>-->
+        <!--</exclusion>-->
+      <!--</exclusions>-->
+    <!--</dependency>-->
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver</artifactId>
+      <version>3.4.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.leangen.graphql</groupId>
+      <artifactId>spqr</artifactId>
+      <version>0.9.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>system-rules</artifactId>
+      <version>1.16.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+  </dependencies>
+
+
+
+  <build>
+
+
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <version>9.4.6.v20170531</version>
+        <configuration>
+          <webAppConfig>
+            <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+          </webAppConfig>
+        </configuration>
+      </plugin>
+
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.5.1</version>
+      <configuration>
+        <compilerArgs>
+          <arg>-parameters</arg>
+        </compilerArgs>
+        <source>1.8</source>
+        <target>1.8</target>
+      </configuration>
+    </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>2.0.0</version>
+        <configuration>
+        <licenseName>apache_v2</licenseName>
+        <!--                    <licenseResolver>${project.baseUri}/src/license</licenseResolver>-->
+        </configuration>
+        <executions>
+          <execution>
+            <id>first</id>
+            <goals>
+              <goal>update-file-header</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+                <licenseName>apache_v2</licenseName>
+                <roots>
+                <root>src/main/java</root>
+                <root>src/test</root>
+                </roots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    <plugin>
+      <artifactId>maven-war-plugin</artifactId>
+      <version>3.1.0</version>
+    </plugin>
+
+    </plugins>
+  </build>
+
+
+</project>

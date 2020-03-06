@@ -1,0 +1,5 @@
+{
+  entities(type: "iotc:IoTStream", query: "sosa:madeBySensor='iotc:Sensor_AEON+Labs+ZW100+MultiSensor+6_MotionAlarmCancelationDelay'"){
+    id
+   }
+}

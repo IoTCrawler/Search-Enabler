@@ -1,0 +1,30 @@
+{
+   #streams
+   streams(madeBySensor: {
+                       #id: "iotc:Sensor_AEON+Labs+ZW100+MultiSensor+6_Temperature"
+                       #isHostedBy: {
+                       #      label: "AEON Labs ZW100 MultiSensor 6"
+                             #label: "FIBARO System FGWPE/F Wall Plug Gen5"
+                       #}
+                       observes: {
+                            label: "Temperature"
+                       #     label: "Energy"
+                       }
+               })
+               {
+                  id,
+                  madeBySensor {
+                      id,
+                      label,
+                      isHostedBy{
+                                      id,
+                                      label,
+                                      location
+                                    },
+                      observes{
+                          id,
+                          label
+                      }
+                  }
+              }
+}

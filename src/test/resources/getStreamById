@@ -1,0 +1,17 @@
+{
+  stream(id: "iotc:Stream_FIBARO+System+FGWPE%2FF+Wall+Plug+Gen5_CurrentEnergyUse") {
+    id,
+    madeBySensor{
+        id,
+        label,
+        observes {
+            id,
+            label
+        }
+        isHostedBy{
+            id,
+            label
+        }
+    }
+  }
+}

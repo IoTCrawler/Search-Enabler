@@ -1,0 +1,10 @@
+{
+  platform(id: "iotc:Device_AEON+Labs+ZW100+MultiSensor+6") {
+    id,
+    label,
+    hosts {
+        id,
+        label
+    }
+  }
+}

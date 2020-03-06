@@ -1,0 +1,11 @@
+{
+  observableProperty(id: "iotc:Property_FIBARO+System+FGWPE%2FF+Wall+Plug+Gen5_CurrentEnergyUse"){
+  #observableProperties{
+    id,
+    label,
+    isObservedBy {
+        id,
+        label
+    }
+  }
+}
