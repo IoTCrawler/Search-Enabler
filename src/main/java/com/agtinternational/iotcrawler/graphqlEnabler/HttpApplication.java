@@ -23,10 +23,15 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
-public class HttpExampleApplication {
+import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
 
-	public static void main(String[] args) {
-		SpringApplication.run(HttpExampleApplication.class, args);
+@SpringBootApplication
+public class HttpApplication {
+
+	public static void main(String[] args) throws Exception {
+		if (!System.getenv().containsKey(IOTCRAWLER_ORCHESTRATOR_URL))
+			throw new Exception("IOTCRAWLER_ORCHESTRATOR_URL not specified");
+
+		SpringApplication.run(HttpApplication.class, args);
 	}
 }
