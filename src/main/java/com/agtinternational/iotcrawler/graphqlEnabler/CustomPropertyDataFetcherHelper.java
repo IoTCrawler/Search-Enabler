@@ -8,10 +8,7 @@ import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
 import com.orange.ngsi2.model.Attribute;
 import graphql.GraphQLException;
 import graphql.Internal;
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLNonNull;
-import graphql.schema.GraphQLScalarType;
-import graphql.schema.GraphQLType;
+import graphql.schema.*;
 import org.dataloader.DataLoader;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -19,10 +16,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,40 +56,64 @@ public class CustomPropertyDataFetcherHelper {
             Object ret = getPropertyViaGetterMethod(object, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
             return ret;
         } catch (NoSuchMethodException ignored) {
-           // ((RDFModel)object).getProperty(propertyName);
-
-//            else
-//                throw new NotImplementedException();
-            String propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(Utils.getFragment(((EntityLD)object).getType())+"."+propertyName);
-            if (propertyNameURI == null)
-                propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(propertyName);
-
-            if (propertyNameURI == null)
-                throw new Exception("No URI found for " + propertyName+" in "+((EntityLD)object).getId());
-
-                Object value = null;
-                if (object instanceof EntityLD) {
-                    Attribute attribute = ((EntityLD) object).getAttribute(propertyNameURI);
-                    if (propertyNameURI.startsWith("http://") && attribute == null)
-                        attribute = ((EntityLD) object).getAttribute(propertyNameURI);
-                    if (attribute == null)
-                        throw new Exception("Attribute " + propertyNameURI + " not found in "+((EntityLD)object).getId());
-                    value = attribute.getValue();
-                } else
-                    throw new NotImplementedException();
-
-                if(graphQLType instanceof GraphQLNonNull) {
-                    String propertyType = ((GraphQLNonNull) graphQLType).getWrappedType().getName();
-                    String propertyTypeURI = IoTCrawlerWiring.bindingRegistry.get(propertyType);
-                    if (propertyTypeURI != null) {
-                        DataLoader loader = IoTCrawlerWiring.dataLoaderRegistry.getDataLoader(propertyType);
-                        Object ret = loader.load(value);
-                        return ret;
-                    }
-                }
-
-            return value;
+            String abc = "123";
         }
+
+        if(!(object instanceof Iterable))
+            object = Arrays.asList(new Object[]{ object });
+
+        Object value = null;
+        Iterator iterator = ((Iterable)object).iterator();
+        List keys = new ArrayList();
+        while(iterator.hasNext()) {
+            Object object0 = iterator.next();
+            if (object0 instanceof EntityLD) {
+
+                try {
+
+                    Object ret = getPropertyViaGetterMethod(object0, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
+                    value = ret;
+                } catch (NoSuchMethodException ignored) {
+                    String propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(Utils.getFragment(((EntityLD) object0).getType()) + "." + propertyName);
+                    if (propertyNameURI == null)
+                        propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(propertyName);
+
+                    if (propertyNameURI == null)
+                        throw new Exception("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
+
+                    Attribute attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                    if (propertyNameURI.startsWith("http://") && attribute == null)
+                        attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                    if (attribute == null)
+                        throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                    value = attribute.getValue();
+                    if(value instanceof List)
+                        keys.addAll((List)value);
+                    else
+                        keys.add(value);
+                }
+            } else
+                throw new NotImplementedException();
+
+        }
+
+        if (graphQLType instanceof GraphQLNonNull) {
+            String propertyType = null;
+            if(((GraphQLNonNull) graphQLType).getWrappedType() instanceof GraphQLList)
+                propertyType = ((GraphQLList)((GraphQLNonNull) graphQLType).getWrappedType()).getWrappedType().getName();
+            else
+                propertyType = ((GraphQLNonNull) graphQLType).getWrappedType().getName();
+            if(propertyType!=null){
+                String propertyTypeURI = IoTCrawlerWiring.bindingRegistry.get(propertyType);
+                 if (propertyTypeURI != null) {
+                    DataLoader loader = IoTCrawlerWiring.dataLoaderRegistry.getDataLoader(propertyType);
+                    Object ret = loader.loadMany(keys);
+                    return ret;
+                }
+            }
+        }
+
+        return value;
     }
 
     private static boolean isNegativelyCached(String key) {

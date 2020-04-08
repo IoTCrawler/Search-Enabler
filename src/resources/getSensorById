@@ -9,6 +9,6 @@
     isHostedBy{
                 id,
                 label
-              }
+             }
   }
 }
