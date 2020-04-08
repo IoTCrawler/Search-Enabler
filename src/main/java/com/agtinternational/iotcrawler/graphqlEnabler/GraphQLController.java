@@ -27,7 +27,7 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CrossOrigin;
+//import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -56,7 +56,7 @@ public class GraphQLController {
     }
 
     @RequestMapping(value = "/graphql", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @CrossOrigin
+    //@CrossOrigin
     public void graphqlGET(@RequestParam("query") String query,
                            @RequestParam(value = "operationName", required = false) String operationName,
                            @RequestParam("variables") String variablesJson,
@@ -76,7 +76,7 @@ public class GraphQLController {
 
     @SuppressWarnings("unchecked")
     @RequestMapping(value = "/graphql", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @CrossOrigin
+    //@CrossOrigin
     public void graphql(@RequestBody Map<String, Object> body, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
         String query = (String) body.get("query");
         if (query == null) {

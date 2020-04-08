@@ -46,7 +46,7 @@ public class AugmentedIoTStream extends IoTStream {
 
     public Object getMadeBySensor() {
         DataLoader loader = IoTCrawlerWiring.dataLoaderRegistry.getDataLoader(Sensor.class.getSimpleName());
-        Object sensorId = madeBySensor();
+        Object sensorId = generatedBy();
         return loader.load(sensorId.toString());
 
     }

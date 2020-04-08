@@ -20,19 +20,19 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
  * #L%
  */
 
-import com.agtinternational.iotcrawler.core.OrchestratorRESTClient;
-import com.agtinternational.iotcrawler.core.OrchestratorRPCClient;
+import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.core.interfaces.IotCrawlerClient;
 import com.agtinternational.iotcrawler.core.models.*;
+import com.agtinternational.iotcrawler.core.ontologies.IotStream;
+import com.agtinternational.iotcrawler.core.ontologies.SOSA;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
-import com.agtinternational.iotcrawler.graphqlEnabler.Context;
-import com.agtinternational.iotcrawler.graphqlEnabler.Wiring;
+import com.agtinternational.iotcrawler.graphqlEnabler.*;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
 import graphql.scalars.ExtendedScalars;
 import graphql.schema.*;
-import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.*;
 import net.minidev.json.JSONObject;
 import org.apache.jena.vocabulary.RDFS;
 import org.dataloader.DataLoader;
@@ -41,14 +41,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import javax.swing.text.html.parser.Entity;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
+import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
+
 
 @Component
 public class IoTCrawlerWiring implements Wiring {
@@ -56,14 +61,17 @@ public class IoTCrawlerWiring implements Wiring {
     static Logger LOGGER = LoggerFactory.getLogger(IoTCrawlerWiring.class);
     public static final DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
     static IotCrawlerClient iotCrawlerClient;
+    Boolean cutURIs;
+    public static Map<String, String> bindingRegistry = new HashMap<>();
 
     public IoTCrawlerWiring() {
-
+        cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
     }
 
     public static IotCrawlerClient getIoTCrawlerClient(){
+        Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
         if(iotCrawlerClient==null) {
-            iotCrawlerClient = new OrchestratorRPCClient();
+            iotCrawlerClient = new IoTCrawlerRESTClient(System.getenv(IOTCRAWLER_ORCHESTRATOR_URL), cutURIs);
             //iotCrawlerClient = new OrchestratorRESTClient();
             try {
                 iotCrawlerClient.init();
@@ -79,68 +87,89 @@ public class IoTCrawlerWiring implements Wiring {
         return dataLoaderRegistry;
     }
 
-    private static List<Object> getAugmentedEntitiesViaHTTP(JSONObject query, int offset, int limit, Class targetClass){
+    private List<Object> getEntitiesViaHTTP(JSONObject query, int offset, int limit, String concept){
         List ret = new ArrayList();
+        String typeURI = bindingRegistry.get(concept);
         try {
-            ret = getIoTCrawlerClient().getEntities(targetClass, (query.size()>0?query.toString():null), null, offset, limit);
+            ret = getIoTCrawlerClient().getEntities(typeURI, (query.size()>0?query.toString():null), null, offset, limit);
         }
         catch (Exception e){
-            LOGGER.error("Failed to get {} entities", targetClass.getCanonicalName());
+            LOGGER.error("Failed to get {} entities", concept);
             e.printStackTrace();
         }
 
-        List augmented = augmentEntities(ret, targetClass);
-        return augmented;
+        //List augmented = augmentEntities(ret, concept);
+        //return augmented;
+        return ret;
     }
 
-    private static List<Object> getAugmentedEntitiesViaHTTP(List<String> keys, Class targetClass){
-        List ret = new ArrayList();
-        try {
-            ret = getIoTCrawlerClient().getEntitiesById(keys.toArray(new String[0]), targetClass);
+    private List<Object> getEntitiesViaHTTP(List<String> keys, String concept){
+        List entitiesFromDB = new ArrayList();
+        String typeURI = bindingRegistry.get(concept);
+        int count=0;
+        for(String key : keys) {
+            try {
+                List<EntityLD> entities = getIoTCrawlerClient().getEntityById(key);
+                entitiesFromDB.addAll(entities);
+            } catch (Exception e) {
+                LOGGER.error("Failed to get {} entities", concept);
+                e.printStackTrace();
+            }
+            count++;
         }
-        catch (Exception e){
-            LOGGER.error("Failed to get {} entities", targetClass.getCanonicalName());
-            e.printStackTrace();
-        }
-
-        //List augmented = ret;
-        List augmented = augmentEntities(ret, targetClass);
+        List augmented = entitiesFromDB;
+        //List augmented = augmentEntities(entitiesFromDB, concept);
         if(keys.size()!=augmented.size()) {
-            LOGGER.warn("Failed to return exact amount of entnties({}). Adding nulls entity to the result", targetClass);
-            for (int i = 0; i < keys.size() - augmented.size(); i++) {
+            int delta = keys.size() - augmented.size();
+            LOGGER.warn("Failed to return exact amount of entnties({}). Adding nulls entity to the result", concept);
+            for (int i = 0; i < delta; i++) {
                 augmented.add(null);   //filling missing results
             }
         }
         return augmented;
     }
 
-    private static List augmentEntities(List inputList, Class targetClass){
+    private List augmentEntities(List inputList, String concept){
         List augmented = new ArrayList();
-        if(targetClass==IoTStream.class)
-            inputList.stream().forEach(item->{  augmented.add(new AugmentedIoTStream((IoTStream) item)); });
+        return inputList;
+//        for(Object item: inputList)
+//        try{
+//            RDFModel rdfModel = RDFModel.fromEntity((EntityLD) item);
+//            //Foo foo = (Foo) DebugProxy.newInstance(new FooImpl((EntityLD) item));
+//            augmented.add(rdfModel);
+//        }
+//        catch (Exception e){
+//            LOGGER.error(e.getLocalizedMessage());
+//        }
 
-        if(targetClass==Sensor.class)
-            inputList.stream().forEach(item->{  augmented.add(new AugmentedSensor((Sensor) item)); });
 
-        if(targetClass==Platform.class)
-            inputList.stream().forEach(item->{  augmented.add(new AugmentedPlatform((Platform) item)); });
+//        if(concept=="IoTStream")
+//            inputList.stream().forEach(item->{  augmented.add(new AugmentedIoTStream((IoTStream) item)); });
+//
+//        if(concept=="Sensor")
+//            inputList.stream().forEach(item->{  augmented.add(new AugmentedSensor((Sensor) item)); });
+//
+//        if(concept=="Platform")
+//            inputList.stream().forEach(item->{  augmented.add(new AugmentedPlatform((Platform) item)); });
+//
+//        if(concept=="ObservableProperty")
+//            inputList.stream().forEach(item->{  augmented.add(new AugmentedObservableProperty((ObservableProperty) item)); });
 
-        if(targetClass==ObservableProperty.class)
-            inputList.stream().forEach(item->{  augmented.add(new AugmentedObservableProperty((ObservableProperty) item)); });
-
-        return augmented;
+        //return augmented;
     }
 
-    private static List serveQuery(JSONObject query, Class targetClass, int offset, int limit){
-        List entities = getAugmentedEntitiesViaHTTP(query, offset,limit, targetClass);
+    private List serveQuery(JSONObject query, String concept, int offset, int limit){
+        List entities = getEntitiesViaHTTP(query, offset,limit, concept);
         return entities;
     }
 
 
-    public static DataFetcher genericDataFetcher(Class targetClass, boolean resolvingInput) {
+    //public static DataFetcher genericDataFetcher(Class targetClass, boolean resolvingInput) {
+    public DataFetcher genericDataFetcher(String concept, boolean resolvingInput) {
+
         return environment -> {
             Context ctx = environment.getContext();
-            DataLoader<String, Object> loader = ctx.getLoader(targetClass.getSimpleName());
+            DataLoader<String, Object> loader = ctx.getLoader(concept);
             String id = environment.getArgument("id");
             String URI = environment.getArgument("URI");
             Object source = environment.getSource();
@@ -151,9 +180,9 @@ public class IoTCrawlerWiring implements Wiring {
 //                    ((Sensor)source).setObserves();
 //            }
 
-             if(id!=null) {
+                if(id!=null) {
                  if (resolvingInput){
-                     List<Object> entities = getAugmentedEntitiesViaHTTP(Arrays.asList(id), targetClass);
+                     List<Object> entities = getEntitiesViaHTTP(Arrays.asList(id), concept);
                      List<String> ids = new ArrayList<>();
                      entities.stream().forEach(entity0 -> {
                          RDFModel entity = ((RDFModel) entity0);
@@ -189,7 +218,7 @@ public class IoTCrawlerWiring implements Wiring {
                 Map<String, Object> arguments = new HashMap<>();
                 arguments.putAll(environment.getArgument("madeBySensor"));
 
-                CompletableFuture future = (CompletableFuture) genericDataFetcher(Sensor.class, true).get(EnvironmentsBuilder.create(environment, arguments));
+                CompletableFuture future = (CompletableFuture) genericDataFetcher("Sensor", true).get(EnvironmentsBuilder.create(environment, arguments));
                 try {
                     Object entities = future.get();
                     if(entities instanceof Iterable) {
@@ -215,7 +244,7 @@ public class IoTCrawlerWiring implements Wiring {
                 Map<String, Object> arguments = new HashMap<>();
                 arguments.putAll(environment.getArgument("isHostedBy"));
 
-                CompletableFuture future = (CompletableFuture)genericDataFetcher(Platform.class, true).get(EnvironmentsBuilder.create(environment, arguments));
+                CompletableFuture future = (CompletableFuture)genericDataFetcher("Platform", true).get(EnvironmentsBuilder.create(environment, arguments));
 
                 try {
                     Object entities = future.get();
@@ -243,7 +272,7 @@ public class IoTCrawlerWiring implements Wiring {
                 //CompletableFuture future = (CompletableFuture)genericDataFetcher(ObservableProperty.class).get();
 
                 DataFetchingEnvironment dataFetchingEnvironment =  EnvironmentsBuilder.create(environment, arguments);
-                CompletableFuture future = (CompletableFuture)genericDataFetcher(ObservableProperty.class, true).get(dataFetchingEnvironment);
+                CompletableFuture future = (CompletableFuture)genericDataFetcher("ObservableProperty", true).get(dataFetchingEnvironment);
 
                 try {
 
@@ -269,12 +298,12 @@ public class IoTCrawlerWiring implements Wiring {
             int offset = (environment.getArgument("offset")!=null?environment.getArgument("offset"):0);
             int limit = (environment.getArgument("limit")!=null?environment.getArgument("limit"):0);
 
-            List entities = serveQuery(query, targetClass, offset, limit);
+            List augmentedEntities = serveQuery(query, concept, offset, limit);
             List<String> ids = new ArrayList<>();
-            entities.stream().forEach(entity0->{
-                RDFModel entitiy = ((RDFModel)entity0);
-                loader.prime(entitiy.getURI(), entitiy);
-                ids.add(entitiy.getURI());
+            augmentedEntities.stream().forEach(entity0->{
+                EntityLD entity = ((EntityLD)entity0);
+                loader.prime(entity.getId(), entity);
+                ids.add(entity.getId());
             });
 
 //            if(resolvingInput)
@@ -321,7 +350,8 @@ public class IoTCrawlerWiring implements Wiring {
             ret = (GraphQLObjectType) environment.getSchema().getType("IoTStream");
         } else if(object instanceof Sensor) {
             ret = (GraphQLObjectType) environment.getSchema().getType("Sensor");
-        }
+        }else
+            throw new NotImplementedException();
         return ret;
     };
 
@@ -329,7 +359,7 @@ public class IoTCrawlerWiring implements Wiring {
     @Override
     public String getSchemaString(){
         try {
-            URL url = Resources.getResource("schema.graphqls");
+            URL url = Resources.getResource("iotcrawler.graphqls");
             String sdl = Resources.toString(url, Charsets.UTF_8);
             return sdl;
         }
@@ -341,25 +371,60 @@ public class IoTCrawlerWiring implements Wiring {
 
     @Override
     public RuntimeWiring build() {
+
+
+
+        bindingRegistry.put("IoTStream", IoTStream.getTypeUri(cutURIs));
+        bindingRegistry.put("Sensor", Sensor.getTypeUri(cutURIs));
+        bindingRegistry.put("Platform", Platform.getTypeUri(cutURIs));
+        bindingRegistry.put("ObservableProperty", ObservableProperty.getTypeUri(cutURIs));
+
+        bindingRegistry.put("label", RDFS.label.toString());
+
+        bindingRegistry.put("isHostedBy", SOSA.isHostedBy);
+        bindingRegistry.put("hosts", SOSA.hosts);
+        bindingRegistry.put("madeBySensor", SOSA.madeBySensor);
+        bindingRegistry.put("IotStream.observes", IotStream.observes);
+        bindingRegistry.put("Sensor.observes", SOSA.observes);
+        bindingRegistry.put("isObservedBy", SOSA.isObservedBy);
+
+
+        bindingRegistry.put("generatedBy", IotStream.generatedBy);
+
+
         //RuntimeWiring.newRuntimeWiring().scalar(ExtendedScalars.DateTime);
+        String[] concepts = new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty" };
+        for(String concept: concepts)
+            dataLoaderRegistry.register(concept, new DataLoader(new GenericLoader(concept)));
+//        dataLoaderRegistry.register(IoTStream, new DataLoader(new GenericLoader("IoTStream")));
+//        dataLoaderRegistry.register(Sensor.class.getSimpleName(), new DataLoader<>(new GenericLoader("Sensor")));
+//        dataLoaderRegistry.register(Platform.class.getSimpleName(), new DataLoader<>(new GenericLoader("Platform")));
+//        dataLoaderRegistry.register(ObservableProperty.class.getSimpleName(), new DataLoader<>(new GenericLoader("ObservableProperty")));
 
-        dataLoaderRegistry.register(IoTStream.class.getSimpleName(), new DataLoader(new GenericLoader(IoTStream.class)));
-        dataLoaderRegistry.register(Sensor.class.getSimpleName(), new DataLoader<>(new GenericLoader(Sensor.class)));
-        dataLoaderRegistry.register(Platform.class.getSimpleName(), new DataLoader<>(new GenericLoader(Platform.class)));
-        dataLoaderRegistry.register(ObservableProperty.class.getSimpleName(), new DataLoader<>(new GenericLoader(ObservableProperty.class)));
 
-        return RuntimeWiring.newRuntimeWiring()
+        dataLoaderRegistry.register("HomeState", new DataLoader<>(new GenericLoader("HomeState")));
+        dataLoaderRegistry.register("Appliance", new DataLoader<>(new GenericLoader("Appliance")));
+        dataLoaderRegistry.register("Activity", new DataLoader<>(new GenericLoader("Activity")));
 
+
+
+        RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
                 .type(newTypeWiring("Query")
-                        .dataFetcher("stream",  genericDataFetcher(IoTStream.class, false))
-                        .dataFetcher("streams", genericDataFetcher(IoTStream.class, false))
-                        .dataFetcher("sensor", genericDataFetcher(Sensor.class, false))
-                        .dataFetcher("sensors", genericDataFetcher(Sensor.class, false))
-                        .dataFetcher("platforms", genericDataFetcher(Platform.class, false))
-                        .dataFetcher("platform", genericDataFetcher(Platform.class, false))
-                        .dataFetcher("observableProperty", genericDataFetcher(ObservableProperty.class, false))
-                        .dataFetcher("observableProperties", genericDataFetcher(ObservableProperty.class, false))
-                        .dataFetcher("entities", genericDataFetcher(EntityLD.class, false))
+                        .dataFetcher("stream",  genericDataFetcher("IoTStream", false))
+                        .dataFetcher("streams", genericDataFetcher("IoTStream", false))
+                        .dataFetcher("sensor", genericDataFetcher("Sensor", false))
+                        .dataFetcher("sensors", genericDataFetcher("Sensor", false))
+                        .dataFetcher("platforms", genericDataFetcher("Platform", false))
+                        .dataFetcher("platform", genericDataFetcher("Platform", false))
+                        .dataFetcher("observableProperty", genericDataFetcher("ObservableProperty", false))
+                        .dataFetcher("observableProperties", genericDataFetcher("ObservableProperty", false))
+                        .dataFetcher("entities", genericDataFetcher("EntityLD", false))
+
+                        .dataFetcher("homeState", genericDataFetcher("HomeState", false))
+                        .dataFetcher("homeStates", genericDataFetcher("HomeState", false))
+                        .dataFetcher("activity", genericDataFetcher("Activity", false))
+                        .dataFetcher("activities", genericDataFetcher("Activity", false))
+
                 )
 
 //                .type(newTypeWiring("IoTStream")
@@ -374,21 +439,29 @@ public class IoTCrawlerWiring implements Wiring {
                 //.type(newTypeWiring("IoTStream").typeResolver(typesResolver))
                 //.type(newTypeWiring("Sensor").typeResolver(typesResolver))
 
-                .scalar(ExtendedScalars.Object)
+                .scalar(ExtendedScalars.Object);
                 //.scalar(new FilterScalarType())
-                .build();
+
+        CustomWiringFactory customWiringFactory = new CustomWiringFactory();
+        runtimeWiringBuilder.wiringFactory(customWiringFactory);
+        RuntimeWiring runtimeWiring = runtimeWiringBuilder.build();
+        customWiringFactory.setRuntimeWiring(runtimeWiring);
+
+        return runtimeWiring;
     }
 
     public class GenericLoader implements org.dataloader.BatchLoader {
 
-        Class targetClass;
-        public GenericLoader(Class targetClass){
-            this.targetClass = targetClass;
+        String concept;
+        public GenericLoader(String concept){
+            this.concept = concept;
         }
 
         @Override
         public CompletionStage<List> load(List list) {
-            return CompletableFuture.supplyAsync(() -> getAugmentedEntitiesViaHTTP(list, targetClass));
+            String test = "123";
+            return CompletableFuture.supplyAsync(() ->
+                    getEntitiesViaHTTP(list, concept));
         }
     }
 

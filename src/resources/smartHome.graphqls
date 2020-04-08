@@ -1,0 +1,40 @@
+
+
+schema {
+    query: smartHomeQuery
+}
+
+type smartHomeQuery {
+        homeState(id: String): HomeState
+        homeStates(activity: ActivityInput, activeAppliance: ApplianceInput): [HomeState]
+
+        activity(id: String): [Activity]
+        activities(homeId: String, location: String): [Activity]
+        activeAppliances(homeId: String, location: String): [Appliance]
+}
+
+
+type HomeState{
+     id: String
+     activeAppliances: [Appliance]
+     activities: [Activity]
+}
+
+type Appliance{
+     Name: String
+     Location: String!
+}
+
+type Activity{
+      Name: String
+}
+
+input ActivityInput {
+    id: String
+    location: String
+}
+
+input ApplianceInput {
+    id: String
+    location: String
+}

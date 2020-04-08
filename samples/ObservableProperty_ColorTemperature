@@ -1,0 +1,18 @@
+{
+  "id": "urn:ngsi-ld:ColorTemperature",
+  "type": "http://www.w3.org/ns/sosa/ObservableProperty",
+  "@context": {
+    "agt-smarthome": "http://www.agtinternational.com/ontologies/SmartHome#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  },
+  "http://www.w3.org/2000/01/rdf-schema#label": {
+    "type": "Property",
+    "value": "Temperature"
+  },
+  "http://www.w3.org/ns/sosa/isObservedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2"
+  }
+}

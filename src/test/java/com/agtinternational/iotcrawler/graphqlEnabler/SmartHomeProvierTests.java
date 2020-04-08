@@ -21,8 +21,6 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 import com.agtinternational.iotcrawler.core.Utils;
-import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
-import com.agtinternational.iotcrawler.core.models.IoTStream;
 import com.agtinternational.iotcrawler.core.models.RDFModel;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
@@ -54,9 +52,8 @@ import static com.agtinternational.iotcrawler.fiware.clients.Constants.NGSILD_BR
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
-public class IoTCrawlerProvierTests {
-	protected Logger LOGGER = LoggerFactory.getLogger(IoTCrawlerProvierTests.class);
-
+public class SmartHomeProvierTests {
+	protected Logger LOGGER = LoggerFactory.getLogger(SmartHomeProvierTests.class);
 
 	GraphQLProvider graphQLProvider;
 	GraphQL graphql;
@@ -74,7 +71,6 @@ public class IoTCrawlerProvierTests {
 		graphql = graphQLProvider.graphQL();
 
 		context = graphQLProvider.getContext();
-
 	}
 
 	private String getQuery(String resourcePath) throws IOException {
@@ -90,7 +86,6 @@ public class IoTCrawlerProvierTests {
 
 
         NgsiLDClient ngsiLDClient = new NgsiLDClient(System.getenv(NGSILD_BROKER_URL));
-		IoTCrawlerRESTClient ioTCrawlerRESTClient = new IoTCrawlerRESTClient(System.getenv(NGSILD_BROKER_URL));
 
         List<Path> filesToRead= new ArrayList<>();
         File folder = new File("samples");
@@ -111,16 +106,14 @@ public class IoTCrawlerProvierTests {
             byte[] modelJson = Files.readAllBytes(path);
             EntityLD entityLD = EntityLD.fromJsonString(new String(modelJson));
 
-//			Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
-//			if(cutURIs) {
-//				 entityLD = RDFModel.fromEntity(entityLD).toEntityLD(cutURIs);
-//			}else
-//				entityLD.setContext(null);
+			Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
+			if(cutURIs) {
+				 entityLD = RDFModel.fromEntity(entityLD).toEntityLD(cutURIs);
+			}else
+				entityLD.setContext(null);
 
 			ngsiLDClient.deleteEntitySync(entityLD.getId());
 			boolean result = ngsiLDClient.addEntitySync(entityLD);
-			List<EntityLD> ret = ioTCrawlerRESTClient.getEntityById(entityLD.getId());
-			Assert.isTrue(ret.size()>0);
         }
 //        catch (Exception e){
 //			LOGGER.error("Problem with {}: {}", path, e.getLocalizedMessage());
@@ -131,8 +124,8 @@ public class IoTCrawlerProvierTests {
     }
 
 	@Test
-	public void getStreamByIdTest() throws Exception {
-		String query = getQuery("getStreamById");
+	public void getHomeStateTest() throws Exception {
+		String query = getQuery("getHomeStates");
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "iotc:Stream_1");

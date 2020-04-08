@@ -1,0 +1,30 @@
+{
+  "id": "urn:ngsi-ld:Platform_homee_00055110D732",
+  "type": "http://www.w3.org/ns/sosa/Platform",
+  "@context": {
+    "agt-smarthome": "http://www.agtinternational.com/ontologies/SmartHome#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  },
+  "http://www.w3.org/ns/sosa/hosts#3": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:FibaroWallPlug_FIBARO_System_FGWPE-F_Wall_Plug_Gen5"
+  },
+  "http://www.w3.org/ns/sosa/hosts#4": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:MultiSensor_AEON_Labs_ZW100_MultiSensor_6"
+  },
+  "http://www.w3.org/ns/sosa/hosts": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2"
+  },
+  "http://www.w3.org/ns/sosa/hosts#2": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:FibaroWallPlug_FIBARO_Wall_plug_living_room"
+  },
+  "http://www.w3.org/2000/01/rdf-schema#label": {
+    "type": "Property",
+    "value": "homee_00055110D732"
+  }
+}
