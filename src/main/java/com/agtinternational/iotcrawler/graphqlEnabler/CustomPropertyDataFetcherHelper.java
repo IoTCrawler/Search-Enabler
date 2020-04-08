@@ -59,41 +59,45 @@ public class CustomPropertyDataFetcherHelper {
             String abc = "123";
         }
 
-        if(!(object instanceof Iterable))
-            object = Arrays.asList(new Object[]{ object });
+        Boolean changed = false;
+        if(!(object instanceof Iterable) && object!=null) {
+            object = Arrays.asList(new Object[]{object});
+            changed = true;
+        }
 
         Object value = null;
         Iterator iterator = ((Iterable)object).iterator();
         List keys = new ArrayList();
-        while(iterator.hasNext()) {
+        while(iterator.hasNext()){
             Object object0 = iterator.next();
-            if (object0 instanceof EntityLD) {
+            if(object0!=null)
+                if (object0 instanceof EntityLD) {
 
-                try {
+                    try {
 
-                    Object ret = getPropertyViaGetterMethod(object0, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
-                    value = ret;
-                } catch (NoSuchMethodException ignored) {
-                    String propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(Utils.getFragment(((EntityLD) object0).getType()) + "." + propertyName);
-                    if (propertyNameURI == null)
-                        propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(propertyName);
+                        Object ret = getPropertyViaGetterMethod(object0, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
+                        value = ret;
+                    } catch (NoSuchMethodException ignored) {
+                        String propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(Utils.getFragment(((EntityLD) object0).getType()) + "." + propertyName);
+                        if (propertyNameURI == null)
+                            propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(propertyName);
 
-                    if (propertyNameURI == null)
-                        throw new Exception("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
+                        if (propertyNameURI == null)
+                            throw new Exception("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
 
-                    Attribute attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                    if (propertyNameURI.startsWith("http://") && attribute == null)
-                        attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                    if (attribute == null)
-                        throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
-                    value = attribute.getValue();
-                    if(value instanceof List)
-                        keys.addAll((List)value);
-                    else
-                        keys.add(value);
-                }
-            } else
-                throw new NotImplementedException();
+                        Attribute attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                        if (propertyNameURI.startsWith("http://") && attribute == null)
+                            attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                        if (attribute == null)
+                            throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                        value = attribute.getValue();
+                        if(value instanceof List)
+                            keys.addAll((List)value);
+                        else
+                            keys.add(value);
+                    }
+                } else
+                    throw new NotImplementedException();
 
         }
 

@@ -28,6 +28,7 @@ import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.gson.JsonArray;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -198,7 +199,11 @@ public class IoTCrawlerProvierTests {
 		LOGGER.info("Executing query");
 		ExecutionResult executionResult = graphql.execute(executionInput);
 		Map data = executionResult.getData();
-        Assert.notNull(data.get("streams"));
+
+		List streams = (List)data.values().iterator().next();
+        Assert.notNull(streams);
+		LOGGER.info("Streams: {}", streams.size());
+
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll((Map)data);
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));

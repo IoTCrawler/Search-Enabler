@@ -112,8 +112,8 @@ public class IoTCrawlerWiring implements Wiring {
                 List<EntityLD> entities = getIoTCrawlerClient().getEntityById(key);
                 entitiesFromDB.addAll(entities);
             } catch (Exception e) {
-                LOGGER.error("Failed to get {} entities", concept);
-                e.printStackTrace();
+                LOGGER.error("Failed to get entity {}", key, concept);
+                //e.printStackTrace();
             }
             count++;
         }
