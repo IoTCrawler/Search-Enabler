@@ -13,8 +13,8 @@
   <inceptionYear>2019</inceptionYear>
 
   <properties>
-    <iotcrawler.core.version>1.0.0</iotcrawler.core.version>
-    <fiware.models.version>1.0.0</fiware.models.version>
+    <iotcrawler.core.version>1.0.2</iotcrawler.core.version>
+    <fiware.models.version>1.0.1</fiware.models.version>
     <ngsi.api.version>7.1-SNAPSHOT</ngsi.api.version>
     <iotcrawler.orchestrator.version>1.0.7</iotcrawler.orchestrator.version>
     <fiware.clients.version>1.0.8</fiware.clients.version>

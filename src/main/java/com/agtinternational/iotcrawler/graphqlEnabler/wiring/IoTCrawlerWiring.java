@@ -20,10 +20,11 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
  * #L%
  */
 
-import com.agtinternational.iotcrawler.core.OrchestratorRESTClient;
-import com.agtinternational.iotcrawler.core.OrchestratorRPCClient;
+import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
+import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRPCClient;
 import com.agtinternational.iotcrawler.core.interfaces.IotCrawlerClient;
 import com.agtinternational.iotcrawler.core.models.*;
+import com.agtinternational.iotcrawler.core.ontologies.SOSA;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.Context;
 import com.agtinternational.iotcrawler.graphqlEnabler.Wiring;
@@ -48,6 +49,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 @Component
@@ -63,7 +65,7 @@ public class IoTCrawlerWiring implements Wiring {
 
     public static IotCrawlerClient getIoTCrawlerClient(){
         if(iotCrawlerClient==null) {
-            iotCrawlerClient = new OrchestratorRPCClient();
+            iotCrawlerClient = new IoTCrawlerRESTClient(System.getenv().get(IOTCRAWLER_ORCHESTRATOR_URL));
             //iotCrawlerClient = new OrchestratorRESTClient();
             try {
                 iotCrawlerClient.init();
@@ -96,7 +98,7 @@ public class IoTCrawlerWiring implements Wiring {
     private static List<Object> getAugmentedEntitiesViaHTTP(List<String> keys, Class targetClass){
         List ret = new ArrayList();
         try {
-            ret = getIoTCrawlerClient().getEntitiesById(keys.toArray(new String[0]), targetClass);
+            ret = getIoTCrawlerClient().getEntityById(keys.get(0), targetClass);
         }
         catch (Exception e){
             LOGGER.error("Failed to get {} entities", targetClass.getCanonicalName());
