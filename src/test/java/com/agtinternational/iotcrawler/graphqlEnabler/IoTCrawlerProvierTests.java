@@ -117,8 +117,13 @@ public class IoTCrawlerProvierTests {
 //				 entityLD = RDFModel.fromEntity(entityLD).toEntityLD(cutURIs);
 //			}else
 //				entityLD.setContext(null);
+			try {
+				ngsiLDClient.deleteEntitySync(entityLD.getId());
+			}
+			catch (Exception e){
 
-			ngsiLDClient.deleteEntitySync(entityLD.getId());
+			}
+
 			boolean result = ngsiLDClient.addEntitySync(entityLD);
 			List<EntityLD> ret = ioTCrawlerRESTClient.getEntityById(entityLD.getId());
 			Assert.isTrue(ret.size()>0);
@@ -130,6 +135,47 @@ public class IoTCrawlerProvierTests {
 		Assert.isTrue(exceptions==0);
         LOGGER.info("Entities were registered");
     }
+
+	@Test
+	@Ignore
+	public void deleteEntities() throws Exception {
+		LOGGER.info("deleteEntities()");
+
+
+		NgsiLDClient ngsiLDClient = new NgsiLDClient(System.getenv(NGSILD_BROKER_URL));
+		IoTCrawlerRESTClient ioTCrawlerRESTClient = new IoTCrawlerRESTClient(System.getenv(NGSILD_BROKER_URL));
+
+		List<Path> filesToRead= new ArrayList<>();
+		File folder = new File("samples");
+		if(folder.exists()) {
+			try {
+				Files.list(folder.toPath()).forEach(file->{
+					filesToRead.add(file);
+				});
+			} catch (IOException e) {
+				LOGGER.error("Failed to list directory {}", folder.getAbsolutePath());
+				e.printStackTrace();
+			}
+		}
+
+		int exceptions=0;
+		for(Path path : filesToRead)
+		{
+			byte[] modelJson = Files.readAllBytes(path);
+			EntityLD entityLD = EntityLD.fromJsonString(new String(modelJson));
+
+			try {
+				ngsiLDClient.deleteEntitySync(entityLD.getId());
+			}
+			catch (Exception e){
+
+			}
+
+		}
+
+		Assert.isTrue(exceptions==0);
+		LOGGER.info("Entities were registered");
+	}
 
 	@Test
 	public void getStreamByIdTest() throws Exception {

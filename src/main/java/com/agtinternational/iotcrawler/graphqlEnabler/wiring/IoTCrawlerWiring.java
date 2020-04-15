@@ -104,59 +104,31 @@ public class IoTCrawlerWiring implements Wiring {
     }
 
     private List<Object> getEntitiesViaHTTP(List<String> keys, String concept){
-        List entitiesFromDB = new ArrayList();
+        List enitities = new ArrayList();
         String typeURI = bindingRegistry.get(concept);
         int count=0;
         for(String key : keys) {
             try {
                 List<EntityLD> entities = getIoTCrawlerClient().getEntityById(key);
-                entitiesFromDB.addAll(entities);
+                enitities.addAll(entities);
             } catch (Exception e) {
                 LOGGER.error("Failed to get entity {}", key, concept);
                 //e.printStackTrace();
             }
             count++;
         }
-        List augmented = entitiesFromDB;
+
         //List augmented = augmentEntities(entitiesFromDB, concept);
-        if(keys.size()!=augmented.size()) {
-            int delta = keys.size() - augmented.size();
-            LOGGER.warn("Failed to return exact amount of entnties({}). Adding nulls entity to the result", concept);
+        if(keys.size()!=enitities.size()) {
+            int delta = keys.size() - enitities.size();
             for (int i = 0; i < delta; i++) {
-                augmented.add(null);   //filling missing results
+                enitities.add(null);   //filling missing results
+                LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
             }
         }
-        return augmented;
+        return enitities;
     }
 
-    private List augmentEntities(List inputList, String concept){
-        List augmented = new ArrayList();
-        return inputList;
-//        for(Object item: inputList)
-//        try{
-//            RDFModel rdfModel = RDFModel.fromEntity((EntityLD) item);
-//            //Foo foo = (Foo) DebugProxy.newInstance(new FooImpl((EntityLD) item));
-//            augmented.add(rdfModel);
-//        }
-//        catch (Exception e){
-//            LOGGER.error(e.getLocalizedMessage());
-//        }
-
-
-//        if(concept=="IoTStream")
-//            inputList.stream().forEach(item->{  augmented.add(new AugmentedIoTStream((IoTStream) item)); });
-//
-//        if(concept=="Sensor")
-//            inputList.stream().forEach(item->{  augmented.add(new AugmentedSensor((Sensor) item)); });
-//
-//        if(concept=="Platform")
-//            inputList.stream().forEach(item->{  augmented.add(new AugmentedPlatform((Platform) item)); });
-//
-//        if(concept=="ObservableProperty")
-//            inputList.stream().forEach(item->{  augmented.add(new AugmentedObservableProperty((ObservableProperty) item)); });
-
-        //return augmented;
-    }
 
     private List serveQuery(JSONObject query, String concept, int offset, int limit){
         List entities = getEntitiesViaHTTP(query, offset,limit, concept);
@@ -396,11 +368,6 @@ public class IoTCrawlerWiring implements Wiring {
         String[] concepts = new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty" };
         for(String concept: concepts)
             dataLoaderRegistry.register(concept, new DataLoader(new GenericLoader(concept)));
-//        dataLoaderRegistry.register(IoTStream, new DataLoader(new GenericLoader("IoTStream")));
-//        dataLoaderRegistry.register(Sensor.class.getSimpleName(), new DataLoader<>(new GenericLoader("Sensor")));
-//        dataLoaderRegistry.register(Platform.class.getSimpleName(), new DataLoader<>(new GenericLoader("Platform")));
-//        dataLoaderRegistry.register(ObservableProperty.class.getSimpleName(), new DataLoader<>(new GenericLoader("ObservableProperty")));
-
 
         dataLoaderRegistry.register("HomeState", new DataLoader<>(new GenericLoader("HomeState")));
         dataLoaderRegistry.register("Appliance", new DataLoader<>(new GenericLoader("Appliance")));
