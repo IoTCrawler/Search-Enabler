@@ -16,16 +16,10 @@ variables:
 
   DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
 
-  IOTCRAWLER_RABBIT_HOST: rabbit
-  IOTCRAWLER_REDIS_HOST: redis
-  NGSILD_BROKER_URL: http://djane:3000/ngsi-ld/
-  RANKING_COMPONENT_URL: http://djane:3000/ngsi-ld/
-  IOT_BROKER_URL: http://iotbroker:8060/ngsi10
-  HTTP_SERVER_HOST: orchestrator
-  HTTP_SERVER_PORT: 3001
+  IOTCRAWLER_ORCHESTRATOR_URL: http://155.54.95.248:9090/ngsi-ld/
 
   #  CI_DEBUG_TRACE: "true"
-  CI_APPLICATION_REPOSITORY: gitlab.iotcrawler.net:4567/orchestrator/orchestrator/${CI_COMMIT_REF_NAME}
+  CI_APPLICATION_REPOSITORY: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/${CI_COMMIT_REF_NAME}
   CI_APPLICATION_TAG: ${CI_COMMIT_SHA}
 
   #HELM_HOST: localhost:44134
