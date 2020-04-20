@@ -1,5 +1,25 @@
 package com.agtinternational.iotcrawler.graphqlEnabler;
 
+/*-
+ * #%L
+ * graphql-enabler
+ * %%
+ * Copyright (C) 2019 - 2020 AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.agtinternational.iotcrawler.core.Utils;
 import com.agtinternational.iotcrawler.core.models.ObservableProperty;
 import com.agtinternational.iotcrawler.core.models.RDFModel;
@@ -10,6 +30,8 @@ import graphql.GraphQLException;
 import graphql.Internal;
 import graphql.schema.*;
 import org.dataloader.DataLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.lang.reflect.Field;
@@ -28,6 +50,8 @@ import static graphql.schema.GraphQLTypeUtil.unwrapOne;
 
 @Internal
 public class CustomPropertyDataFetcherHelper {
+    private static Logger LOGGER = LoggerFactory.getLogger(CustomPropertyDataFetcherHelper.class);
+
     private static final AtomicBoolean USE_SET_ACCESSIBLE = new AtomicBoolean(true);
     private static final AtomicBoolean USE_NEGATIVE_CACHE = new AtomicBoolean(true);
     private static final ConcurrentMap<String, Method> METHOD_CACHE = new ConcurrentHashMap<>();
@@ -89,12 +113,16 @@ public class CustomPropertyDataFetcherHelper {
                         if (propertyNameURI.startsWith("http://") && attribute == null)
                             attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
                         if (attribute == null)
-                            throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
-                        value = attribute.getValue();
-                        if(value instanceof List)
-                            keys.addAll((List)value);
-                        else
-                            keys.add(value);
+                            LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                            //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                        else {
+                            value = attribute.getValue();
+
+                            if (value instanceof List)
+                                keys.addAll((List) value);
+                            else
+                                keys.add(value);
+                        }
                     }
                 } else
                     throw new NotImplementedException();

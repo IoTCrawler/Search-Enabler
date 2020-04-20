@@ -16,7 +16,11 @@
            },
            isHostedBy{
                        id,
-                       label
+                       label,
+                       hosts{
+                                 id,
+                                 label
+                               }
                      }
   }
 }

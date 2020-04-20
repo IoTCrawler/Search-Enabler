@@ -9,8 +9,8 @@ type Query {
     sensor(id: String): Sensor
     platform(id: String): Platform
     observableProperty(id: String): ObservableProperty
-    #streams(query: String, madeBySensor: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
-    streams(madeBySensor: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
+    #streams(query: String, generatedBy: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
+    streams(generatedBy: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
     sensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
     platforms(hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
     observableProperties(query: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]

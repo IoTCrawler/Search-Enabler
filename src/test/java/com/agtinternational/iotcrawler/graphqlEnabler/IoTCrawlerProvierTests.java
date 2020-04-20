@@ -121,12 +121,15 @@ public class IoTCrawlerProvierTests {
 				ngsiLDClient.deleteEntitySync(entityLD.getId());
 			}
 			catch (Exception e){
-
+				LOGGER.error(e.getLocalizedMessage());
+			}
+			try {
+				boolean result = ngsiLDClient.addEntitySync(entityLD);
+			}
+			catch (Exception e){
+				throw e;
 			}
 
-			boolean result = ngsiLDClient.addEntitySync(entityLD);
-			List<EntityLD> ret = ioTCrawlerRESTClient.getEntityById(entityLD.getId());
-			Assert.isTrue(ret.size()>0);
         }
 //        catch (Exception e){
 //			LOGGER.error("Problem with {}: {}", path, e.getLocalizedMessage());
