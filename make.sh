@@ -18,7 +18,7 @@ if [ "$1" = "package" ]; then
 fi
 
 if [ "$1" = "build-image" ]; then
-  (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
+   (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
 	  mvn package -DskipTests=true jib:dockerBuild -U
 fi
 
