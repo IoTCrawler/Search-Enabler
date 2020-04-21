@@ -193,10 +193,13 @@ public class IoTCrawlerProvierTests {
 
 		LOGGER.info("Executing query");
 		ExecutionResult executionResult = graphql.execute(executionInput);
-		Object data = executionResult.getData();
-		Assert.notNull(((Map)data).get("stream"));
-        JSONObject jsonObject = new JSONObject();
-		jsonObject.putAll((Map)data);
+		Map data = executionResult.getData();
+		Assert.notNull(data);
+
+		Assert.notNull(data.get("stream"));
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.putAll(data);
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
 	}
 
@@ -243,13 +246,15 @@ public class IoTCrawlerProvierTests {
 		LOGGER.info("Executing query");
 		ExecutionResult executionResult = graphql.execute(executionInput);
 		Map data = executionResult.getData();
+		Assert.notNull(data);
 
-		List streams = (List)data.values().iterator().next();
-        Assert.notNull(streams);
-		LOGGER.info("Streams: {}", streams.size());
+		List entities = (List)data.get("streams");
+		Assert.isTrue(entities.size()>0);
+		LOGGER.info("Streams: {}", entities.size());
 
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll((Map)data);
+
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
 	}
 
@@ -267,12 +272,14 @@ public class IoTCrawlerProvierTests {
 				.build();
 
 		ExecutionResult executionResult = graphql.execute(executionInput);
-		Object data = executionResult.getData();
+		Map data = executionResult.getData();
 		Assert.notNull(data);
+
+		Assert.notNull(data.get("sensor"));
+
 		JSONObject jsonObject = new JSONObject();
-		jsonObject.putAll((Map)data);
+		jsonObject.putAll(data);
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
-		String abc = "123";
 	}
 
 	@Test
@@ -291,10 +298,16 @@ public class IoTCrawlerProvierTests {
 
 		LOGGER.info("Executing query");
 		ExecutionResult executionResult = graphql.execute(executionInput);
-		Object data = executionResult.getData();
+		Map data = executionResult.getData();
 		Assert.notNull(data);
+
+		List entities = (List)data.get("sensors");
+		Assert.isTrue(entities.size()>0);
+		LOGGER.info("Sensors: {}", entities.size());
+
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll((Map)data);
+
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
 	}
 
@@ -312,12 +325,14 @@ public class IoTCrawlerProvierTests {
 				.build();
 
 		ExecutionResult executionResult = graphql.execute(executionInput);
-		Object data = executionResult.getData();
+		Map data = executionResult.getData();
 		Assert.notNull(data);
+
+		Assert.notNull(data.get("platform"));
+
 		JSONObject jsonObject = new JSONObject();
-		jsonObject.putAll((Map)data);
+		jsonObject.putAll(data);
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
-		String abc = "123";
 	}
 
 	@Test
@@ -334,12 +349,18 @@ public class IoTCrawlerProvierTests {
 				.build();
 
 		ExecutionResult executionResult = graphql.execute(executionInput);
-		Object data = executionResult.getData();
+
+		Map data = executionResult.getData();
 		Assert.notNull(data);
+
+		List entities = (List)data.get("platforms");
+		Assert.isTrue(entities.size()>0);
+		LOGGER.info("Platforms: {}", entities.size());
+
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll((Map)data);
+
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
-		String abc = "123";
 	}
 
 
@@ -382,11 +403,16 @@ public class IoTCrawlerProvierTests {
 				.build();
 
 		ExecutionResult executionResult = graphql.execute(executionInput);
-		Object data = executionResult.getData();
+		Map data = executionResult.getData();
 		Assert.notNull(data);
+
+		List entities = (List)data.get("observableProperties");
+		Assert.isTrue(entities.size()>0);
+		LOGGER.info("Observable Proeperties: {}", entities.size());
 
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll((Map)data);
+
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
 
 	}

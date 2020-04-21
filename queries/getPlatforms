@@ -10,7 +10,7 @@
    {
            id,
            label,
-           location
+           #location
            hosts{
                 id
                 label

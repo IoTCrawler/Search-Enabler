@@ -96,6 +96,16 @@ public class IoTCrawlerWiring implements Wiring {
     private List<Object> getEntitiesViaHTTP(Map<String, Object> query, int offset, int limit, String concept){
         List ret = new ArrayList();
         String typeURI = bindingRegistry.get(concept);
+        if(query.size()==0)
+            try {
+                List res = getIoTCrawlerClient().getEntities(typeURI, null, null, offset, limit);
+                return res;
+            } catch (Exception e) {
+                LOGGER.error("Failed to get {} entities", concept);
+                e.printStackTrace();
+                return null;
+            }
+
         for(String key: query.keySet()){
             Object value = query.get(key);
             if(!(value instanceof Iterable))
@@ -238,20 +248,26 @@ public class IoTCrawlerWiring implements Wiring {
                         environment.getExecutionContext()
                 );
 
-                LOGGER.info("Executing {} fetcher with ", targetType.getName(), argValue.toString());
+                LOGGER.info("Executing {} fetcher", targetType.getName());
                 CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
                 try {
                     Object entities = future.get();
                     if (entities instanceof Iterable) {
+
                         if (!((Iterable) entities).iterator().hasNext())
                             return null;
 
                         Object entityIds = ((ArrayList) entities).stream().map(entity -> ((EntityLD) entity).getId()).collect(Collectors.toList());
-                        if (((List) entityIds).size() == 0)
+                        int size = ((List) entityIds).size();
+                        if (size == 0)
                             return null;
+
+                        LOGGER.info("{} fetcher executed. {} entities returned", targetType.getName(), size);
                         query.put(propertyURI, entityIds);
-                    } else
+                    } else {
+                        LOGGER.info("{} fetcher executed. One entity returned", targetType.getName());
                         query.put(propertyURI, ((EntityLD) entities).getId());
+                    }
                     //                                query.remove(key);
                 } catch (Exception e) {
                     LOGGER.error("Failed to resolve madeBySensor filter");
@@ -303,18 +319,6 @@ public class IoTCrawlerWiring implements Wiring {
 //            }
 
             Map<String,Object> query = new HashMap<>();
-            //query.putAll(environment.getArguments());
-
-//            if(query.containsKey("label")){
-//                query.put(RDFS.label.getURI(), query.get("label"));
-//                query.remove("label");
-//            }
-
-//            if(query.containsKey("offset"))
-//                query.remove("offset");
-//
-//            if(query.containsKey("limit"))
-//                query.remove("limit");
 
             if(environment.getArguments().size()>0){
                 Map<String, Object> arguments = environment.getArguments();
@@ -323,121 +327,7 @@ public class IoTCrawlerWiring implements Wiring {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                String test ="123";
-                //arguments.putAll(environment.getArgument("madeBySensor"));
-//                for(String key: arguments.keySet()) {
-//
-//                    //query = resolveInput(graphQLArgument.getType(), query, environment);
-//                    Object argValue = arguments.get(key);
-//                    //if(bindingRegistry.containsKey(key)){
-//                    if(argValue instanceof Map){
-//                        query = resolveInput(query, environment, (Map)argValue);
-//                        String propertyURI = bindingRegistry.get(key);
-//                        //String targetTypeURI = bindingRegistry.get(type);
-//                        Map<String, Object> argumentMap = ((Map)arguments.get(key));
-//                        for(String property2: argumentMap.keySet()){
-//                           // GraphQLInputObjectField field2 =  ((GraphQLInputObjectType)graphQLArgument.getType()).getField(property2);
-//                           // GraphQLInputType type2 = field2.getType();
-//                            //resolveInput(type2, query, environment);
-//                            String test ="123";
-//                        }
-//                        if(argumentMap.size()==1 && argumentMap.containsKey("id")) {
-//                            query.put(propertyURI, argumentMap.get("id").toString());
-//                        }else{
-//
-//
-//
-//                            }
-//
-//                        //query.put(con, ((RDFModel)entities).getURI());
-//
-//                    }
-//                }
             }
-            String abc = "123";
-
-//            if(environment.getArgument("madeBySensor")!=null){  //sensor
-//
-//                Map<String, Object> arguments = new HashMap<>();
-//                arguments.putAll(environment.getArgument("madeBySensor"));
-//
-//                CompletableFuture future = (CompletableFuture) genericDataFetcher("Sensor", true).get(EnvironmentsBuilder.create(environment, arguments));
-//                try {
-//                    Object entities = future.get();
-//                    if(entities instanceof Iterable) {
-//                        if(!((Iterable)entities).iterator().hasNext())
-//                            return null;
-//
-//                        Object entityIds = ((ArrayList)entities).stream().map(sensor -> ((RDFModel)sensor).getURI()).collect(Collectors.toList());
-//                        if (((List)entityIds).size()==0)
-//                            return null;
-//                        query.put(SOSA.madeBySensor, entityIds);
-//                    }else
-//                        query.put(SOSA.madeBySensor, ((RDFModel)entities).getURI());
-//                    query.remove("madeBySensor");
-//                }
-//                catch (Exception e){
-//                    LOGGER.error("Failed to resolve madeBySensor filter");
-//                    e.printStackTrace();
-//                    return null;
-//                }
-//            }
-//
-//            if(environment.getArgument("isHostedBy")!=null){   //platform
-//                Map<String, Object> arguments = new HashMap<>();
-//                arguments.putAll(environment.getArgument("isHostedBy"));
-//
-//                CompletableFuture future = (CompletableFuture)genericDataFetcher("Platform", true).get(EnvironmentsBuilder.create(environment, arguments));
-//
-//                try {
-//                    Object entities = future.get();
-//                    if(entities instanceof Iterable) {
-//                        Object entityIds = ((ArrayList)entities).stream().map(sensor -> ((RDFModel)sensor).getURI()).collect(Collectors.toList());
-//                        if (((List)entityIds).size()==0)
-//                            return null;
-//                        query.put(SOSA.isHostedBy, entityIds);
-//                    }else
-//                        query.put(SOSA.isHostedBy, ((RDFModel)entities).getURI());
-//                    query.remove("isHostedBy");
-//                }
-//                catch (Exception e){
-//                    LOGGER.error("Failed to resolve isHostedBy filter");
-//                    e.printStackTrace();
-//                    return null;
-//                }
-//
-//            }
-//
-//            if(environment.getArgument("observes")!=null){  //observableProperty
-//                Map<String, Object> arguments = new HashMap<>();
-//                arguments.putAll(environment.getArgument("observes"));
-//
-//                //CompletableFuture future = (CompletableFuture)genericDataFetcher(ObservableProperty.class).get();
-//
-//                DataFetchingEnvironment dataFetchingEnvironment =  EnvironmentsBuilder.create(environment, arguments);
-//                CompletableFuture future = (CompletableFuture)genericDataFetcher("ObservableProperty", true).get(dataFetchingEnvironment);
-//
-//                try {
-//
-//                    Object entities = future.get();
-//                    if(entities instanceof Iterable) {
-//                        Object entityIds = ((ArrayList)entities).stream().map(sensor -> ((RDFModel)sensor).getURI()).collect(Collectors.toList());
-//                        if (((List)entityIds).size()==0)
-//                            return null;
-//                        query.put(SOSA.observes, entityIds);
-//                    }else
-//                        query.put(SOSA.observes, ((RDFModel)entities).getURI());
-//                    query.remove("observes");
-//                }
-//                catch (Exception e){
-//                    LOGGER.error("Failed to resolve observes filter");
-//                    e.printStackTrace();
-//                    return null;
-//                }
-//            }
-//            if (environment.getArgument("query")!=null)
-//                query = environment.getArgument("query");
-
             int offset = (query.containsKey("offset")?(int)query.get("offset"):0);
             int limit = (query.containsKey("limit")?(int)query.get("limit"):0);
 
@@ -447,9 +337,9 @@ public class IoTCrawlerWiring implements Wiring {
             if(query.containsKey("limit"))
                 query.remove("limit");
 
-            List augmentedEntities = serveQuery(query, concept, offset, limit);
+            List entities = serveQuery(query, concept, offset, limit);
             List<String> ids = new ArrayList<>();
-            augmentedEntities.stream().forEach(entity0->{
+            entities.stream().forEach(entity0->{
                 EntityLD entity = ((EntityLD)entity0);
                 loader.prime(entity.getId(), entity);
                 ids.add(entity.getId());
