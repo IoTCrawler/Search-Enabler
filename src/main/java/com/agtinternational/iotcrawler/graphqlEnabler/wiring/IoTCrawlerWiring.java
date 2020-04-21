@@ -30,10 +30,15 @@ import com.agtinternational.iotcrawler.graphqlEnabler.*;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
+import graphql.GraphQL;
+import graphql.execution.ExecutionTypeInfo;
+import graphql.language.*;
 import graphql.scalars.ExtendedScalars;
 import graphql.schema.*;
 import graphql.schema.idl.*;
+import jena.cmd.Arg;
 import net.minidev.json.JSONObject;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.vocabulary.RDFS;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
@@ -44,6 +49,7 @@ import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.swing.text.html.parser.Entity;
+import javax.xml.crypto.Data;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -90,12 +96,23 @@ public class IoTCrawlerWiring implements Wiring {
     private List<Object> getEntitiesViaHTTP(Map<String, Object> query, int offset, int limit, String concept){
         List ret = new ArrayList();
         String typeURI = bindingRegistry.get(concept);
-        try {
-            ret = getIoTCrawlerClient().getEntities(typeURI, query, null, offset, limit);
-        }
-        catch (Exception e){
-            LOGGER.error("Failed to get {} entities", concept);
-            e.printStackTrace();
+        for(String key: query.keySet()){
+            Object value = query.get(key);
+            if(!(value instanceof Iterable))
+                value = Arrays.asList(new Object[]{ value });
+
+            Iterator iterator = ((Iterable) value).iterator();
+            while (iterator.hasNext()) {
+                Map query2 = new HashMap();
+                query2.put(key, iterator.next());
+                try {
+                    List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
+                    ret.addAll(res);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to get {} entities", concept);
+                    e.printStackTrace();
+                }
+            }
         }
 
         //List augmented = augmentEntities(ret, concept);
@@ -135,6 +152,121 @@ public class IoTCrawlerWiring implements Wiring {
         return entities;
     }
 
+    private Map resolveInput(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> arguments) throws Exception {
+
+        //for(String argName: arguments.keySet()) {
+        for(Field field: environment.getFields())
+            for(Argument argument: field.getArguments()){
+
+                String argName = argument.getName();
+
+
+            Object argValue = arguments.get(argName);
+            String typeName = ((GraphQLModifiedType)environment.getFieldType()).getWrappedType().getName();
+
+
+            String propertyURI = findURI(typeName, argName);
+
+            if(propertyURI==null)
+                throw new Exception("URI not found for "+argName);
+
+            GraphQLArgument graphQLArgument = environment.getFieldTypeInfo().getFieldDefinition().getArgument(argName);
+            GraphQLType graphQLInputType = environment.getFieldTypeInfo().getFieldDefinition().getType();
+            if(graphQLArgument!=null)//getting from argument if possible
+                graphQLInputType = graphQLArgument.getType();
+
+
+            if(graphQLInputType instanceof GraphQLModifiedType)
+                graphQLInputType = ((GraphQLModifiedType) graphQLInputType).getWrappedType();
+            String inputTypeName = graphQLInputType.getName().replace("Input","");
+
+            GraphQLType targetType = environment.getGraphQLSchema().getType(inputTypeName);
+
+            if(targetType instanceof GraphQLObjectType) {
+
+                LOGGER.info("Initializing {} fetcher to resolve {}", targetType.getName(), argName);
+                DataFetcher dataFetcher = genericDataFetcher(targetType.getName(), true);
+
+                //GraphQLOutputType graphQLType = environment.getFieldType();
+                GraphQLList graphQLType = new GraphQLList(targetType);
+
+
+                //GraphQLOutputType targetObjectType = environment.getFieldTypeInfo().getFieldDefinition().getType();
+
+                //GraphQLFieldDefinition fieldDefinition = targetObjectType.getFieldDefinition(targetType.getName());
+                List<Field> fields = new ArrayList<>();
+                List<ObjectField> objectFields = ((ObjectValue) argument.getValue()).getObjectFields();
+                Field field1 = null;
+                for (ObjectField objectField : objectFields) {
+                    List<Argument> arguments1 = new ArrayList<>();
+                    arguments1.add(new Argument(objectField.getName(), objectField.getValue()));
+                    field1 = new Field(objectField.getName(), arguments1);
+                    fields.add(field1);
+                }
+//                GraphQLFieldDefinition fieldDefinition = ((GraphQLObjectType)environment.getParentType())
+//                        .getFieldDefinition(inputTypeName.toLowerCase()+"s");
+
+                GraphQLObjectType graphQLObjectType = (GraphQLObjectType) environment.getGraphQLSchema().getType(inputTypeName);
+                GraphQLFieldDefinition fieldDefinition = graphQLObjectType.getFieldDefinition(field1.getName());
+
+                ExecutionTypeInfo fieldTypeInfo = ExecutionTypeInfo.newTypeInfo()
+                        .field(field1)
+                        .fieldDefinition(fieldDefinition)
+                        .type(graphQLType)
+                        .build();
+
+                DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
+                        environment.getSource(),
+                        (Map) argValue,
+                        environment.getContext(),
+                        environment.getRoot(),
+
+                        fieldDefinition,
+                        //environment.getFieldDefinition(),
+                        fields,
+                        //environment.getFields(),
+                        //environment.getFieldType(),
+                        graphQLType,
+
+                        environment.getParentType(),
+                        environment.getGraphQLSchema(),
+                        environment.getFragmentsByName(),
+                        environment.getExecutionId(),
+                        environment.getSelectionSet(),
+                        //environment.getFieldTypeInfo(),
+                        fieldTypeInfo,
+                        environment.getExecutionContext()
+                );
+
+                LOGGER.info("Executing {} fetcher with ", targetType.getName(), argValue.toString());
+                CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
+                try {
+                    Object entities = future.get();
+                    if (entities instanceof Iterable) {
+                        if (!((Iterable) entities).iterator().hasNext())
+                            return null;
+
+                        Object entityIds = ((ArrayList) entities).stream().map(entity -> ((EntityLD) entity).getId()).collect(Collectors.toList());
+                        if (((List) entityIds).size() == 0)
+                            return null;
+                        query.put(propertyURI, entityIds);
+                    } else
+                        query.put(propertyURI, ((EntityLD) entities).getId());
+                    //                                query.remove(key);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to resolve madeBySensor filter");
+                    e.printStackTrace();
+                    return null;
+                }
+            }else if(targetType instanceof GraphQLScalarType){
+                query.put(propertyURI, (argValue instanceof String? "\""+argValue.toString()+"\"": argValue));
+            }else
+                throw new NotImplementedException();
+
+        }
+
+        return query;
+    }
 
     //public static DataFetcher genericDataFetcher(Class targetClass, boolean resolvingInput) {
     public DataFetcher genericDataFetcher(String concept, boolean resolvingInput) {
@@ -157,9 +289,9 @@ public class IoTCrawlerWiring implements Wiring {
                      List<Object> entities = getEntitiesViaHTTP(Arrays.asList(id), concept);
                      List<String> ids = new ArrayList<>();
                      entities.stream().forEach(entity0 -> {
-                         RDFModel entity = ((RDFModel) entity0);
-                         loader.prime(entity.getURI(), entity);
-                         ids.add(entity.getURI());
+                         EntityLD entity = ((EntityLD) entity0);
+                         loader.prime(entity.getId(), entity);
+                         ids.add(entity.getId());
                      });
                      //return loader.loadMany(ids);
                  }
@@ -186,44 +318,41 @@ public class IoTCrawlerWiring implements Wiring {
 
             if(environment.getArguments().size()>0){
                 Map<String, Object> arguments = environment.getArguments();
-                //arguments.putAll(environment.getArgument("madeBySensor"));
-                for(String key: arguments.keySet()) {
-                    GraphQLArgument graphQLArgument = environment.getFieldTypeInfo().getFieldDefinition().getArgument(key);
-                    String type = graphQLArgument.getType().getName();
-                    if(bindingRegistry.containsKey(key)){
-                        String propertyURI = bindingRegistry.get(key);
-                        //String targetTypeURI = bindingRegistry.get(type);
-                        Map argumentMap = ((Map)arguments.get(key));
-                        if(argumentMap.size()==1 && argumentMap.containsKey("id")) {
-                            query.put(propertyURI, argumentMap.get("id").toString());
-                        }else{
-                            throw new NotImplementedException();
-                        }
-
-                        //query.put(con, ((RDFModel)entities).getURI());
-//                        DataFetcher dataFetcher = genericDataFetcher(conceptURI, true);
-//                        CompletableFuture future = (CompletableFuture) dataFetcher.get(EnvironmentsBuilder.create(environment, arguments));
-//                        try {
-//                            Object entities = future.get();
-//                            if(entities instanceof Iterable) {
-//                                if(!((Iterable)entities).iterator().hasNext())
-//                                    return null;
-//
-//                                Object entityIds = ((ArrayList)entities).stream().map(sensor -> ((RDFModel)sensor).getURI()).collect(Collectors.toList());
-//                                if (((List)entityIds).size()==0)
-//                                    return null;
-//                                query.put(SOSA.madeBySensor, entityIds);
-//                            }else
-//                                query.put(SOSA.madeBySensor, ((RDFModel)entities).getURI());
-//                            query.remove(key);
-//                        }
-//                        catch (Exception e){
-//                            LOGGER.error("Failed to resolve madeBySensor filter");
-//                            e.printStackTrace();
-//                            return null;
-//                        }
-                    }
+                try {
+                    query = resolveInput(query, environment, arguments);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+                String test ="123";
+                //arguments.putAll(environment.getArgument("madeBySensor"));
+//                for(String key: arguments.keySet()) {
+//
+//                    //query = resolveInput(graphQLArgument.getType(), query, environment);
+//                    Object argValue = arguments.get(key);
+//                    //if(bindingRegistry.containsKey(key)){
+//                    if(argValue instanceof Map){
+//                        query = resolveInput(query, environment, (Map)argValue);
+//                        String propertyURI = bindingRegistry.get(key);
+//                        //String targetTypeURI = bindingRegistry.get(type);
+//                        Map<String, Object> argumentMap = ((Map)arguments.get(key));
+//                        for(String property2: argumentMap.keySet()){
+//                           // GraphQLInputObjectField field2 =  ((GraphQLInputObjectType)graphQLArgument.getType()).getField(property2);
+//                           // GraphQLInputType type2 = field2.getType();
+//                            //resolveInput(type2, query, environment);
+//                            String test ="123";
+//                        }
+//                        if(argumentMap.size()==1 && argumentMap.containsKey("id")) {
+//                            query.put(propertyURI, argumentMap.get("id").toString());
+//                        }else{
+//
+//
+//
+//                            }
+//
+//                        //query.put(con, ((RDFModel)entities).getURI());
+//
+//                    }
+//                }
             }
             String abc = "123";
 
@@ -309,8 +438,14 @@ public class IoTCrawlerWiring implements Wiring {
 //            if (environment.getArgument("query")!=null)
 //                query = environment.getArgument("query");
 
-            int offset = (environment.getArgument("offset")!=null?environment.getArgument("offset"):0);
-            int limit = (environment.getArgument("limit")!=null?environment.getArgument("limit"):0);
+            int offset = (query.containsKey("offset")?(int)query.get("offset"):0);
+            int limit = (query.containsKey("limit")?(int)query.get("limit"):0);
+
+            if(query.containsKey("offset"))
+                query.remove("offset");
+
+            if(query.containsKey("limit"))
+                query.remove("limit");
 
             List augmentedEntities = serveQuery(query, concept, offset, limit);
             List<String> ids = new ArrayList<>();
@@ -381,6 +516,13 @@ public class IoTCrawlerWiring implements Wiring {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String findURI(String type, String property){
+        if(bindingRegistry.containsKey(type+"."+property))
+            return bindingRegistry.get(type+"."+property);
+
+        return bindingRegistry.get(property);
     }
 
     @Override

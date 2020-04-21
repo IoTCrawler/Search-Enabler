@@ -22,13 +22,8 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 import com.agtinternational.iotcrawler.core.Utils;
 import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
-import com.agtinternational.iotcrawler.core.models.IoTStream;
-import com.agtinternational.iotcrawler.core.models.RDFModel;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-import com.google.gson.JsonArray;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -42,15 +37,14 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static com.agtinternational.iotcrawler.fiware.clients.Constants.NGSILD_BROKER_URL;
 
 //@RunWith(SpringRunner.class)
@@ -79,9 +73,10 @@ public class IoTCrawlerProvierTests {
 	}
 
 	private String getQuery(String resourcePath) throws IOException {
-		URL url = Resources.getResource(resourcePath);
-		String sdl = Resources.toString(url, Charsets.UTF_8);
-		return sdl;
+		String ret = new String(Files.readAllBytes(Paths.get(resourcePath)));
+//		URL url = Resources.getResource(resourcePath);
+//		String sdl = Resources.toString(url, Charsets.UTF_8);
+		return ret;
 	}
 
     @Test
@@ -182,7 +177,7 @@ public class IoTCrawlerProvierTests {
 
 	@Test
 	public void getStreamByIdTest() throws Exception {
-		String query = getQuery("getStreamById");
+		String query = getQuery("queries/getStreamById");
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "iotc:Stream_1");
@@ -233,7 +228,7 @@ public class IoTCrawlerProvierTests {
 
 	@Test
 	public void getStreamsTest() throws Exception {
-		String query = getQuery("getStreams");
+		String query = getQuery("queries/getStreams");
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -261,7 +256,7 @@ public class IoTCrawlerProvierTests {
 
 	@Test
 	public void getSensorByIdTest() throws Exception {
-		String query = getQuery("getSensorById");
+		String query = getQuery("queries/getSensorById");
 		Map<String, Object> variables = new HashMap<>();
 
 		ExecutionInput executionInput = ExecutionInput.newExecutionInput()
@@ -282,7 +277,7 @@ public class IoTCrawlerProvierTests {
 
 	@Test
 	public void getSensorsTest() throws Exception {
-		String query = getQuery("getSensors");
+		String query = getQuery("queries/getSensors");
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -305,7 +300,7 @@ public class IoTCrawlerProvierTests {
 
 	@Test
 	public void getPlatformByIdTest() throws Exception {
-		String query = getQuery("getPlatformById");
+		String query = getQuery("queries/getPlatformById");
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -327,7 +322,7 @@ public class IoTCrawlerProvierTests {
 
 	@Test
 	public void getPlatformsTest() throws Exception {
-		String query = getQuery("getPlatforms");
+		String query = getQuery("queries/getPlatforms");
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -351,7 +346,7 @@ public class IoTCrawlerProvierTests {
 
 	@Test
 	public void getObservablePropertyByIdTest() throws Exception {
-		String query = getQuery("getObservablePropertyById");
+		String query = getQuery("queries/getObservablePropertyById");
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -375,7 +370,7 @@ public class IoTCrawlerProvierTests {
 
 	@Test
 	public void getObservablePropertiesTest() throws Exception {
-		String query = getQuery("getObservableProperties");
+		String query = getQuery("queries/getObservableProperties");
 
 		Map<String, Object> variables = new HashMap<>();
 

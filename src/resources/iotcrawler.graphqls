@@ -52,7 +52,7 @@ type Sensor {
     label: String
     isHostedBy: Platform!
     madeObservation: StreamObservation!
-    observes: [ObservableProperty]!
+    observes: ObservableProperty!
     location: String
 }
 

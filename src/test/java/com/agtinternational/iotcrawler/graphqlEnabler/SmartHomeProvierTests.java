@@ -125,7 +125,7 @@ public class SmartHomeProvierTests {
 
 	@Test
 	public void getHomeStateTest() throws Exception {
-		String query = getQuery("getHomeStates");
+		String query = getQuery("queries/getHomeStates");
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "iotc:Stream_1");
@@ -176,7 +176,7 @@ public class SmartHomeProvierTests {
 
 	@Test
 	public void getStreamsTest() throws Exception {
-		String query = getQuery("getStreams");
+		String query = getQuery("queries/getStreams");
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -200,7 +200,7 @@ public class SmartHomeProvierTests {
 
 	@Test
 	public void getSensorByIdTest() throws Exception {
-		String query = getQuery("getSensorById");
+		String query = getQuery("queries/getSensorById");
 		Map<String, Object> variables = new HashMap<>();
 
 		ExecutionInput executionInput = ExecutionInput.newExecutionInput()
@@ -221,7 +221,7 @@ public class SmartHomeProvierTests {
 
 	@Test
 	public void getSensorsTest() throws Exception {
-		String query = getQuery("getSensors");
+		String query = getQuery("queries/getSensors");
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -244,7 +244,7 @@ public class SmartHomeProvierTests {
 
 	@Test
 	public void getPlatformByIdTest() throws Exception {
-		String query = getQuery("getPlatformById");
+		String query = getQuery("queries/getPlatformById");
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -266,7 +266,7 @@ public class SmartHomeProvierTests {
 
 	@Test
 	public void getPlatformsTest() throws Exception {
-		String query = getQuery("getPlatforms");
+		String query = getQuery("queries/getPlatforms");
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -290,7 +290,7 @@ public class SmartHomeProvierTests {
 
 	@Test
 	public void getObservablePropertyByIdTest() throws Exception {
-		String query = getQuery("getObservablePropertyById");
+		String query = getQuery("queries/getObservablePropertyById");
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -314,7 +314,7 @@ public class SmartHomeProvierTests {
 
 	@Test
 	public void getObservablePropertiesTest() throws Exception {
-		String query = getQuery("getObservableProperties");
+		String query = getQuery("queries/getObservableProperties");
 
 		Map<String, Object> variables = new HashMap<>();
 

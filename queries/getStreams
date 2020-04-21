@@ -1,18 +1,17 @@
 {
    #streams
-   streams(limit: 5
-            #generatedBy: {
-                       #id: "urn:ngsi-ld:Sensor:ora10"
-                       #id: "urn:ngsi-ld:Sensor:ora10"
+   streams(
+            generatedBy: {
+                       #id: "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2"
                        #isHostedBy: {
-                       #      label: "AEON Labs ZW100 MultiSensor 6"
-                       #      #label: "FIBARO System FGWPE/F Wall Plug Gen5"
+                            #id: "urn:ngsi-ld:Platform_homee_00055110D732"
+                       #     label: "homee_00055110D732"
                        #}
-                       #observes: {
-                       #     label: "Temperature"
+                       observes: {
+                            label: "Temperature"
                        #     label: "Energy"
-                       #}
-               #}
+                       }
+               }
                )
                {
                   id,
@@ -24,10 +23,10 @@
                   #                    label,
                                       #location
                                     },
-                      #observes{
+                      observes{
                       #    id,
-                      #    label
-                      #}
+                          label
+                      }
                   }
               }
 }
