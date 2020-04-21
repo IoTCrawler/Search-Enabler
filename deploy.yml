@@ -130,6 +130,7 @@ canary:
   stage: production
   script:
     - echo "SERVER ${SERVER}"
+    - echo "CERTIFICATE_AUTHORITY_DATA ${CERTIFICATE_AUTHORITY_DATA}"
     - kubectl config set-cluster k8s --server="${SERVER}"
     - kubectl config set clusters.k8s.certificate-authority-data ${CERTIFICATE_AUTHORITY_DATA}
     - kubectl config set-credentials gitlab --token="${USER_TOKEN}"
