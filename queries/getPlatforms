@@ -1,0 +1,19 @@
+{
+   platforms
+   #platforms(
+   #         hosts: {
+   #                 observes: {
+   #                             #id: "iotc:Property_FIBARO+System+FGWPE%2FF+Wall+Plug+Gen5_CurrentEnergyUse"
+   #                             label: "Energy"
+   #                           }
+   #         })
+   {
+           id,
+           label,
+           #location
+           hosts{
+                id
+                label
+           }
+   }
+}

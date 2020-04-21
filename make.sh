@@ -3,24 +3,39 @@
 #
 
 
-if [ "$1" = "prepare-fiware-models" ]; then
+if [ "$1" = "prepare-core" ]; then
 	#Fiware/clients: Preparing iot-broker
-	(if [ ! -d /tmp/iotc-fiware-models ]; then git clone git@gitlab.iotcrawler.net:core/fiware-models.git /tmp/iotc-fiware-models ; fi);
-	cd /tmp/iotc-fiware-models && mvn install -DskipTests=true
+	rm -rf /tmp/orchestrator && git clone https://orchestrator:weRm4nhQcjTyacFuPbLk@gitlab.iotcrawler.net/orchestrator/orchestrator.git tmp/orchestrator
+	export CURR=$(pwd) && cd /tmp/orchestrator
+	sed -i 's/<phase>process-sources<\/phase>/<phase>none<\/phase>/' IoTCrawler/pom.xml
+	sh make.sh install && cd ${CURR}
 fi
 
-if [ "$1" = "prepare-core-models" ]; then
-	#Fiware/clients: Preparing iot-broker
-	(if [ ! -d /tmp/iotc-core-models ]; then git clone git@gitlab.iotcrawler.net:core/core-models.git /tmp/iotc-core-models ; fi);
-	cd /tmp/iotc-core-models && mvn install -DskipTests=true
+if [ "$1" = "package" ]; then
+	#Search enabler: Checking core dependency
+	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
+	mvn package -DskipTests=true
 fi
 
+if [ "$1" = "build-image" ]; then
+   (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
+	  mvn package -DskipTests=true jib:dockerBuild -U
+fi
 
-if [ "$1" = "install" ]; then
-	#Fiware/clients: Checking fiware-models dependency
-	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/fiware-models ]; then sh make.sh prepare-fiware-models; fi);
-	#Fiware/clients: Checking core-models dependency
-	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core-models ]; then sh make.sh prepare-core-models; fi);
-	#Fiware/clients: installing
-	mvn install -DskipTests=true
+if [ "$1" = "push-image" ]; then
+#  echo "# Setting env vars for pushing"
+  if [ -z "$CI_COMMIT_TAG" ]; then
+        export CI_APPLICATION_REPOSITORY=${CI_APPLICATION_REPOSITORY:-$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG}
+        export CI_APPLICATION_TAG=${CI_APPLICATION_TAG:-$CI_COMMIT_SHA}
+      else
+        export CI_APPLICATION_REPOSITORY=${CI_APPLICATION_REPOSITORY:-$CI_REGISTRY_IMAGE}
+        export CI_APPLICATION_TAG=${CI_APPLICATION_TAG:-$CI_COMMIT_TAG}
+  fi
+
+# gitlab.iotcrawler.net:4567/orchestrator/orchestrator is already in variables (on in a gitlab)
+  echo "# docker tag ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG} ${CI_APPLICATION_TAG}"
+  docker tag ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG} ${CI_APPLICATION_TAG}
+  echo "# docker push ${CI_APPLICATION_REPOSITORY}:$CI_APPLICATION_TAG"
+  docker push ${CI_APPLICATION_REPOSITORY}:$CI_APPLICATION_TAG
+	#docker push "${CI_APPLICATION_REPOSITORY}:latest"
 fi

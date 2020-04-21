@@ -1,13 +1,17 @@
 {
-  stream(id: "iotc:Stream_FIBARO+System+FGWPE%2FF+Wall+Plug+Gen5_CurrentEnergyUse") {
+  stream(id: "urn:ngsi-ld:Stream_Zipato_Bulb_2_ColorTemperature") {
     id,
-    madeBySensor{
+    observes{
+        id,
+        label
+    },
+    generatedBy {
         id,
         label,
         observes {
             id,
             label
-        }
+        },
         isHostedBy{
             id,
             label

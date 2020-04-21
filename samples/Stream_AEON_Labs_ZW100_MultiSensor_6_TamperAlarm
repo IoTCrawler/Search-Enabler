@@ -1,0 +1,18 @@
+{
+  "id": "urn:ngsi-ld:Stream_AEON_Labs_ZW100_MultiSensor_6_TamperAlarm",
+  "type": "http://purl.org/iot/ontology/iot-stream#IotStream",
+  "@context": {
+    "agt-smarthome": "http://www.agtinternational.com/ontologies/SmartHome#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  },
+  "http://purl.org/iot/ontology/iot-stream#observes": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:TamperAlarm"
+  },
+  "http://purl.org/iot/ontology/iot-stream#generatedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:MultiSensor_AEON_Labs_ZW100_MultiSensor_6"
+  }
+}

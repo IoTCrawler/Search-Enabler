@@ -1,0 +1,19 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+strategyType:
+enableSelector:
+deploymentApiVersion: apps/v1
+fullnameOverride: "production"
+address: 35.241.228.250.nip.io
+image:
+  repository: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master
+  tag: latest
+  pullPolicy: IfNotPresent
+  secrets:
+    - name: gitlab-registry-root-orchestrator
+    - name: gitlab-registry
+application:
+  track: latest
+  tier: web

@@ -1,5 +1,5 @@
 {
-  sensor(id: "iotc:Sensor_FIBARO+System+FGWPE%2FF+Wall+Plug+Gen5_CurrentEnergyUse") {
+  sensor(id: "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2") {
     id,
     label,
     observes {
@@ -9,6 +9,6 @@
     isHostedBy{
                 id,
                 label
-              }
+             }
   }
 }

@@ -1,0 +1,64 @@
+{
+  "id": "urn:ngsi-ld:MultiSensor_AEON_Labs_ZW100_MultiSensor_6",
+  "type": "http://www.w3.org/ns/sosa/Sensor",
+  "location": {
+      "type": "GeoProperty",
+      "value": {
+        "type": "Point",
+        "coordinates": [
+          52.28267,
+          8.023755
+        ]
+      }
+    },
+  "@context": {
+    "agt-smarthome": "http://www.agtinternational.com/ontologies/SmartHome#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  },
+  "http://www.w3.org/ns/sosa/observes#4": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:RelativeHumidity"
+  },
+  "http://www.agtinternational.com/ontologies/SmartHome#type": {
+    "type": "Property",
+    "value": "http://www.agtinternational.com/ontologies/devices#MultiSensor"
+  },
+  "http://www.w3.org/ns/sosa/observes#3": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:TamperAlarm"
+  },
+  "http://www.w3.org/ns/sosa/observes#2": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Temperature"
+  },
+  "http://www.w3.org/ns/sosa/observes": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:UV"
+  },
+  "http://www.w3.org/ns/sosa/isHostedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Platform_homee_00055110D732"
+  },
+  "http://www.w3.org/2000/01/rdf-schema#label": {
+    "type": "Property",
+    "value": "AEON Labs ZW100 MultiSensor 6"
+  },
+  "http://www.w3.org/ns/sosa/observes#8": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:MotionAlarm"
+  },
+  "http://www.w3.org/ns/sosa/observes#7": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:BatteryLevel"
+  },
+  "http://www.w3.org/ns/sosa/observes#6": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Brightness"
+  },
+  "http://www.w3.org/ns/sosa/observes#5": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:MotionAlarmCancelationDelay"
+  }
+}
