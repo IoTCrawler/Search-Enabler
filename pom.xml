@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.agtinternational.iotcrawler</groupId>
-  <artifactId>graphql-enabler</artifactId>
+  <artifactId>search-enabler</artifactId>
   <packaging>war</packaging>
   <version>1.0-SNAPSHOT</version>
 
@@ -13,11 +13,15 @@
   <inceptionYear>2019</inceptionYear>
 
   <properties>
+    <!--    <iotcrawler.orchestrator.version>1.0.7</iotcrawler.orchestrator.version>-->
     <iotcrawler.core.version>1.0.2</iotcrawler.core.version>
     <fiware.models.version>1.0.1</fiware.models.version>
+    <fiware.clients.version>1.0.1</fiware.clients.version>
     <ngsi.api.version>7.1-SNAPSHOT</ngsi.api.version>
-    <iotcrawler.orchestrator.version>1.0.7</iotcrawler.orchestrator.version>
-    <fiware.clients.version>1.0.8</fiware.clients.version>
+
+    <!--    <git.branch></git.branch>-->
+    <!--    <git.commit.id></git.commit.id>-->
+
     <junit.version>4.11</junit.version>
     <slf4j.version>1.7.15</slf4j.version>
   </properties>
@@ -52,44 +56,29 @@
           <groupId>org.ops4j.pax.logging</groupId>
           <artifactId>*</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>eu.neclab.iotplatform</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>com.agtinternational.iotcrawler</groupId>-->
-<!--      <artifactId>fiware-clients</artifactId>-->
-<!--      <version>${fiware.clients.version}</version>-->
-<!--      <exclusions>-->
-<!--        <exclusion>-->
-<!--          <groupId>com.agtinternational.iotcrawler</groupId>-->
-<!--          <artifactId>fiware-models</artifactId>-->
-<!--        </exclusion>-->
-<!--        <exclusion>-->
-<!--          <groupId>com.agtinternational.iotcrawler</groupId>-->
-<!--          <artifactId>core</artifactId>-->
-<!--        </exclusion>-->
-<!--        &lt;!&ndash;<exclusion>&ndash;&gt;-->
-<!--        &lt;!&ndash;<groupId>org.apache.httpcomponents</groupId>&ndash;&gt;-->
-<!--        &lt;!&ndash;<artifactId>httpclient-osgi</artifactId>&ndash;&gt;-->
-<!--        &lt;!&ndash;</exclusion>&ndash;&gt;-->
-<!--        &lt;!&ndash;<exclusion>&ndash;&gt;-->
-<!--        &lt;!&ndash;<groupId>org.apache.httpcomponents</groupId>&ndash;&gt;-->
-<!--        &lt;!&ndash;<artifactId>httpasyncclient</artifactId>&ndash;&gt;-->
-<!--        &lt;!&ndash;</exclusion>&ndash;&gt;-->
-<!--      </exclusions>-->
-<!--      &lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>com.agtinternational.iotcrawler</groupId>
+      <artifactId>fiware-clients</artifactId>
+      <version>${fiware.clients.version}</version>
+    </dependency>
 
     <!--<dependency>-->
-      <!--<groupId>com.agtinternational.iotcrawler</groupId>-->
-      <!--<artifactId>orchestrator</artifactId>-->
-      <!--<version>${iotcrawler.orchestrator.version}</version>-->
-      <!--<exclusions>-->
-        <!--<exclusion>-->
-          <!--<groupId>org.objectweb</groupId>-->
-          <!--<artifactId>asm</artifactId>-->
-        <!--</exclusion>-->
-      <!--</exclusions>-->
+    <!--<groupId>com.agtinternational.iotcrawler</groupId>-->
+    <!--<artifactId>orchestrator</artifactId>-->
+    <!--<version>${iotcrawler.orchestrator.version}</version>-->
+    <!--<exclusions>-->
+    <!--<exclusion>-->
+    <!--<groupId>org.objectweb</groupId>-->
+    <!--<artifactId>asm</artifactId>-->
+    <!--</exclusion>-->
+    <!--</exclusions>-->
     <!--</dependency>-->
 
     <dependency>
@@ -143,13 +132,21 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
+      <!--      <version>4.2.0.RELEASE</version>-->
       <version>5.2.1.RELEASE</version>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.springframework/spring-web -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
+      <!--      <version>4.2.0.RELEASE</version>-->
+      <version>5.2.1.RELEASE</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <!--      <version>4.2.0.RELEASE</version>-->
       <version>5.2.1.RELEASE</version>
     </dependency>
 
@@ -157,60 +154,63 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
       <version>2.2.1.RELEASE</version>
-      <exclusions>
-
-<!--        <exclusion>-->
-<!--          <groupId>ch.qos.logback</groupId>-->
-<!--          <artifactId>logback-classic</artifactId>-->
-<!--        </exclusion>-->
-      </exclusions>
-      <!--<scope>test</scope>-->
+      <!--      <exclusions>-->
+      <!--        <exclusion>-->
+      <!--          <groupId>org.springframework</groupId>-->
+      <!--          <artifactId>spring-webmvc</artifactId>-->
+      <!--        </exclusion>-->
+      <!--      </exclusions>-->
     </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>com.orange.fiware</groupId>-->
+    <!--      <artifactId>ngsi-client</artifactId>-->
+    <!--      <version>0.1.3</version>-->
+    <!--      <scope>compile</scope>-->
+    <!--    </dependency>-->
 
-
-    <dependency>
-      <groupId>eu.neclab.iotplatform</groupId>
-      <artifactId>ngsi.api</artifactId>
-      <version>7.1-SNAPSHOT</version>
-      <!--            <scope>provided</scope>-->
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>net.minidev</groupId>
-          <artifactId>asm</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ops4j.pax.logging</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>eu.neclab.iotplatform</groupId>-->
+    <!--      <artifactId>ngsi.api</artifactId>-->
+    <!--      <version>7.1-SNAPSHOT</version>-->
+    <!--      &lt;!&ndash;            <scope>provided</scope>&ndash;&gt;-->
+    <!--      <exclusions>-->
+    <!--        <exclusion>-->
+    <!--          <groupId>com.fasterxml.jackson.core</groupId>-->
+    <!--          <artifactId>*</artifactId>-->
+    <!--        </exclusion>-->
+    <!--        <exclusion>-->
+    <!--          <groupId>net.minidev</groupId>-->
+    <!--          <artifactId>asm</artifactId>-->
+    <!--        </exclusion>-->
+    <!--        <exclusion>-->
+    <!--          <groupId>org.springframework</groupId>-->
+    <!--          <artifactId>*</artifactId>-->
+    <!--        </exclusion>-->
+    <!--        <exclusion>-->
+    <!--          <groupId>org.ops4j.pax.logging</groupId>-->
+    <!--          <artifactId>*</artifactId>-->
+    <!--        </exclusion>-->
+    <!--      </exclusions>-->
+    <!--    </dependency>-->
 
 
 
     <!--<dependency>-->
-      <!--<groupId>com.graphql-java</groupId>-->
-      <!--<artifactId>graphql-java-extended-scalars</artifactId>-->
-      <!--<version>1.0</version>-->
+    <!--<groupId>com.graphql-java</groupId>-->
+    <!--<artifactId>graphql-java-extended-scalars</artifactId>-->
+    <!--<version>1.0</version>-->
     <!--</dependency>-->
 
     <!--<dependency>-->
-      <!--<groupId>com.zhokhov.graphql</groupId>-->
-      <!--<artifactId>graphql-datetime-spring-boot-starter</artifactId>-->
-      <!--<version>1.5.1</version>-->
-      <!--<exclusions>-->
-        <!--<exclusion>-->
-          <!--<groupId>org.springframework.boot</groupId>-->
-          <!--<artifactId>spring-boot-starter-websocket</artifactId>-->
-        <!--</exclusion>-->
-      <!--</exclusions>-->
+    <!--<groupId>com.zhokhov.graphql</groupId>-->
+    <!--<artifactId>graphql-datetime-spring-boot-starter</artifactId>-->
+    <!--<version>1.5.1</version>-->
+    <!--<exclusions>-->
+    <!--<exclusion>-->
+    <!--<groupId>org.springframework.boot</groupId>-->
+    <!--<artifactId>spring-boot-starter-websocket</artifactId>-->
+    <!--</exclusion>-->
+    <!--</exclusions>-->
     <!--</dependency>-->
 
     <dependency>
@@ -220,11 +220,15 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongodb-driver</artifactId>
-      <version>3.4.2</version>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>org.mongodb</groupId>-->
+    <!--      <artifactId>mongodb-driver</artifactId>-->
+    <!--      <version>3.4.2</version>-->
+    <!--    </dependency>-->
+
+
+
+
 
     <dependency>
       <groupId>io.leangen.graphql</groupId>
@@ -263,9 +267,30 @@
 
 
   <build>
-
+    <finalName>${git.branch}:${git.commit.id}</finalName>
+    <!--    <testSourceDirectory>src/test/java</testSourceDirectory>-->
 
     <plugins>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>4.0.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+            <!-- *NOTE*: The default phase of revision is initialize, but
+              in case you want to change it, you can do so by adding the phase here -->
+            <phase>package</phase>
+            <configuration>
+              <generateGitPropertiesFile>false</generateGitPropertiesFile>
+              <injectAllReactorProjects>true</injectAllReactorProjects>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
@@ -277,26 +302,67 @@
         </configuration>
       </plugin>
 
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-compiler-plugin</artifactId>
-      <version>3.5.1</version>
-      <configuration>
-        <compilerArgs>
-          <arg>-parameters</arg>
-        </compilerArgs>
-        <source>1.8</source>
-        <target>1.8</target>
-      </configuration>
-    </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>jib-maven-plugin</artifactId>
+        <version>2.0.0</version>
+        <configuration>
+          <from>
+            <image>java</image>
+          </from>
+          <to>
+            <!--<image>localhost:5000/${project.name}:${project.version}</image>-->
+            <image>gitlab.iotcrawler.net:4567/${project.name}/${project.name}/${build.finalName}</image>
+            <!--                        <image>gitlab.iotcrawler.net:4567/${project.name}/${project.name}/master</image>-->
+            <auth>
+              <!--<username></username>-->
+              <!--<password></password>-->
+            </auth>
+            <!-- optional: create a tag based on the git commit id (via the git-commit-id plugin): -->
+            <!--                        <tags>-->
+            <!--                            <tag>${git.commit.id}</tag>-->
+            <!--                        </tags>-->
+          </to>
+          <!--                    <extraDirectories>-->
+          <!--                        <paths>${agent-extraction-root}</paths>-->
+          <!--                    </extraDirectories>-->
+          <container>
+            <jvmFlags>
+              <jvmFlag>-server</jvmFlag>
+            </jvmFlags>
+          </container>
+        </configuration>
+        <executions>
+          <execution>
+            <id>build-and-push-docker-image</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
         <version>2.0.0</version>
         <configuration>
-        <licenseName>apache_v2</licenseName>
-        <!--                    <licenseResolver>${project.baseUri}/src/license</licenseResolver>-->
+          <licenseName>apache_v2</licenseName>
+          <!--                    <licenseResolver>${project.baseUri}/src/license</licenseResolver>-->
         </configuration>
         <executions>
           <execution>
@@ -306,20 +372,20 @@
             </goals>
             <phase>process-sources</phase>
             <configuration>
-                <licenseName>apache_v2</licenseName>
-                <roots>
+              <licenseName>apache_v2</licenseName>
+              <roots>
                 <root>src/main/java</root>
                 <root>src/test</root>
-                </roots>
+              </roots>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
-    <plugin>
-      <artifactId>maven-war-plugin</artifactId>
-      <version>3.1.0</version>
-    </plugin>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.1.0</version>
+      </plugin>
 
     </plugins>
   </build>
