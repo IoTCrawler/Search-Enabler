@@ -43,14 +43,14 @@ stages:
   - performance
   - cleanup
 
-build:
-  stage: build
-  tags:
-    - java_maven
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - sh make.sh build-image && sh make.sh push-image
+#build:
+#  stage: build
+#  tags:
+#    - java_maven
+#  before_script:
+#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#  script:
+#    - sh make.sh build-image && sh make.sh push-image
 
 #test:
 #  stage: test
