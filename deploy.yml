@@ -72,19 +72,19 @@ staging:
   extends: .auto-deploy
   stage: staging
   script:
-#    - kubectl config set-cluster k8s --server="${SERVER}"
-#    - kubectl config set clusters.k8s.certificate-authority-data ${CERTIFICATE_AUTHORITY_DATA}
-#    - kubectl config set-credentials gitlab --token="${USER_TOKEN}"
-#    - kubectl config set-context default --cluster=k8s --user=gitlab
-#    - kubectl config use-context default
+    - kubectl config set-cluster k8s --server="${SERVER}"
+    - kubectl config set clusters.k8s.certificate-authority-data ${CERTIFICATE_AUTHORITY_DATA}
+    - kubectl config set-credentials gitlab --token="${USER_TOKEN}"
+    - kubectl config set-context default --cluster=k8s --user=gitlab
+    - kubectl config use-context default
+
 #    - echo "kubectl delete --all deployment --namespace ${KUBE_NAMESPACE}"
 #    - kubectl delete --all deployment --namespace ${KUBE_NAMESPACE} || echo ""
 #    - kubectl delete --all service --namespace ${KUBE_NAMESPACE} || echo ""
 
-    - echo "HELM_UPGRADE_EXTRA_ARGS $HELM_UPGRADE_EXTRA_ARGS"
     #- sed -i "s#helm upgrade --install#helm upgrade --install --force#g" /usr/local/bin/auto-deploy
     #- cat /usr/local/bin/auto-deploy
-
+    - auto-deploy delete
     - auto-deploy check_kube_domain
     - auto-deploy download_chart
     - auto-deploy ensure_namespace
