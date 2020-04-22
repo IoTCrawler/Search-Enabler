@@ -20,6 +20,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
@@ -56,6 +57,20 @@ public class GraphQLController {
         this.objectMapper = objectMapper;
         this.contextProvider = contextProvider;
     }
+
+    @RequestMapping(value = "/version", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    public void index(HttpServletResponse httpServletResponse) throws Exception {
+        String response =  (System.getenv().containsKey("VERSION")?System.getenv().get("VERSION"):"Not set");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setCharacterEncoding("UTF-8");
+        httpServletResponse.setContentType("application/json");
+        httpServletResponse.setHeader("Access-Control-Allow-Origin", "*");
+        String body = objectMapper.writeValueAsString(response);
+        PrintWriter writer = httpServletResponse.getWriter();
+        writer.write(body);
+        writer.close();
+    }
+
 
     @RequestMapping(value = "/graphql", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     //@CrossOrigin
