@@ -7,13 +7,13 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: search-enabler
-  name: search-enabler-{{ .Values.gitlab.env }}-service
+  name: search-enabler-{{ .Values.gitlab.env }}
 spec:
   ports:
   - name: "80"
     port: 80
     targetPort: 8080
   selector:
-    io.kompose.service: search-enabler-{{ .Values.gitlab.env }}-service
+    io.kompose.service: search-enabler-{{ .Values.gitlab.env }}
 status:
   loadBalancer: {}
