@@ -20,6 +20,8 @@ spec:
         kompose.cmd: kompose convert -c -f docker-compose.yml
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
+      labels:
+        io.kompose.service: search-enabler-{{ .Values.gitlab.env }}-service
     spec:
       imagePullSecrets:
 {{ toYaml .Values.image.secrets | indent 10 }}
