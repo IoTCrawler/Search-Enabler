@@ -52,31 +52,14 @@ build:
   script:
     - sh make.sh build-image && sh make.sh push-image
 
-#test:
-#  stage: test
-#  tags:
-#    - java_maven
-#  before_script:
-#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-#    - docker ps
-#    #- less /proc/meminfo
-#    - cd $CI_PROJECT_DIR/orchestrator && make start-containers
-#    - docker ps
-#  script:
-#    - less /proc/meminfo
-#    - echo $IOTCRAWLER_RABBIT_HOST
-#    - cd $CI_PROJECT_DIR/orchestrator && sh make.sh rest-client-test
-#    #- cd $CI_PROJECT_DIR/orchestrator && make rpc-client-test
-#  after_script:
-#    - cd $CI_PROJECT_DIR/orchestrator && make stop-containers
 
 
 include:
   #- template: Jobs/Build.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab-foss/blob/master/lib/gitlab/ci/templates/Jobs/Build.gitlab-ci.yml
   #- template: Jobs/Test.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab-foss/blob/master/lib/gitlab/ci/templates/Jobs/Test.gitlab-ci.yml
   #- template: Jobs/Code-Quality.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab-foss/blob/master/lib/gitlab/ci/templates/Jobs/Code-Quality.gitlab-ci.yml
-  #- template: Jobs/Deploy.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab-foss/blob/master/lib/gitlab/ci/templates/Jobs/Deploy.gitlab-ci.yml
-  - local: deploy.yml
+  - template: Jobs/Deploy.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab-foss/blob/master/lib/gitlab/ci/templates/Jobs/Deploy.gitlab-ci.yml
+  #- local: deploy.yml
   #- template: Jobs/DAST-Default-Branch-Deploy.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab-foss/blob/master/lib/gitlab/ci/templates/Jobs/DAST-Default-Branch-Deploy.gitlab-ci.yml
   #- template: Jobs/Browser-Performance-Testing.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab-foss/blob/master/lib/gitlab/ci/templates/Jobs/Browser-Performance-Testing.gitlab-ci.yml
   - template: Security/DAST.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab-foss/blob/master/lib/gitlab/ci/templates/Security/DAST.gitlab-ci.yml
