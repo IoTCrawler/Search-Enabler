@@ -94,6 +94,7 @@ staging:
     - auto-deploy delete
     - auto-deploy create_secret
     - auto-deploy deploy
+    - echo $CI_ENVIRONMENT_URL
   environment:
     name: search-enabler-staging
     url: http://$CI_PROJECT_PATH_SLUG-staging.$KUBE_INGRESS_BASE_DOMAIN

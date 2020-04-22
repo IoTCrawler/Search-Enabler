@@ -17,12 +17,11 @@ variables:
   DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
 
   IOTCRAWLER_ORCHESTRATOR_URL: http://155.54.95.248:9090/ngsi-ld/
-  KUBE_NAMESPACE: search-enabler-54-{}
+  KUBE_NAMESPACE: ${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_BUILD_STAGE}
 
-  CI_DEBUG_TRACE: "true"
+  #CI_DEBUG_TRACE: "true"
   CI_APPLICATION_REPOSITORY: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/${CI_COMMIT_REF_NAME}
   CI_APPLICATION_TAG: ${CI_COMMIT_SHA}
-
 
   #HELM_HOST: localhost:44134
   #KUBE_NAMESPACE: orchestrator-local-production  #defined for a project in a gitblab
