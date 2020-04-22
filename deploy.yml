@@ -84,8 +84,7 @@ staging:
 
     #- sed -i "s#helm upgrade --install#helm upgrade --install --force#g" /usr/local/bin/auto-deploy
     #- cat /usr/local/bin/auto-deploy
-    - echo "CI_ENVIRONMENT_SLUG $CI_ENVIRONMENT_SLUG"
-    - echo "CI_PROJECT_PATH_SLUG $CI_PROJECT_PATH_SLUG"
+
     - auto-deploy check_kube_domain
     - auto-deploy download_chart
     - auto-deploy ensure_namespace
@@ -148,34 +147,25 @@ canary:
 #    - sed -i "s#<TOKEN>#${USER_TOKEN}#g" kube_config
 
     #- sed -i "s#helm upgrade --install#helm upgrade --install --force#g" /usr/local/bin/auto-deploy
-    - echo "cat /usr/local/bin/auto-deploy"
-    - cat /usr/local/bin/auto-deploy
-    - echo "HELM_UPGRADE_EXTRA_ARGS $HELM_UPGRADE_EXTRA_ARGS"
+
     #- cat $KUBECONFIG
     #- export KUBECONFIG="kube_config"
     #- cat $KUBECONFIG
     #- echo $HELM_HOST
 
+
     - auto-deploy check_kube_domain
-    #- auto-deploy download_chart
+    - auto-deploy download_chart
     - auto-deploy ensure_namespace
-    - auto-deploy create_secret
     #- auto-deploy initialize_tiller
     - tiller -alsologtostderr &
-    #- export HELM_HOST=localhost:44134
-    #- helm init
-    #- helm version
-    #- helm ls
-#    - helm help
-#    - helm list
-#    - helm history production
-#    - helm status production
-#    - helm test production
-    #- sleep 20000
-    - auto-deploy deploy || echo "deployment should be done. Error ignored"
+    - auto-deploy delete
+    - auto-deploy create_secret
+    - auto-deploy deploy
     - auto-deploy delete canary
     - auto-deploy delete rollout
     - auto-deploy persist_environment_url
+    - echo $CI_ENVIRONMENT_URL
 #  variables:
 #    CI_DEBUG_TRACE: "true"
   environment:
