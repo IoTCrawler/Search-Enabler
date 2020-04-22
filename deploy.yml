@@ -68,7 +68,7 @@
 # only manually promote to production, enable this job by setting
 # STAGING_ENABLED.
 
-staging:
+staging1:
   extends: .auto-deploy
   stage: staging
   script:
@@ -93,7 +93,7 @@ staging:
     - auto-deploy create_secret
     - auto-deploy deploy || echo "deployment should be done. Error ignored"
   environment:
-    name: staging
+    name: staging2
     url: http://$CI_PROJECT_PATH_SLUG-staging.$KUBE_INGRESS_BASE_DOMAIN
   only:
 #    refs:
