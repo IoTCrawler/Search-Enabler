@@ -84,6 +84,7 @@ staging:
 
     #- sed -i "s#helm upgrade --install#helm upgrade --install --force#g" /usr/local/bin/auto-deploy
     #- cat /usr/local/bin/auto-deploy
+    - echo "CI_ENVIRONMENT_SLUG $CI_ENVIRONMENT_SLUG"
     - echo "CI_PROJECT_PATH_SLUG $CI_PROJECT_PATH_SLUG"
     - auto-deploy check_kube_domain
     - auto-deploy download_chart
@@ -92,7 +93,7 @@ staging:
     - tiller -alsologtostderr &
     - auto-deploy delete
     - auto-deploy create_secret
-    - auto-deploy deploy || echo "deployment should be done. Error ignored"
+    - auto-deploy deploy
   environment:
     name: search-enabler-staging
     url: http://$CI_PROJECT_PATH_SLUG-staging.$KUBE_INGRESS_BASE_DOMAIN
