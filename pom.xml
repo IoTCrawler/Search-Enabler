@@ -295,8 +295,11 @@
 
 
   <build>
-    <sourceDirectory>src/resources</sourceDirectory>
-    <testSourceDirectory>src/resources</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>src/resources</directory>
+      </resource>
+    </resources>
     <finalName>${git.branch}:${git.commit.id}</finalName>
 
     <plugins>
