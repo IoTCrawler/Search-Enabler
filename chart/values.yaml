@@ -8,7 +8,7 @@ deploymentApiVersion: apps/v1
 fullnameOverride: "production"
 address: 35.241.228.250.nip.io
 image:
-  url: "gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:e71742c3d0998c894b1953828a1673bdbc845151"
+  url: "gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:f99f79c8235b781a9d807700532e2b47a438264f"
   #repository: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master
   pullPolicy: IfNotPresent
   secrets:

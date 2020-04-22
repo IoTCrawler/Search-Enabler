@@ -1,0 +1,8 @@
+version: '3.3'
+services:
+  search-enabler:
+    image: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:f99f79c8235b781a9d807700532e2b47a438264f
+    environment:
+      - IOTCRAWLER_ORCHESTRATOR_URL=http://155.54.95.248:9090/ngsi-ld/
+    ports:
+      - "8080:8080"

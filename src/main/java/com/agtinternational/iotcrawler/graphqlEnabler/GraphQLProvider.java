@@ -67,20 +67,20 @@ public class GraphQLProvider {
         dataLoaderRegistry = wiring.getDataLoaderRegistry();
         context = new ContextProvider(dataLoaderRegistry).newContext();
 
-        //TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(wiring.getSchemaString());
+        TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(wiring.getSchemaString());
 
 
         SchemaParser schemaParser = new SchemaParser();
         SchemaGenerator schemaGenerator = new SchemaGenerator();
 
-        File schemaFile1 = new File("src/resources/iotcrawler.graphqls");
-        File schemaFile2 = new File("src/resources/smartHome.graphqls");
+        //File schemaFile1 = new File("src/resources/iotcrawler.graphqls");
+        //File schemaFile2 = new File("src/resources/smartHome.graphqls");
         //File schemaFile3 = loadSchema("starWarsSchemaPart3.graphqls");
 
-        TypeDefinitionRegistry typeRegistry = new TypeDefinitionRegistry();
+        //TypeDefinitionRegistry typeRegistry = new TypeDefinitionRegistry();
 
 // each registry is merged into the main registry
-        typeRegistry.merge(schemaParser.parse(schemaFile1));
+        //typeRegistry.merge(schemaParser.parse(schemaFile1));
         //typeRegistry.merge(schemaParser.parse(schemaFile2));
         //typeRegistry.add(schemaParser.parse(schemaFile2))
         //typeRegistry.merge(schemaParser.parse(schemaFile3));
