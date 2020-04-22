@@ -5,7 +5,6 @@ replicaCount: 1
 strategyType:
 enableSelector:
 deploymentApiVersion: apps/v1
-fullnameOverride: "production"
 address: 35.241.228.250.nip.io
 image:
   url: "gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:f99f79c8235b781a9d807700532e2b47a438264f"
