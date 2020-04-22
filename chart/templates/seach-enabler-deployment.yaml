@@ -7,12 +7,12 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: search-enabler
-  name: {{ .Values.gitlab.env }}
+  name: search-enabler-{{ .Values.gitlab.env }}-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: search-enabler
+      io.kompose.service: search-enabler-{{ .Values.gitlab.env }}-service
   strategy: {}
   template:
     metadata:
@@ -20,15 +20,13 @@ spec:
         kompose.cmd: kompose convert -c -f docker-compose.yml
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
-      labels:
-        io.kompose.service: search-enabler
     spec:
       imagePullSecrets:
 {{ toYaml .Values.image.secrets | indent 10 }}
       containers:
       - name: {{ .Chart.Name }}
-        #image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        image: "{{ .Values.image.url }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        #image: "{{ .Values.image.url }}"
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         ports:
           - name: "port80"
