@@ -295,8 +295,9 @@
 
 
   <build>
+    <sourceDirectory>src/resources</sourceDirectory>
+    <testSourceDirectory>src/resources</testSourceDirectory>
     <finalName>${git.branch}:${git.commit.id}</finalName>
-<!--    <testSourceDirectory>src/test/java</testSourceDirectory>-->
 
     <plugins>
       <plugin>

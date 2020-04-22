@@ -27,12 +27,14 @@ spec:
 {{ toYaml .Values.image.secrets | indent 10 }}
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        #image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.image.url }}"
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         ports:
           - name: "port80"
             containerPort: 8080
-
         env:
           - name: VERSION
             value: "{{ .Values.image.tag }}"
+          - name: IOTCRAWLER_ORCHESTRATOR_URL
+            value: "http://155.54.95.248:9090/ngsi-ld/"

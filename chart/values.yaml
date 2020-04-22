@@ -8,12 +8,13 @@ deploymentApiVersion: apps/v1
 fullnameOverride: "production"
 address: 35.241.228.250.nip.io
 image:
-  repository: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master
-  tag: latest
+  url: "gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:e71742c3d0998c894b1953828a1673bdbc845151"
+  #repository: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master
   pullPolicy: IfNotPresent
   secrets:
-    - name: gitlab-registry-root-search-enabler
     - name: gitlab-registry
+  #  - name: gitlab-registry-root-search-enabler
+
 application:
   track: latest
   tier: web
