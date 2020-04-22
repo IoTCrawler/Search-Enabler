@@ -95,7 +95,7 @@ staging:
     - auto-deploy deploy
     - echo $CI_ENVIRONMENT_URL
   environment:
-    name: search-enabler-staging
+    name: $CI_ENVIRONMENT_SLUG
     url: http://$CI_PROJECT_PATH_SLUG-staging.$KUBE_INGRESS_BASE_DOMAIN
   only:
 #    refs:
@@ -119,7 +119,7 @@ canary:
     - auto-deploy create_secret
     - auto-deploy deploy canary
   environment:
-    name: production
+    name: $CI_ENVIRONMENT_SLUG
     url: http://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
   when: manual
   only:
@@ -169,10 +169,12 @@ canary:
 #  variables:
 #    CI_DEBUG_TRACE: "true"
   environment:
-    name: production
+    name: $CI_ENVIRONMENT_SLUG
     url: http://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
   artifacts:
     paths: [environment_url.txt]
+
+
 
 production:
   <<: *production_template
