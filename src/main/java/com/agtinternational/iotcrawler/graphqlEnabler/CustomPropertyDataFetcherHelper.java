@@ -29,10 +29,10 @@ import com.orange.ngsi2.model.Attribute;
 import graphql.GraphQLException;
 import graphql.Internal;
 import graphql.schema.*;
+import org.apache.commons.lang.NotImplementedException;
 import org.dataloader.DataLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

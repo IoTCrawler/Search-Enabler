@@ -12,7 +12,7 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
   secrets:
-    - name: gitlab-registry-root-orchestrator
+    - name: gitlab-registry-root-search-enabler
     - name: gitlab-registry
 application:
   track: latest

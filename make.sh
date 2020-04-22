@@ -2,9 +2,8 @@
 #__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 
-
 if [ "$1" = "prepare-core" ]; then
-	#Fiware/clients: Preparing iot-broker
+	echo "Search-enabler: Preparing core"
 	rm -rf /tmp/orchestrator && git clone https://orchestrator:weRm4nhQcjTyacFuPbLk@gitlab.iotcrawler.net/orchestrator/orchestrator.git tmp/orchestrator
 	export CURR=$(pwd) && cd /tmp/orchestrator
 	sed -i 's/<phase>process-sources<\/phase>/<phase>none<\/phase>/' IoTCrawler/pom.xml
@@ -12,14 +11,15 @@ if [ "$1" = "prepare-core" ]; then
 fi
 
 if [ "$1" = "package" ]; then
-	#Search enabler: Checking core dependency
+	echo "Search enabler: Checking core dependency"
 	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
-	mvn package -DskipTests=true
+	mvn clean package -DskipTests=true
 fi
 
 if [ "$1" = "build-image" ]; then
+   echo "Search enabler: Checking core dependency"
    (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
-	  mvn package -DskipTests=true jib:dockerBuild -U
+	 mvn clean package -DskipTests=true jib:dockerBuild -U
 fi
 
 if [ "$1" = "push-image" ]; then
