@@ -93,7 +93,7 @@ staging:
     - auto-deploy delete
     - auto-deploy create_secret
     - auto-deploy deploy
-    - echo http://${CI_PROJECT_NAME}-${CI_BUILD_STAGE}.$KUBE_INGRESS_BASE_DOMAIN
+    - echo $CI_ENVIRONMENT_URL
   environment:
     name: ${CI_PROJECT_NAME}-${CI_BUILD_STAGE}
     url: http://${CI_PROJECT_NAME}-${CI_BUILD_STAGE}.$KUBE_INGRESS_BASE_DOMAIN
@@ -165,12 +165,12 @@ canary:
     - auto-deploy delete canary
     - auto-deploy delete rollout
     - auto-deploy persist_environment_url
-    - echo http://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    - echo $CI_ENVIRONMENT_URL
 #  variables:
 #    CI_DEBUG_TRACE: "true"
   environment:
     name: ${CI_PROJECT_NAME}-${CI_BUILD_STAGE}
-    url: http://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    url: http://${CI_PROJECT_NAME}-${CI_BUILD_STAGE}.$KUBE_INGRESS_BASE_DOMAIN
   artifacts:
     paths: [environment_url.txt]
 
