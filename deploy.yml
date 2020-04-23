@@ -151,8 +151,7 @@ canary:
     #- cat $KUBECONFIG
     #- export KUBECONFIG="kube_config"
     #- cat $KUBECONFIG
-    #- echo $HELM_HOST
-
+    - echo $CI_ENVIRONMENT_SLUG
 
     - auto-deploy check_kube_domain
     - auto-deploy download_chart
@@ -169,6 +168,7 @@ canary:
 #  variables:
 #    CI_DEBUG_TRACE: "true"
   environment:
+    slug: ${CI_PROJECT_NAME}-${CI_BUILD_STAGE}
     name: ${CI_PROJECT_NAME}-${CI_BUILD_STAGE}
     url: http://${CI_PROJECT_NAME}-${CI_BUILD_STAGE}.$KUBE_INGRESS_BASE_DOMAIN
   artifacts:
