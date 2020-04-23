@@ -32,7 +32,7 @@ spec:
         #image: "{{ .Values.image.url }}"
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         ports:
-          - name: "port80"
+          - name: "port8080"
             containerPort: 8080
         env:
           - name: VERSION

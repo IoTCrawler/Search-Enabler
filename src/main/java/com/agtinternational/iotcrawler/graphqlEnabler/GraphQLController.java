@@ -58,9 +58,9 @@ public class GraphQLController {
         this.contextProvider = contextProvider;
     }
 
-    @RequestMapping(value = "/version", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
     public void index(HttpServletResponse httpServletResponse) throws Exception {
-        String response =  (System.getenv().containsKey("VERSION")?System.getenv().get("VERSION"):"Not set");
+        String response =  (System.getenv().containsKey("VERSION")?"Version:"+System.getenv().get("VERSION"):"Version not set");
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
         httpServletResponse.setCharacterEncoding("UTF-8");
         httpServletResponse.setContentType("application/json");
