@@ -18,7 +18,8 @@ fi
 
 if [ "$1" = "build-image" ]; then
    echo "Search enabler: Checking core dependency"
-   (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
+   (if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
+   (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ] ; then sh make.sh prepare-core; fi);
 	 mvn clean package -DskipTests=true jib:dockerBuild -U
 fi
 
