@@ -70,7 +70,7 @@
 
 staging:
   extends: .auto-deploy
-  stage: staging
+  stage: staging1
   script:
     - kubectl config set-cluster k8s --server="${SERVER}"
     - kubectl config set clusters.k8s.certificate-authority-data ${CERTIFICATE_AUTHORITY_DATA}
