@@ -6,13 +6,13 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: {{ .Values.gitlab.env }}
+    io.kompose.service: search-enabler
   name: {{ .Values.gitlab.env }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: {{ .Values.gitlab.env }}
+      io.kompose.service: search-enabler
   strategy: {}
   template:
     metadata:
@@ -21,14 +21,14 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: {{ .Values.gitlab.env }}
+        io.kompose.service: search-enabler
     spec:
       imagePullSecrets:
 {{ toYaml .Values.image.secrets | indent 10 }}
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        #image: "{{ .Values.image.repository }}:f0b741ede3b648efd7b369df8dd4d8eaf865e3d7"
+        #image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.image.repository }}:d4481db3977214554945858c1f0e073ad16c8466"
         #image: "{{ .Values.image.url }}"
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         ports:
