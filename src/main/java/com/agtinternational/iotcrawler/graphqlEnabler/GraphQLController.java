@@ -58,18 +58,18 @@ public class GraphQLController {
         this.contextProvider = contextProvider;
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public void index(HttpServletResponse httpServletResponse) throws Exception {
-        String response =  (System.getenv().containsKey("VERSION")?"Version:"+System.getenv().get("VERSION"):"Version not set");
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        httpServletResponse.setContentType("application/json");
-        httpServletResponse.setHeader("Access-Control-Allow-Origin", "*");
-        String body = objectMapper.writeValueAsString(response);
-        PrintWriter writer = httpServletResponse.getWriter();
-        writer.write(body);
-        writer.close();
-    }
+//    @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+//    public void index(HttpServletResponse httpServletResponse) throws Exception {
+//        String response =  (System.getenv().containsKey("VERSION")?"Version:"+System.getenv().get("VERSION"):"Version not set");
+//        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+//        httpServletResponse.setCharacterEncoding("UTF-8");
+//        httpServletResponse.setContentType("application/json");
+//        httpServletResponse.setHeader("Access-Control-Allow-Origin", "*");
+//        String body = objectMapper.writeValueAsString(response);
+//        PrintWriter writer = httpServletResponse.getWriter();
+//        writer.write(body);
+//        writer.close();
+//    }
 
 
     @RequestMapping(value = "/graphql", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
