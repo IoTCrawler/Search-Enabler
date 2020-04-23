@@ -20,7 +20,6 @@ variables:
   KUBE_NAMESPACE: ${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_BUILD_STAGE}
 
   #CI_DEBUG_TRACE: "true"
-  CI_ENVIRONMENT_URL: ${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_BUILD_STAGE}.35.241.228.250.nip.io
   CI_APPLICATION_REPOSITORY: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/${CI_COMMIT_REF_NAME}
   CI_APPLICATION_TAG: ${CI_COMMIT_SHA}
 
@@ -45,14 +44,14 @@ stages:
   - performance
   - cleanup
 
-#build:
-#  stage: build
-#  tags:
-#    - java_maven
-#  before_script:
-#    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-#  script:
-#    - sh make.sh build-image && sh make.sh push-image
+build:
+  stage: build
+  tags:
+    - java_maven
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - sh make.sh build-image && sh make.sh push-image
 
 
 
