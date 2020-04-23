@@ -101,7 +101,7 @@ staging:
 #      - master
     kubernetes: active
     variables:
-      - $STAGING_ENABLED
+      - $STAGING_ENABLED1
 
 # Canaries are disabled by default, but if you want them,
 # and know what the downsides are, you can enable this by setting
