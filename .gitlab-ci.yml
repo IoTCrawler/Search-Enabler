@@ -34,6 +34,7 @@ stages:
   - deploy  # dummy stage to follow the template guidelines
   - review
   - dast
+  - staging
   - canary
   - production
   - incremental rollout 10%
@@ -42,7 +43,7 @@ stages:
   - incremental rollout 100%
   - performance
   - cleanup
-#  - staging
+
 #build:
 #  stage: build
 #  tags:
