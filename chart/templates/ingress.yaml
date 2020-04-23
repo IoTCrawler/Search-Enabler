@@ -4,7 +4,7 @@ metadata:
   name: search-enabler-ingress
 spec:
   rules:
-    - host: {{ .Values.gitlab.env }}.35.241.228.250.nip.io
+    - host: {{.Values.service.url}}
       http:
         paths:
           - path: "/"
