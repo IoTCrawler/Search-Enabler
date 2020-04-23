@@ -151,7 +151,7 @@ canary:
     #- cat $KUBECONFIG
     #- export KUBECONFIG="kube_config"
     #- cat $KUBECONFIG
-    - export CI_ENVIRONMENT_SLUG = ${CI_PROJECT_NAME}-${CI_BUILD_STAGE}
+    - export CI_ENVIRONMENT_SLUG="${CI_PROJECT_NAME}-${CI_BUILD_STAGE}"
     - echo $CI_ENVIRONMENT_SLUG
     - auto-deploy check_kube_domain
     - auto-deploy download_chart
