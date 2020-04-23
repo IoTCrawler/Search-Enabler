@@ -93,10 +93,10 @@ staging:
     - auto-deploy delete
     - auto-deploy create_secret
     - auto-deploy deploy
-    - echo http://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
+    - echo http://${CI_PROJECT_NAME}-${CI_BUILD_STAGE}.$KUBE_INGRESS_BASE_DOMAIN
   environment:
     name: ${CI_PROJECT_NAME}-${CI_BUILD_STAGE}
-    url: http://$CI_PROJECT_PATH_SLUG-${CI_BUILD_STAGE}.$KUBE_INGRESS_BASE_DOMAIN
+    url: http://${CI_PROJECT_NAME}-${CI_BUILD_STAGE}.$KUBE_INGRESS_BASE_DOMAIN
   only:
 #    refs:
 #      - master
