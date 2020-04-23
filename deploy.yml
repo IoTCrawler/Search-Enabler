@@ -145,7 +145,7 @@ canary:
 #    - sed -i "s#<SERVER>#${SERVER}#g" kube_config
 #    - sed -i "s#<TOKEN>#${USER_TOKEN}#g" kube_config
 
-    sed -i "s#helm upgrade --install#helm upgrade --install --force#g" /usr/local/bin/auto-deploy
+    - sed -i "s#helm upgrade --install#helm upgrade --install --force#g" /usr/local/bin/auto-deploy
 
     #- cat $KUBECONFIG
     #- export KUBECONFIG="kube_config"
