@@ -6,13 +6,13 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: search-enabler
+    io.kompose.service: {{ .Values.gitlab.app }}
   name: {{ .Values.gitlab.env }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: search-enabler
+      io.kompose.service: {{ .Values.gitlab.app }}
   strategy: {}
   template:
     metadata:
@@ -21,7 +21,7 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: search-enabler
+        io.kompose.service: {{ .Values.gitlab.app }}
     spec:
       imagePullSecrets:
 {{ toYaml .Values.image.secrets | indent 10 }}

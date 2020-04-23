@@ -165,7 +165,7 @@ canary:
     - auto-deploy delete canary
     - auto-deploy delete rollout
     - auto-deploy persist_environment_url
-    - echo $CI_ENVIRONMENT_URL
+    - echo http://$CI_PROJECT_PATH_SLUG.$KUBE_INGRESS_BASE_DOMAIN
 #  variables:
 #    CI_DEBUG_TRACE: "true"
   environment:

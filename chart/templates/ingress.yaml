@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: search-enabler-ingress
+  name: {{ .Values.gitlab.app }}-ingress
 spec:
   rules:
     - host: {{.Release.Name}}.35.241.228.250.nip.io
@@ -9,5 +9,5 @@ spec:
         paths:
           - path: "/"
             backend:
-              serviceName: "search-enabler"
+              serviceName: {{ .Values.gitlab.app }}
               servicePort: 8080
