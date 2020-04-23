@@ -96,7 +96,7 @@ staging:
     - echo ${CI_ENVIRONMENT_URL}
   environment:
     name: ${CI_PROJECT_NAME}-${CI_BUILD_STAGE}
-    url: http://$CI_PROJECT_PATH_SLUG-staging.$KUBE_INGRESS_BASE_DOMAIN
+    url: http://$CI_PROJECT_PATH_SLUG-${CI_BUILD_STAGE}.$KUBE_INGRESS_BASE_DOMAIN
   only:
 #    refs:
 #      - master

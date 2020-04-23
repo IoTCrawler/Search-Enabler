@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: search-enabler-ingress
+spec:
+  rules:
+    - host: search-enabler-{{.Release.Name}}.35.241.228.250.nip.io
+      http:
+        paths:
+          - path: "/"
+            backend:
+              serviceName: "search-enabler"
+              servicePort: 8080
