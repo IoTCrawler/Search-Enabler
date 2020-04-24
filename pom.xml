@@ -37,11 +37,11 @@
 
   <dependencies>
 
-    <dependency>
-      <groupId>com.agtinternational.iotcrawler</groupId>
-      <artifactId>fiware-models</artifactId>
-      <version>${fiware.models.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>com.agtinternational.iotcrawler</groupId>-->
+<!--      <artifactId>fiware-models</artifactId>-->
+<!--      <version>${fiware.models.version}</version>-->
+<!--    </dependency>-->
 
 
     <dependency>

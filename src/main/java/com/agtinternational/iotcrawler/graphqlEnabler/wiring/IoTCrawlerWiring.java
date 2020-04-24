@@ -21,7 +21,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
  */
 
 import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
-import com.agtinternational.iotcrawler.core.interfaces.IotCrawlerClient;
+import com.agtinternational.iotcrawler.core.interfaces.IoTCrawlerClient;
 import com.agtinternational.iotcrawler.core.models.*;
 import com.agtinternational.iotcrawler.core.ontologies.IotStream;
 import com.agtinternational.iotcrawler.core.ontologies.SOSA;
@@ -66,7 +66,7 @@ public class IoTCrawlerWiring implements Wiring {
 
     static Logger LOGGER = LoggerFactory.getLogger(IoTCrawlerWiring.class);
     public static final DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
-    static IotCrawlerClient iotCrawlerClient;
+    static IoTCrawlerClient iotCrawlerClient;
     Boolean cutURIs;
     public static Map<String, String> bindingRegistry = new HashMap<>();
 
@@ -74,7 +74,7 @@ public class IoTCrawlerWiring implements Wiring {
         cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
     }
 
-    public static IotCrawlerClient getIoTCrawlerClient(){
+    public static IoTCrawlerClient getIoTCrawlerClient(){
         Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
         if(iotCrawlerClient==null) {
             iotCrawlerClient = new IoTCrawlerRESTClient(System.getenv(IOTCRAWLER_ORCHESTRATOR_URL), cutURIs);
