@@ -25,6 +25,7 @@ import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
+import com.google.gson.JsonObject;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -251,14 +252,16 @@ public class IoTCrawlerProvierTests {
 		Map data = executionResult.getData();
 		Assert.notNull(data);
 
-		List entities = (List)data.get("streams");
-		Assert.isTrue(entities.size()>0);
-		LOGGER.info("Streams: {}", entities.size());
+	    Object results = ((Map)data).values().iterator().next();
+		Assert.notNull(results);
+
+		for(Object result: (List)results)
+			Assert.notNull(result);
 
 		JSONObject jsonObject = new JSONObject();
-		jsonObject.putAll((Map)data);
-
+		jsonObject.putAll(data);
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
+
 	}
 
 
@@ -278,7 +281,8 @@ public class IoTCrawlerProvierTests {
 		Map data = executionResult.getData();
 		Assert.notNull(data);
 
-		Assert.notNull(data.get("sensor"));
+		Object results = ((Map)data).values().iterator().next();
+		Assert.notNull(results);
 
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll(data);
@@ -302,15 +306,14 @@ public class IoTCrawlerProvierTests {
 		LOGGER.info("Executing query");
 		ExecutionResult executionResult = graphql.execute(executionInput);
 		Map data = executionResult.getData();
-		Assert.notNull(data);
+		Object results = ((Map)data).values().iterator().next();
+		Assert.notNull(results);
 
-		List entities = (List)data.get("sensors");
-		Assert.isTrue(entities.size()>0);
-		LOGGER.info("Sensors: {}", entities.size());
+//		for(Object result: (List)results)
+//			Assert.notNull(result);
 
 		JSONObject jsonObject = new JSONObject();
-		jsonObject.putAll((Map)data);
-
+		jsonObject.putAll(data);
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
 	}
 
@@ -384,7 +387,7 @@ public class IoTCrawlerProvierTests {
 		ExecutionResult executionResult = graphql.execute(executionInput);
 		Object data = executionResult.getData();
 		Assert.notNull(data);
-		
+
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll((Map)data);
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));

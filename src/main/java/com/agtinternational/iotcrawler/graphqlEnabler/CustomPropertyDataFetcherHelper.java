@@ -142,7 +142,7 @@ public class CustomPropertyDataFetcherHelper {
             propertyType = ((GraphQLList) wrappedType).getWrappedType().getName();
         else if (wrappedType instanceof GraphQLObjectType)
             propertyType = ((GraphQLObjectType) wrappedType).getName();
-        else if (graphQLType instanceof GraphQLNonNull)
+        else if (wrappedType instanceof GraphQLNonNull)
             propertyType = ((GraphQLNonNull) wrappedType).getWrappedType().getName();
 //        else
 //            throw new NotImplementedException();
