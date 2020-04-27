@@ -30,25 +30,19 @@ public class EnvVariablesSetter {
     public static final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     public static void init(){
-        //public static final String IoTCTripleStoreURI = "http://10.67.42.53:10035/repositories/IoTCrawler2/sparql";
-        //public static final String defaultTripleStoreURI = "http://10.67.42.53:10035/repositories/KB/sparql";
 
         //environmentVariables.set(CUT_TYPE_URIS, "true");
-        if(!System.getenv().containsKey(NGSILD_BROKER_URL))
-            //environmentVariables.set(NGSILD_BROKER_URL, "http://i5-nuc:9091/ngsi-ld/");
-            //environmentVariables.set(NGSILD_BROKER_URL, "http://localhost:3000/ngsi-ld/");
-            //environmentVariables.set(NGSILD_BROKER_URL, "http://10.67.1.107:9090/ngsi-ld/");
-            //environmentVariables.set(NGSILD_BROKER_URL, "http://155.54.95.171:9090/ngsi-ld/");
-            environmentVariables.set(NGSILD_BROKER_URL, "http://155.54.95.248:9090/ngsi-ld/");
+//        String brokerURL = "http://155.54.95.248:9090/ngsi-ld/";
+//        String brokerURL = "http://155.54.95.171:9090/ngsi-ld/";
+//        String brokerURL = "http://10.67.1.107:9090/ngsi-ld/";
+//        String brokerURL = "http://localhost:3000/ngsi-ld/";
+        String brokerURL = "http://i5-nuc:9091/ngsi-ld/";
 
-            //environmentVariables.set(NGSILD_BROKER_URL, "http://155.54.95.171:9090/ngsi-ld/");
+        if(!System.getenv().containsKey(NGSILD_BROKER_URL))
+            environmentVariables.set(NGSILD_BROKER_URL, brokerURL);
 
         if(!System.getenv().containsKey(IOTCRAWLER_ORCHESTRATOR_URL))
-            environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL, "http://i5-nuc:9091/ngsi-ld/");
-            //environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL, "http://10.67.1.107:9090/ngsi-ld/");
-        //    environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL, "http://155.54.95.248:9090/ngsi-ld/");
-            //environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL, "http://localhost:3000/ngsi-ld/");
-            //environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL, "http://155.54.95.171:9090/ngsi-ld/");
+            environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL,brokerURL);
 
     }
 }

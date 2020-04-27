@@ -21,10 +21,8 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 import com.agtinternational.iotcrawler.core.Utils;
-import com.agtinternational.iotcrawler.core.models.ObservableProperty;
-import com.agtinternational.iotcrawler.core.models.RDFModel;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
 import com.orange.ngsi2.model.Attribute;
 import graphql.GraphQLException;
 import graphql.Internal;
@@ -102,9 +100,9 @@ public class CustomPropertyDataFetcherHelper {
                         Object ret = getPropertyViaGetterMethod(object0, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
                         value = ret;
                     } catch (NoSuchMethodException ignored) {
-                        String propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(Utils.getFragment(((EntityLD) object0).getType()) + "." + propertyName);
+                        String propertyNameURI = GenericMDRWiring.bindingRegistry.get(Utils.getFragment(((EntityLD) object0).getType()) + "." + propertyName);
                         if (propertyNameURI == null)
-                            propertyNameURI = IoTCrawlerWiring.bindingRegistry.get(propertyName);
+                            propertyNameURI = GenericMDRWiring.bindingRegistry.get(propertyName);
 
                         if (propertyNameURI == null)
                             throw new Exception("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
@@ -117,6 +115,8 @@ public class CustomPropertyDataFetcherHelper {
                             //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
                         else {
                             value = attribute.getValue();
+//                            if(graphQLType instanceof GraphQLList && !(value instanceof List))
+//                                value = Arrays.asList(new Object[]{ value });
 
                             if (value instanceof List)
                                 keys.addAll((List) value);
@@ -124,24 +124,35 @@ public class CustomPropertyDataFetcherHelper {
                                 keys.add(value);
                         }
                     }
-                } else
-                    throw new NotImplementedException();
+                } //else
+                    //throw new NotImplementedException();
 
         }
 
-        if (graphQLType instanceof GraphQLNonNull) {
-            String propertyType = null;
-            if(((GraphQLNonNull) graphQLType).getWrappedType() instanceof GraphQLList)
-                propertyType = ((GraphQLList)((GraphQLNonNull) graphQLType).getWrappedType()).getWrappedType().getName();
-            else
-                propertyType = ((GraphQLNonNull) graphQLType).getWrappedType().getName();
-            if(propertyType!=null){
-                String propertyTypeURI = IoTCrawlerWiring.bindingRegistry.get(propertyType);
-                 if (propertyTypeURI != null) {
-                    DataLoader loader = IoTCrawlerWiring.dataLoaderRegistry.getDataLoader(propertyType);
-                    Object ret = loader.loadMany(keys);
-                    return ret;
-                }
+        GraphQLType wrappedType=null;
+        if(graphQLType instanceof GraphQLList)
+            wrappedType = ((GraphQLList)graphQLType).getWrappedType();
+        else if (graphQLType instanceof GraphQLNonNull)
+            wrappedType = ((GraphQLNonNull) graphQLType).getWrappedType();
+        //        else
+//            throw new NotImplementedException();
+
+        String propertyType = null;
+        if (wrappedType instanceof GraphQLList)
+            propertyType = ((GraphQLList) wrappedType).getWrappedType().getName();
+        else if (wrappedType instanceof GraphQLObjectType)
+            propertyType = ((GraphQLObjectType) wrappedType).getName();
+        else if (graphQLType instanceof GraphQLNonNull)
+            propertyType = ((GraphQLNonNull) wrappedType).getWrappedType().getName();
+//        else
+//            throw new NotImplementedException();
+
+        if(propertyType!=null){
+            String propertyTypeURI = GenericMDRWiring.bindingRegistry.get(propertyType);
+             if (propertyTypeURI != null) {
+                DataLoader loader = GenericMDRWiring.dataLoaderRegistry.getDataLoader(propertyType);
+                Object ret = loader.loadMany(keys);
+                return ret;
             }
         }
 

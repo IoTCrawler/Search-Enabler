@@ -37,7 +37,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
 
 import static graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentationOptions.newOptions;
@@ -53,16 +52,23 @@ public class GraphQLProvider {
     private Wiring wiring;
     private Context context;
 
-    @Autowired
-    public GraphQLProvider() {
+    //@Autowired
+//    public GraphQLProvider(){
+//        this.wiring = wiring;
+//    }
 
+    @Autowired
+    public GraphQLProvider(){ //used for http app
+        this.wiring = new IoTCrawlerWiring.Builder().build();
+    }
+
+    public GraphQLProvider(Wiring wiring){  //used for outside tests
+        this.wiring = wiring;
     }
 
 
     @PostConstruct
     public void init() throws IOException {
-
-        wiring = new IoTCrawlerWiring();
 
         dataLoaderRegistry = wiring.getDataLoaderRegistry();
         context = new ContextProvider(dataLoaderRegistry).newContext();
@@ -128,5 +134,6 @@ public class GraphQLProvider {
     public GraphQL graphQL() {
         return graphQL;
     }
+
 
 }

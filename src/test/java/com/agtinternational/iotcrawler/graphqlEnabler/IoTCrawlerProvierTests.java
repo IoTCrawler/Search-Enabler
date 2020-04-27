@@ -24,6 +24,7 @@ import com.agtinternational.iotcrawler.core.Utils;
 import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -46,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.agtinternational.iotcrawler.fiware.clients.Constants.NGSILD_BROKER_URL;
+import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
@@ -63,14 +65,15 @@ public class IoTCrawlerProvierTests {
 
 		LOGGER.info("Initing graphql provider");
 
-
-		graphQLProvider = new GraphQLProvider();
+		graphQLProvider = new GraphQLProvider(new IoTCrawlerWiring.Builder().build());
 		graphQLProvider.init();
 		graphql = graphQLProvider.graphQL();
 
 		context = graphQLProvider.getContext();
 
 	}
+
+
 
 	private String getQuery(String resourcePath) throws IOException {
 		String ret = new String(Files.readAllBytes(Paths.get(resourcePath)));
