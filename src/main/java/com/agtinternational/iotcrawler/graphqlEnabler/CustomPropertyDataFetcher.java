@@ -126,6 +126,7 @@ public class CustomPropertyDataFetcher<T> implements DataFetcher<T> {
 
         try {
             Object ret = CustomPropertyDataFetcherHelper.getPropertyValue(propertyName, source, environment.getFieldType(), environment);
+            //Object ret = CustomPropertyDataFetcherHelper.getPropertyValue(propertyName, source, environment.getParentType(), environment);
             return (T)ret;
         } catch (Exception e) {
             e.printStackTrace();

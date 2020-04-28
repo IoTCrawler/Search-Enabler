@@ -20,17 +20,23 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * #L%
  */
 
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
 import graphql.GraphQL;
 import graphql.execution.instrumentation.ChainedInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentation;
 import graphql.execution.instrumentation.tracing.TracingInstrumentation;
+import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.TypeDefinition;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +44,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentationOptions.newOptions;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
@@ -49,7 +59,7 @@ public class GraphQLProvider {
 
     private GraphQLSchema graphQLSchema;
     private DataLoaderRegistry dataLoaderRegistry;
-    private Wiring wiring;
+    private GenericMDRWiring wiring;
     private Context context;
 
     //@Autowired
@@ -59,22 +69,43 @@ public class GraphQLProvider {
 
     @Autowired
     public GraphQLProvider(){ //used for http app
-        this.wiring = new IoTCrawlerWiring.Builder().build();
+        this(new IoTCrawlerWiring.Builder().build());
+
     }
 
-    public GraphQLProvider(Wiring wiring){  //used for outside tests
+    public GraphQLProvider(GenericMDRWiring wiring){  //used for outside tests
         this.wiring = wiring;
+        this.dataLoaderRegistry = new DataLoaderRegistry();
     }
 
 
     @PostConstruct
     public void init() throws IOException {
 
-        dataLoaderRegistry = wiring.getDataLoaderRegistry();
-        context = new ContextProvider(dataLoaderRegistry).newContext();
-
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(wiring.getSchemaString());
 
+        Map<String, String> bindingRegistry = new LinkedHashMap<>();
+        for (TypeDefinition typeDefinition: typeRegistry.types().values()){
+
+            if(typeDefinition instanceof ObjectTypeDefinition){
+
+                wiring.registerDataloaderConcept(typeDefinition.getName());
+                //dataLoaderRegistry.register(typeDefinition.getName(), new DataLoader(new GenericMDRWiring.GenericLoader(typeDefinition.getName())));
+
+                if(((ObjectTypeDefinition) typeDefinition).getDescription()!=null)
+                    bindingRegistry.put(typeDefinition.getName(),((ObjectTypeDefinition) typeDefinition).getDescription().getContent());
+
+
+                for(FieldDefinition fieldDefinition : ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions()){
+                    String name2=fieldDefinition.getName();
+                    if(fieldDefinition.getDescription()!=null)
+                        bindingRegistry.put(typeDefinition.getName()+"."+name2,fieldDefinition.getDescription().getContent());
+                }
+            }
+        }
+        wiring.setBindingRegistry(bindingRegistry);
+        dataLoaderRegistry = wiring.getDataLoaderRegistry();
+        context = new ContextProvider(dataLoaderRegistry).newContext();
 
         SchemaParser schemaParser = new SchemaParser();
         SchemaGenerator schemaGenerator = new SchemaGenerator();

@@ -157,13 +157,13 @@ public class GenericMDRWiring implements Wiring {
         }
 
         //List augmented = augmentEntities(entitiesFromDB, concept);
-        if(keys.size()!=enitities.size()) {
-            int delta = keys.size() - enitities.size();
-            for (int i = 0; i < delta; i++) {
-                enitities.add(null);   //filling missing results
-                LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
-            }
-        }
+//        if(keys.size()!=enitities.size()) {
+//            int delta = keys.size() - enitities.size();
+//            for (int i = 0; i < delta; i++) {
+//                enitities.add(null);   //filling missing results
+//                LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
+//            }
+//        }
         return enitities;
     }
 
@@ -182,113 +182,116 @@ public class GenericMDRWiring implements Wiring {
                 String argName = argument.getName();
 
 
-            Object argValue = arguments.get(argName);
-            String typeName = ((GraphQLModifiedType)environment.getFieldType()).getWrappedType().getName();
+                Object argValue = arguments.get(argName);
+                GraphQLType wrappedType = ((GraphQLModifiedType)environment.getFieldType()).getWrappedType();
+                String typeName = wrappedType.getName();
+
+                String propertyURI = findURI(typeName, argName);
+//                if(wrappedType instanceof GraphQLObjectType)
+//                    propertyURI = ((GraphQLObjectType)wrappedType).getDescription();
+//                else throw new NotImplementedException(wrappedType.getClass().getCanonicalName()+" not implemented");
+
+                if(propertyURI==null)
+                    throw new Exception("URI not found for "+argName);
+
+                GraphQLArgument graphQLArgument = environment.getFieldTypeInfo().getFieldDefinition().getArgument(argName);
+                GraphQLType graphQLInputType = environment.getFieldTypeInfo().getFieldDefinition().getType();
+                if(graphQLArgument!=null)//getting from argument if possible
+                    graphQLInputType = graphQLArgument.getType();
 
 
-            String propertyURI = findURI(typeName, argName);
+                if(graphQLInputType instanceof GraphQLModifiedType)
+                    graphQLInputType = ((GraphQLModifiedType) graphQLInputType).getWrappedType();
+                String inputTypeName = graphQLInputType.getName().replace("Input","");
 
-            if(propertyURI==null)
-                throw new Exception("URI not found for "+argName);
+                GraphQLType targetType = environment.getGraphQLSchema().getType(inputTypeName);
 
-            GraphQLArgument graphQLArgument = environment.getFieldTypeInfo().getFieldDefinition().getArgument(argName);
-            GraphQLType graphQLInputType = environment.getFieldTypeInfo().getFieldDefinition().getType();
-            if(graphQLArgument!=null)//getting from argument if possible
-                graphQLInputType = graphQLArgument.getType();
+                if(targetType instanceof GraphQLObjectType) {
 
+                    LOGGER.info("Initializing {} fetcher to resolve {}", targetType.getName(), typeName+"."+argName);
+                    DataFetcher dataFetcher = genericDataFetcher(targetType.getName(), true);
 
-            if(graphQLInputType instanceof GraphQLModifiedType)
-                graphQLInputType = ((GraphQLModifiedType) graphQLInputType).getWrappedType();
-            String inputTypeName = graphQLInputType.getName().replace("Input","");
-
-            GraphQLType targetType = environment.getGraphQLSchema().getType(inputTypeName);
-
-            if(targetType instanceof GraphQLObjectType) {
-
-                LOGGER.info("Initializing {} fetcher to resolve {}", targetType.getName(), argName);
-                DataFetcher dataFetcher = genericDataFetcher(targetType.getName(), true);
-
-                //GraphQLOutputType graphQLType = environment.getFieldType();
-                GraphQLList graphQLType = new GraphQLList(targetType);
+                    //GraphQLOutputType graphQLType = environment.getFieldType();
+                    GraphQLList graphQLType = new GraphQLList(targetType);
 
 
-                //GraphQLOutputType targetObjectType = environment.getFieldTypeInfo().getFieldDefinition().getType();
+                    //GraphQLOutputType targetObjectType = environment.getFieldTypeInfo().getFieldDefinition().getType();
 
-                //GraphQLFieldDefinition fieldDefinition = targetObjectType.getFieldDefinition(targetType.getName());
-                List<Field> fields = new ArrayList<>();
-                List<ObjectField> objectFields = ((ObjectValue) argument.getValue()).getObjectFields();
-                Field field1 = null;
-                for (ObjectField objectField : objectFields) {
-                    List<Argument> arguments1 = new ArrayList<>();
-                    arguments1.add(new Argument(objectField.getName(), objectField.getValue()));
-                    field1 = new Field(objectField.getName(), arguments1);
-                    fields.add(field1);
-                }
-//                GraphQLFieldDefinition fieldDefinition = ((GraphQLObjectType)environment.getParentType())
-//                        .getFieldDefinition(inputTypeName.toLowerCase()+"s");
-
-                GraphQLObjectType graphQLObjectType = (GraphQLObjectType) environment.getGraphQLSchema().getType(inputTypeName);
-                GraphQLFieldDefinition fieldDefinition = graphQLObjectType.getFieldDefinition(field1.getName());
-
-                ExecutionTypeInfo fieldTypeInfo = ExecutionTypeInfo.newTypeInfo()
-                        .field(field1)
-                        .fieldDefinition(fieldDefinition)
-                        .type(graphQLType)
-                        .build();
-
-                DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
-                        environment.getSource(),
-                        (Map) argValue,
-                        environment.getContext(),
-                        environment.getRoot(),
-
-                        fieldDefinition,
-                        //environment.getFieldDefinition(),
-                        fields,
-                        //environment.getFields(),
-                        //environment.getFieldType(),
-                        graphQLType,
-
-                        environment.getParentType(),
-                        environment.getGraphQLSchema(),
-                        environment.getFragmentsByName(),
-                        environment.getExecutionId(),
-                        environment.getSelectionSet(),
-                        //environment.getFieldTypeInfo(),
-                        fieldTypeInfo,
-                        environment.getExecutionContext()
-                );
-
-                LOGGER.info("Executing {} fetcher", targetType.getName());
-                CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
-                try {
-                    Object entities = future.get();
-                    if (entities instanceof Iterable) {
-
-                        if (!((Iterable) entities).iterator().hasNext())
-                            return null;
-
-                        Object entityIds = ((ArrayList) entities).stream().map(entity -> ((EntityLD) entity).getId()).collect(Collectors.toList());
-                        int size = ((List) entityIds).size();
-                        if (size == 0)
-                            return null;
-
-                        LOGGER.info("{} fetcher executed. {} entities returned", targetType.getName(), size);
-                        query.put(propertyURI, entityIds);
-                    } else {
-                        LOGGER.info("{} fetcher executed. One entity returned", targetType.getName());
-                        query.put(propertyURI, ((EntityLD) entities).getId());
+                    //GraphQLFieldDefinition fieldDefinition = targetObjectType.getFieldDefinition(targetType.getName());
+                    List<Field> fields = new ArrayList<>();
+                    List<ObjectField> objectFields = ((ObjectValue) argument.getValue()).getObjectFields();
+                    Field field1 = null;
+                    for (ObjectField objectField : objectFields) {
+                        List<Argument> arguments1 = new ArrayList<>();
+                        arguments1.add(new Argument(objectField.getName(), objectField.getValue()));
+                        field1 = new Field(objectField.getName(), arguments1);
+                        fields.add(field1);
                     }
-                    //                                query.remove(key);
-                } catch (Exception e) {
-                    LOGGER.error("Failed to resolve madeBySensor filter");
-                    e.printStackTrace();
-                    return null;
-                }
-            }else if(targetType instanceof GraphQLScalarType){
-                query.put(propertyURI, (argValue instanceof String? "\""+argValue.toString()+"\"": argValue));
-            }else
-                throw new NotImplementedException();
+    //                GraphQLFieldDefinition fieldDefinition = ((GraphQLObjectType)environment.getParentType())
+    //                        .getFieldDefinition(inputTypeName.toLowerCase()+"s");
+
+                    GraphQLObjectType graphQLObjectType = (GraphQLObjectType) environment.getGraphQLSchema().getType(inputTypeName);
+                    GraphQLFieldDefinition fieldDefinition = graphQLObjectType.getFieldDefinition(field1.getName());
+
+                    ExecutionTypeInfo fieldTypeInfo = ExecutionTypeInfo.newTypeInfo()
+                            .field(field1)
+                            .fieldDefinition(fieldDefinition)
+                            .type(graphQLType)
+                            .build();
+
+                    DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
+                            environment.getSource(),
+                            (Map) argValue,
+                            environment.getContext(),
+                            environment.getRoot(),
+
+                            fieldDefinition,
+                            //environment.getFieldDefinition(),
+                            fields,
+                            //environment.getFields(),
+                            //environment.getFieldType(),
+                            graphQLType,
+
+                            environment.getParentType(),
+                            environment.getGraphQLSchema(),
+                            environment.getFragmentsByName(),
+                            environment.getExecutionId(),
+                            environment.getSelectionSet(),
+                            //environment.getFieldTypeInfo(),
+                            fieldTypeInfo,
+                            environment.getExecutionContext()
+                    );
+
+                    LOGGER.info("Executing {} fetcher", targetType.getName());
+                    CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
+                    try {
+                        Object entities = future.get();
+                        if (entities instanceof Iterable) {
+
+                            if (!((Iterable) entities).iterator().hasNext())
+                                return null;
+
+                            Object entityIds = ((ArrayList) entities).stream().map(entity -> ((EntityLD) entity).getId()).collect(Collectors.toList());
+                            int size = ((List) entityIds).size();
+                            if (size == 0)
+                                return null;
+
+                            LOGGER.info("{} fetcher executed. {} entities returned", targetType.getName(), size);
+                            query.put(propertyURI, entityIds);
+                        } else {
+                            LOGGER.info("{} fetcher executed. One entity returned", targetType.getName());
+                            query.put(propertyURI, ((EntityLD) entities).getId());
+                        }
+                        //                                query.remove(key);
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to resolve madeBySensor filter");
+                        e.printStackTrace();
+                        return null;
+                    }
+                }else if(targetType instanceof GraphQLScalarType){
+                    query.put(propertyURI, (argValue instanceof String? "\""+argValue.toString()+"\"": argValue));
+                }else
+                    throw new NotImplementedException();
 
         }
 
@@ -301,6 +304,10 @@ public class GenericMDRWiring implements Wiring {
         return environment -> {
             Context ctx = environment.getContext();
             DataLoader<String, Object> loader = ctx.getLoader(concept);
+            if(loader==null) {
+                LOGGER.error("Loader for " + concept + " not found");
+                return null;
+            }
             String id = environment.getArgument("id");
             String URI = environment.getArgument("URI");
             Object source = environment.getSource();
@@ -411,11 +418,18 @@ public class GenericMDRWiring implements Wiring {
         return schemaString;
     }
 
+    public static String findURI(String type){
+        if(bindingRegistry.containsKey(type))
+            return bindingRegistry.get(type);
+        LOGGER.warn("Type {} not found in binding registry", type);
+        return null;
+    }
+
     public static String findURI(String type, String property){
         if(bindingRegistry.containsKey(type+"."+property))
             return bindingRegistry.get(type+"."+property);
-
-        return bindingRegistry.get(property);
+        LOGGER.warn("Type {} not found in binding registry", type+"."+property);
+        return null;
     }
 
     @Override
@@ -428,7 +442,7 @@ public class GenericMDRWiring implements Wiring {
         return runtimeWiring;
     }
 
-    public class GenericLoader implements org.dataloader.BatchLoader {
+    public static class GenericLoader implements org.dataloader.BatchLoader {
 
         String concept;
         public GenericLoader(String concept){

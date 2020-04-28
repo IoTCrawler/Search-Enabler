@@ -2,29 +2,29 @@
    #streams
    streams(
             generatedBy: {
-                       #id: "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2"
+                       id: "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2"
                        #isHostedBy: {
                             #id: "urn:ngsi-ld:Platform_homee_00055110D732"
                        #     label: "homee_00055110D732"
                        #}
-                       observes: {
-                            label: "Temperature"
+                       #observes: {
+                       #     label: "Temperature"
                        #     label: "Energy"
-                       }
+                       #}
                }
                )
                {
                   id,
                   generatedBy {
-                      id,
-                  #    label,
+                       id,
+                       label,
                        isHostedBy{
-                                      id,
-                  #                    label,
+                                     id,
+                                     label,
                                       #location
                                     },
                       observes{
-                      #    id,
+                          id,
                           label
                       }
                   }

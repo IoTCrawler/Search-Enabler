@@ -31,48 +31,64 @@ input PlatformInput {
     id: String
     label: String
     hosts: SensorInput
-    #hosts: [Sensor]
     location: String
 }
 
 input ObservablePropertyInput {
     id: String
     label: String
+    """http://www.w3.org/ns/sosa/isObservedBy"""
     isObservedBy: SensorInput
 }
 
+"""http://purl.org/iot/ontology/iot-stream#IotStream"""
 type IoTStream {
     id: String!
+    """http://purl.org/iot/ontology/iot-stream#generatedBy"""
     generatedBy: Sensor!
+    """http://purl.org/iot/ontology/iot-stream#observes"""
     observes: ObservableProperty!
 }
 
+"""http://www.w3.org/ns/sosa/Sensor"""
 type Sensor {
     id: String!
+    """http://www.w3.org/2000/01/rdf-schema#label"""
     label: String
+    """http://www.w3.org/ns/sosa/isHostedBy"""
     isHostedBy: Platform!
+    """http://www.w3.org/ns/sosa/madeObservation"""
     madeObservation: StreamObservation!
+    """http://www.w3.org/ns/sosa/observes"""
     observes: ObservableProperty!
     location: String
 }
 
+"""http://www.w3.org/ns/sosa/Platform"""
 type Platform {
     id: String!
+    """http://www.w3.org/2000/01/rdf-schema#label"""
     label: String!
+    """http://www.w3.org/ns/sosa/hosts"""
     hosts: [Sensor]!
     location: String
 }
 
+"""http://www.w3.org/ns/sosa/ObservableProperty"""
 type ObservableProperty {
     id: String!
+    """http://www.w3.org/2000/01/rdf-schema#label"""
     label: String!
+    """http://www.w3.org/ns/sosa/isObservedBy"""
     isObservedBy: [Sensor]!
 }
 
+"""http://purl.org/iot/ontology/iot-stream#StreamObservation"""
 type StreamObservation {
     id: String!
     observes: ObservableProperty!
 }
+
 
 type Entity {
     id: String!

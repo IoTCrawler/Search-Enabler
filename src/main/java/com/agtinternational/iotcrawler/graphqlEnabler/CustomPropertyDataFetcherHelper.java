@@ -37,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,7 +61,7 @@ public class CustomPropertyDataFetcherHelper {
         return getPropertyValue(propertyName, object, graphQLType, null);
     }
 
-    public static Object getPropertyValue(String propertyName, Object object, GraphQLType graphQLType, DataFetchingEnvironment environment) throws Exception {
+    public static Object getPropertyValue(String propertyName, Object object, GraphQLType fieldType, DataFetchingEnvironment environment) throws Exception {
         if (object == null) {
             return null;
         }
@@ -75,84 +76,101 @@ public class CustomPropertyDataFetcherHelper {
         boolean dfeInUse = environment != null;
         try {
 
-            Object ret = getPropertyViaGetterMethod(object, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
+            Object ret = getPropertyViaGetterMethod(object, propertyName, fieldType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
             return ret;
         } catch (NoSuchMethodException ignored) {
             String abc = "123";
         }
 
         Boolean changed = false;
-        if(!(object instanceof Iterable) && object!=null) {
+
+        if(object instanceof EntityLD) {  //Handling multivalue properties
             object = Arrays.asList(new Object[]{object});
             changed = true;
         }
 
+        List referenceIDs = new ArrayList();
         Object value = null;
-        Iterator iterator = ((Iterable)object).iterator();
-        List keys = new ArrayList();
-        while(iterator.hasNext()){
-            Object object0 = iterator.next();
-            if(object0!=null)
-                if (object0 instanceof EntityLD) {
+        if(object instanceof Iterable) {
+            Iterator iterator = ((Iterable) object).iterator();
+            while (iterator.hasNext()) {
+                Object object0 = iterator.next();
+                if (object0 != null)
+                    if (object0 instanceof EntityLD) {
 
-                    try {
+//                        try {
+//
+//                            Object ret = getPropertyViaGetterMethod(object0, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
+//                            value = ret;
+//                        } catch (NoSuchMethodException ignored) {
+                            String propertyNameURI = GenericMDRWiring.bindingRegistry.get(Utils.getFragment(((EntityLD) object0).getType()) + "." + propertyName);
+                            if (propertyNameURI == null)
+                                //Getting parent type Might be problematic!
+                                propertyNameURI = GenericMDRWiring.findURI(environment.getParentType().getName(), propertyName);
 
-                        Object ret = getPropertyViaGetterMethod(object0, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
-                        value = ret;
-                    } catch (NoSuchMethodException ignored) {
-                        String propertyNameURI = GenericMDRWiring.bindingRegistry.get(Utils.getFragment(((EntityLD) object0).getType()) + "." + propertyName);
-                        if (propertyNameURI == null)
-                            propertyNameURI = GenericMDRWiring.bindingRegistry.get(propertyName);
+                            if (propertyNameURI != null) {
+                                Attribute attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                                //processing only relations
 
-                        if (propertyNameURI == null)
-                            throw new Exception("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
-
-                        Attribute attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                        if (propertyNameURI.startsWith("http://") && attribute == null)
-                            attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                        if (attribute == null)
-                            LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
-                            //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
-                        else {
-                            value = attribute.getValue();
+                                    if (propertyNameURI.startsWith("http://") && attribute == null)
+                                        attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                                    if (attribute == null)
+                                        LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                                        //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                                    else {
+                                        value = attribute.getValue();
 //                            if(graphQLType instanceof GraphQLList && !(value instanceof List))
 //                                value = Arrays.asList(new Object[]{ value });
+                                        if(attribute.getType().get().equals("Relationship")){
+                                            if (value instanceof List)
+                                                referenceIDs.addAll((List) value);
+                                            else
+                                                referenceIDs.add(value);
+                                        }
+                                    }
 
-                            if (value instanceof List)
-                                keys.addAll((List) value);
-                            else
-                                keys.add(value);
-                        }
-                    }
-                } //else
-                    //throw new NotImplementedException();
-
+                            } else
+                                LOGGER.warn("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
+                        //}
+                    } else
+                        throw new NotImplementedException();
+            }
         }
 
-        GraphQLType wrappedType=null;
-        if(graphQLType instanceof GraphQLList)
-            wrappedType = ((GraphQLList)graphQLType).getWrappedType();
-        else if (graphQLType instanceof GraphQLNonNull)
-            wrappedType = ((GraphQLNonNull) graphQLType).getWrappedType();
-        //        else
-//            throw new NotImplementedException();
+        if(referenceIDs.size()>0){
+            GraphQLType wrappedType = null;
+            if (fieldType instanceof GraphQLList)
+                wrappedType = ((GraphQLList) fieldType).getWrappedType();
+            else if (fieldType instanceof GraphQLNonNull)
+                wrappedType = ((GraphQLNonNull) fieldType).getWrappedType();
+            else
+                LOGGER.warn("Skipping fieldType="+fieldType.getClass().getName());
 
-        String propertyType = null;
-        if (wrappedType instanceof GraphQLList)
-            propertyType = ((GraphQLList) wrappedType).getWrappedType().getName();
-        else if (wrappedType instanceof GraphQLObjectType)
-            propertyType = ((GraphQLObjectType) wrappedType).getName();
-        else if (wrappedType instanceof GraphQLNonNull)
-            propertyType = ((GraphQLNonNull) wrappedType).getWrappedType().getName();
-//        else
-//            throw new NotImplementedException();
+            String propertyType = null;
+            if (wrappedType instanceof GraphQLList)
+                propertyType = ((GraphQLList) wrappedType).getWrappedType().getName();
+            else if (wrappedType instanceof GraphQLObjectType)
+                propertyType = ((GraphQLObjectType) wrappedType).getName();
+            else if (wrappedType instanceof GraphQLNonNull)
+                propertyType = ((GraphQLNonNull) wrappedType).getWrappedType().getName();
+            else
+                LOGGER.warn("Skipping wrappedType="+wrappedType.getClass().getName());
 
-        if(propertyType!=null){
-            String propertyTypeURI = GenericMDRWiring.bindingRegistry.get(propertyType);
-             if (propertyTypeURI != null) {
-                DataLoader loader = GenericMDRWiring.dataLoaderRegistry.getDataLoader(propertyType);
-                Object ret = loader.loadMany(keys);
-                return ret;
+            if (propertyType != null){
+                String propertyTypeURI = GenericMDRWiring.findURI(propertyType);
+                if (propertyTypeURI != null) {
+                    DataLoader loader = GenericMDRWiring.dataLoaderRegistry.getDataLoader(propertyType);
+                    if (loader == null)
+                        throw new Exception("No data loader for " + propertyType);
+                    CompletableFuture future;
+                    if (fieldType instanceof GraphQLList)
+                        future = loader.loadMany(referenceIDs);
+                    else
+                        future = loader.load(referenceIDs.get(0));
+                    return future;
+                    //Object ret = future.get();
+                    //return ret;
+                }
             }
         }
 

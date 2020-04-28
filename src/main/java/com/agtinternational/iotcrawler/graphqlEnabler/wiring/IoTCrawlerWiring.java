@@ -79,26 +79,26 @@ public class IoTCrawlerWiring{
 
                     .scalar(ExtendedScalars.Object);
 
-            Map<String, String> bindingRegistry = new HashMap<>();
-            bindingRegistry.put("IoTStream", IoTStream.getTypeUri(cutURIs));
-            bindingRegistry.put("Sensor", Sensor.getTypeUri(cutURIs));
-            bindingRegistry.put("SensorInput", Sensor.getTypeUri(cutURIs));
+//            Map<String, String> bindingRegistry = new HashMap<>();
+//            bindingRegistry.put("IoTStream", IoTStream.getTypeUri(cutURIs));
+//            bindingRegistry.put("Sensor", Sensor.getTypeUri(cutURIs));
+//            bindingRegistry.put("SensorInput", Sensor.getTypeUri(cutURIs));
+//
+//            bindingRegistry.put("Platform", Platform.getTypeUri(cutURIs));
+//            bindingRegistry.put("PlatformInput", Platform.getTypeUri(cutURIs));
+//
+//            bindingRegistry.put("ObservableProperty", ObservableProperty.getTypeUri(cutURIs));
+//            bindingRegistry.put("ObservablePropertyInput", ObservableProperty.getTypeUri(cutURIs));
 
-            bindingRegistry.put("Platform", Platform.getTypeUri(cutURIs));
-            bindingRegistry.put("PlatformInput", Platform.getTypeUri(cutURIs));
+            //bindingRegistry.put("label", RDFS.label.toString());
 
-            bindingRegistry.put("ObservableProperty", ObservableProperty.getTypeUri(cutURIs));
-            bindingRegistry.put("ObservablePropertyInput", ObservableProperty.getTypeUri(cutURIs));
-
-            bindingRegistry.put("label", RDFS.label.toString());
-
-            bindingRegistry.put("isHostedBy", SOSA.isHostedBy);
-            bindingRegistry.put("hosts", SOSA.hosts);
+            //bindingRegistry.put("isHostedBy", SOSA.isHostedBy);
+            //bindingRegistry.put("hosts", SOSA.hosts);
             //bindingRegistry.put("madeBySensor", SOSA.madeBySensor);
-            bindingRegistry.put("IotStream.observes", IotStream.observes);
-            bindingRegistry.put("Sensor.observes", SOSA.observes);
-            bindingRegistry.put("isObservedBy", SOSA.isObservedBy);
-            bindingRegistry.put("generatedBy", IotStream.generatedBy);
+            //bindingRegistry.put("IotStream.observes", IotStream.observes);
+            //bindingRegistry.put("Sensor.observes", SOSA.observes);
+            //bindingRegistry.put("isObservedBy", SOSA.isObservedBy);
+            //bindingRegistry.put("generatedBy", IotStream.generatedBy);
 
             String schemaString = null;
             try {
@@ -112,9 +112,10 @@ public class IoTCrawlerWiring{
             GenericMDRWiring ret = new GenericMDRWiring();
             ret.setSchemaString(schemaString);
             ret.setRuntimeWiringBuilder(runtimeWiringBuilder);
-            ret.setBindingRegistry(bindingRegistry);
-            for(String concept: dataLoaderConcepts)
-                ret.registerDataloaderConcept(concept);
+            //ret.setBindingRegistry(bindingRegistry);
+//
+//            for(String concept: dataLoaderConcepts)
+//                ret.registerDataloaderConcept(concept);
 
             return ret;
         }

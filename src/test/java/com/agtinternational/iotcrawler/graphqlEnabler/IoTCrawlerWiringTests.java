@@ -25,7 +25,6 @@ import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
-import com.google.gson.JsonObject;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -52,8 +51,8 @@ import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
-public class IoTCrawlerProvierTests {
-	protected Logger LOGGER = LoggerFactory.getLogger(IoTCrawlerProvierTests.class);
+public class IoTCrawlerWiringTests {
+	protected Logger LOGGER = LoggerFactory.getLogger(IoTCrawlerWiringTests.class);
 
 
 	GraphQLProvider graphQLProvider;
@@ -255,12 +254,12 @@ public class IoTCrawlerProvierTests {
 	    Object results = ((Map)data).values().iterator().next();
 		Assert.notNull(results);
 
-		for(Object result: (List)results)
-			Assert.notNull(result);
-
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll(data);
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
+
+		for(Object result: (List)results)
+			Assert.notNull(result);
 
 	}
 
