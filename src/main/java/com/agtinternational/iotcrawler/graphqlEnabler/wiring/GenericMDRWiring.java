@@ -156,14 +156,13 @@ public class GenericMDRWiring implements Wiring {
             count++;
         }
 
-        //List augmented = augmentEntities(entitiesFromDB, concept);
-//        if(keys.size()!=enitities.size()) {
-//            int delta = keys.size() - enitities.size();
-//            for (int i = 0; i < delta; i++) {
-//                enitities.add(null);   //filling missing results
-//                LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
-//            }
-//        }
+        if(keys.size()!=enitities.size()) {
+            int delta = keys.size() - enitities.size();
+            for (int i = 0; i < delta; i++) {
+                enitities.add(null);   //filling missing results
+                LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
+            }
+        }
         return enitities;
     }
 
@@ -191,8 +190,10 @@ public class GenericMDRWiring implements Wiring {
 //                    propertyURI = ((GraphQLObjectType)wrappedType).getDescription();
 //                else throw new NotImplementedException(wrappedType.getClass().getCanonicalName()+" not implemented");
 
-                if(propertyURI==null)
-                    throw new Exception("URI not found for "+argName);
+                if(propertyURI==null) {
+                    LOGGER.warn("URI not found for " + argName+". Excluding from resolution");
+                    continue;
+                }
 
                 GraphQLArgument graphQLArgument = environment.getFieldTypeInfo().getFieldDefinition().getArgument(argName);
                 GraphQLType graphQLInputType = environment.getFieldTypeInfo().getFieldDefinition().getType();
@@ -312,11 +313,6 @@ public class GenericMDRWiring implements Wiring {
             String URI = environment.getArgument("URI");
             Object source = environment.getSource();
 
-//            if(source!=null){
-//                String fieldName = environment.getField().getName();
-//                if(fieldName.equals("observes"))
-//                    ((Sensor)source).setObserves();
-//            }
 
                 if(id!=null) {
                  if (resolvingInput){
@@ -338,6 +334,8 @@ public class GenericMDRWiring implements Wiring {
 
             Map<String,Object> query = new HashMap<>();
 
+            int offset = 0;
+            int limit = 0;
             if(environment.getArguments().size()>0){
                 Map<String, Object> arguments = environment.getArguments();
                 try {
@@ -345,15 +343,12 @@ public class GenericMDRWiring implements Wiring {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                if(environment.getArgument("offset")!=null)
+                    offset = environment.getArgument("offset");
+                if(environment.getArgument("limit")!=null)
+                    limit = environment.getArgument("limit");
             }
-            int offset = (query.containsKey("offset")?(int)query.get("offset"):0);
-            int limit = (query.containsKey("limit")?(int)query.get("limit"):0);
 
-            if(query.containsKey("offset"))
-                query.remove("offset");
-
-            if(query.containsKey("limit"))
-                query.remove("limit");
 
             List entities = serveQuery(query, concept, offset, limit);
             List<String> ids = new ArrayList<>();

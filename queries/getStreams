@@ -1,6 +1,6 @@
 {
    #streams
-   streams(
+   streams(limit:0,offset:0,
             generatedBy: {
                        id: "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2"
                        #isHostedBy: {
