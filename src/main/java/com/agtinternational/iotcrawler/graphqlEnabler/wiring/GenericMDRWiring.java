@@ -209,16 +209,6 @@ public class GenericMDRWiring implements Wiring {
 
                 if(targetType instanceof GraphQLObjectType) {
 
-                    LOGGER.info("Initializing {} fetcher to resolve {}", targetType.getName(), typeName+"."+argName);
-                    DataFetcher dataFetcher = genericDataFetcher(targetType.getName(), true);
-
-                    //GraphQLOutputType graphQLType = environment.getFieldType();
-                    GraphQLList graphQLType = new GraphQLList(targetType);
-
-
-                    //GraphQLOutputType targetObjectType = environment.getFieldTypeInfo().getFieldDefinition().getType();
-
-                    //GraphQLFieldDefinition fieldDefinition = targetObjectType.getFieldDefinition(targetType.getName());
                     List<Field> fields = new ArrayList<>();
                     List<ObjectField> objectFields = ((ObjectValue) argument.getValue()).getObjectFields();
                     Field field1 = null;
@@ -228,9 +218,18 @@ public class GenericMDRWiring implements Wiring {
                         field1 = new Field(objectField.getName(), arguments1);
                         fields.add(field1);
                     }
-    //                GraphQLFieldDefinition fieldDefinition = ((GraphQLObjectType)environment.getParentType())
-    //                        .getFieldDefinition(inputTypeName.toLowerCase()+"s");
 
+                    //treating id as scalar(not requesting the reference object)
+                    if(fields.size()==1 && fields.get(0).getName().equals("id")){
+                        Object value = (argValue instanceof Map? ((Map)argValue).get("id"): argValue);
+                        query.put(propertyURI, (value instanceof String? "\""+value.toString()+"\"": value));
+                        continue;
+                    }
+
+                    LOGGER.info("Initializing {} fetcher to resolve {}", targetType.getName(), typeName+"."+argName);
+                    DataFetcher dataFetcher = genericDataFetcher(targetType.getName(), true);
+
+                    GraphQLList graphQLType = new GraphQLList(targetType);
                     GraphQLObjectType graphQLObjectType = (GraphQLObjectType) environment.getGraphQLSchema().getType(inputTypeName);
                     GraphQLFieldDefinition fieldDefinition = graphQLObjectType.getFieldDefinition(field1.getName());
 
@@ -320,8 +319,10 @@ public class GenericMDRWiring implements Wiring {
                      List<String> ids = new ArrayList<>();
                      entities.stream().forEach(entity0 -> {
                          EntityLD entity = ((EntityLD) entity0);
-                         loader.prime(entity.getId(), entity);
-                         ids.add(entity.getId());
+                         if(entity!=null) {
+                             loader.prime(entity.getId(), entity);
+                             ids.add(entity.getId());
+                         }
                      });
                      //return loader.loadMany(ids);
                  }
