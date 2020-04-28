@@ -45,9 +45,9 @@ input ObservablePropertyInput {
 type IoTStream {
     id: String!
     """http://purl.org/iot/ontology/iot-stream#generatedBy"""
-    generatedBy: Sensor!
+    generatedBy: Sensor
     """http://purl.org/iot/ontology/iot-stream#observes"""
-    observes: ObservableProperty!
+    observes: ObservableProperty
 }
 
 """http://www.w3.org/ns/sosa/Sensor"""
@@ -56,11 +56,11 @@ type Sensor {
     """http://www.w3.org/2000/01/rdf-schema#label"""
     label: String
     """http://www.w3.org/ns/sosa/isHostedBy"""
-    isHostedBy: Platform!
+    isHostedBy: Platform
     """http://www.w3.org/ns/sosa/madeObservation"""
-    madeObservation: StreamObservation!
+    madeObservation: StreamObservation
     """http://www.w3.org/ns/sosa/observes"""
-    observes: ObservableProperty!
+    observes: ObservableProperty
     location: String
 }
 
@@ -68,9 +68,9 @@ type Sensor {
 type Platform {
     id: String!
     """http://www.w3.org/2000/01/rdf-schema#label"""
-    label: String!
+    label: String
     """http://www.w3.org/ns/sosa/hosts"""
-    hosts: [Sensor]!
+    hosts: [Sensor]
     location: String
 }
 
@@ -78,15 +78,15 @@ type Platform {
 type ObservableProperty {
     id: String!
     """http://www.w3.org/2000/01/rdf-schema#label"""
-    label: String!
+    label: String
     """http://www.w3.org/ns/sosa/isObservedBy"""
-    isObservedBy: [Sensor]!
+    isObservedBy: [Sensor]
 }
 
 """http://purl.org/iot/ontology/iot-stream#StreamObservation"""
 type StreamObservation {
     id: String!
-    observes: ObservableProperty!
+    observes: ObservableProperty
 }
 
 

@@ -143,7 +143,9 @@ public class CustomPropertyDataFetcherHelper {
                 wrappedType = ((GraphQLList) fieldType).getWrappedType();
             else if (fieldType instanceof GraphQLNonNull)
                 wrappedType = ((GraphQLNonNull) fieldType).getWrappedType();
-            else
+            else  if (fieldType instanceof GraphQLObjectType)
+                wrappedType = fieldType;
+            else if(fieldType!=null)
                 LOGGER.warn("Skipping fieldType="+fieldType.getClass().getName());
 
             String propertyType = null;
@@ -153,7 +155,7 @@ public class CustomPropertyDataFetcherHelper {
                 propertyType = ((GraphQLObjectType) wrappedType).getName();
             else if (wrappedType instanceof GraphQLNonNull)
                 propertyType = ((GraphQLNonNull) wrappedType).getWrappedType().getName();
-            else
+            else if(wrappedType!=null)
                 LOGGER.warn("Skipping wrappedType="+wrappedType.getClass().getName());
 
             if (propertyType != null){
