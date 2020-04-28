@@ -163,7 +163,7 @@ public class CustomPropertyDataFetcherHelper {
                     if (loader == null)
                         throw new Exception("No data loader for " + propertyType);
                     CompletableFuture future;
-                    if (fieldType instanceof GraphQLList)
+                    if (wrappedType instanceof GraphQLList)
                         future = loader.loadMany(referenceIDs);
                     else
                         future = loader.load(referenceIDs.get(0));
