@@ -46,59 +46,27 @@ public class IoTCrawlerWiring{
             Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
             String[] dataLoaderConcepts = new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty" };
 
-            RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
-                    .type(newTypeWiring("Query")
-                            .dataFetcher("stream",  GenericMDRWiring.genericDataFetcher("IoTStream", false))
-                            .dataFetcher("streams", GenericMDRWiring.genericDataFetcher("IoTStream", false))
-                            .dataFetcher("sensor", GenericMDRWiring.genericDataFetcher("Sensor", false))
-                            .dataFetcher("sensors", GenericMDRWiring.genericDataFetcher("Sensor", false))
-                            .dataFetcher("platforms", GenericMDRWiring.genericDataFetcher("Platform", false))
-                            .dataFetcher("platform", GenericMDRWiring.genericDataFetcher("Platform", false))
-                            .dataFetcher("observableProperty", GenericMDRWiring.genericDataFetcher("ObservableProperty", false))
-                            .dataFetcher("observableProperties", GenericMDRWiring.genericDataFetcher("ObservableProperty", false))
-                            .dataFetcher("entities", GenericMDRWiring.genericDataFetcher("EntityLD", false))
-
-                            .dataFetcher("homeState", GenericMDRWiring.genericDataFetcher("HomeState", false))
-                            .dataFetcher("homeStates", GenericMDRWiring.genericDataFetcher("HomeState", false))
-                            .dataFetcher("activity", GenericMDRWiring.genericDataFetcher("Activity", false))
-                            .dataFetcher("activities", GenericMDRWiring.genericDataFetcher("Activity", false))
-
-                    )
-
-//                .type(newTypeWiring("IoTStream")
-//                        .dataFetcher("madeBySensor", genericDataFetcher(Sensor.class))
-//                )
+//            RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
+//                    .type(newTypeWiring("Query")
+//                            .dataFetcher("stream",  GenericMDRWiring.genericDataFetcher("IoTStream", false))
+//                            .dataFetcher("streams", GenericMDRWiring.genericDataFetcher("IoTStream", false))
+//                            .dataFetcher("sensor", GenericMDRWiring.genericDataFetcher("Sensor", false))
+//                            .dataFetcher("sensors", GenericMDRWiring.genericDataFetcher("Sensor", false))
+//                            .dataFetcher("platforms", GenericMDRWiring.genericDataFetcher("Platform", false))
+//                            .dataFetcher("platform", GenericMDRWiring.genericDataFetcher("Platform", false))
+//                            .dataFetcher("observableProperty", GenericMDRWiring.genericDataFetcher("ObservableProperty", false))
+//                            .dataFetcher("observableProperties", GenericMDRWiring.genericDataFetcher("ObservableProperty", false))
+//                            .dataFetcher("entities", GenericMDRWiring.genericDataFetcher("EntityLD", false))
 //
-//                .type(newTypeWiring("Sensor")
-//                        .dataFetcher("isHostedBy", genericDataFetcher(Platform.class))
-//                        .dataFetcher("observes", genericDataFetcher(ObservableProperty.class))
-//                )
-
-                    //.type(newTypeWiring("IoTStream").typeResolver(typesResolver))
-                    //.type(newTypeWiring("Sensor").typeResolver(typesResolver))
-
-                    .scalar(ExtendedScalars.Object);
-
-//            Map<String, String> bindingRegistry = new HashMap<>();
-//            bindingRegistry.put("IoTStream", IoTStream.getTypeUri(cutURIs));
-//            bindingRegistry.put("Sensor", Sensor.getTypeUri(cutURIs));
-//            bindingRegistry.put("SensorInput", Sensor.getTypeUri(cutURIs));
+//                            .dataFetcher("homeState", GenericMDRWiring.genericDataFetcher("HomeState", false))
+//                            .dataFetcher("homeStates", GenericMDRWiring.genericDataFetcher("HomeState", false))
+//                            .dataFetcher("activity", GenericMDRWiring.genericDataFetcher("Activity", false))
+//                            .dataFetcher("activities", GenericMDRWiring.genericDataFetcher("Activity", false))
 //
-//            bindingRegistry.put("Platform", Platform.getTypeUri(cutURIs));
-//            bindingRegistry.put("PlatformInput", Platform.getTypeUri(cutURIs));
-//
-//            bindingRegistry.put("ObservableProperty", ObservableProperty.getTypeUri(cutURIs));
-//            bindingRegistry.put("ObservablePropertyInput", ObservableProperty.getTypeUri(cutURIs));
+//                    )
+//                    .scalar(ExtendedScalars.Object);
 
-            //bindingRegistry.put("label", RDFS.label.toString());
 
-            //bindingRegistry.put("isHostedBy", SOSA.isHostedBy);
-            //bindingRegistry.put("hosts", SOSA.hosts);
-            //bindingRegistry.put("madeBySensor", SOSA.madeBySensor);
-            //bindingRegistry.put("IotStream.observes", IotStream.observes);
-            //bindingRegistry.put("Sensor.observes", SOSA.observes);
-            //bindingRegistry.put("isObservedBy", SOSA.isObservedBy);
-            //bindingRegistry.put("generatedBy", IotStream.generatedBy);
 
             String schemaString = null;
             try {
@@ -111,7 +79,7 @@ public class IoTCrawlerWiring{
             }
             GenericMDRWiring ret = new GenericMDRWiring();
             ret.setSchemaString(schemaString);
-            ret.setRuntimeWiringBuilder(runtimeWiringBuilder);
+            //ret.setRuntimeWiringBuilder(runtimeWiringBuilder);
             //ret.setBindingRegistry(bindingRegistry);
 //
 //            for(String concept: dataLoaderConcepts)

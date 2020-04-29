@@ -27,15 +27,11 @@ import graphql.execution.instrumentation.ChainedInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentation;
 import graphql.execution.instrumentation.tracing.TracingInstrumentation;
-import graphql.language.FieldDefinition;
-import graphql.language.InputObjectTypeDefinition;
-import graphql.language.ObjectTypeDefinition;
-import graphql.language.TypeDefinition;
+import graphql.language.*;
+import graphql.scalars.ExtendedScalars;
 import graphql.schema.GraphQLSchema;
-import graphql.schema.idl.RuntimeWiring;
-import graphql.schema.idl.SchemaGenerator;
-import graphql.schema.idl.SchemaParser;
-import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.schema.idl.*;
+import org.apache.commons.lang3.NotImplementedException;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,10 +80,13 @@ public class GraphQLProvider {
 
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(wiring.getSchemaString());
 
+        TypeRuntimeWiring.Builder wiringBuilder = newTypeWiring("Query");
+
         Map<String, String> bindingRegistry = new LinkedHashMap<>();
         for (TypeDefinition typeDefinition: typeRegistry.types().values()){
 
             if(typeDefinition instanceof ObjectTypeDefinition){
+
 
                 wiring.registerDataloaderConcept(typeDefinition.getName());
                 //dataLoaderRegistry.register(typeDefinition.getName(), new DataLoader(new GenericMDRWiring.GenericLoader(typeDefinition.getName())));
@@ -98,36 +97,35 @@ public class GraphQLProvider {
 
                 for(FieldDefinition fieldDefinition : ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions()){
                     String name2=fieldDefinition.getName();
+
+                    if(typeDefinition.getName().toLowerCase().equals("query")) {
+                        Object type = fieldDefinition.getType();
+                        String typeName = null;
+                        if(type instanceof ListType)
+                            type = ((ListType)type).getType();
+
+                        if(type instanceof TypeName)
+                            typeName = ((TypeName)type).getName();
+                        else
+                            throw new NotImplementedException(type.getClass().getCanonicalName());
+                        wiringBuilder.dataFetcher(name2, GenericMDRWiring.genericDataFetcher(typeName, false));
+                    }
+
                     if(fieldDefinition.getDescription()!=null)
                         bindingRegistry.put(typeDefinition.getName()+"."+name2,fieldDefinition.getDescription().getContent());
                 }
             }
         }
+        RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring().type(wiringBuilder).scalar(ExtendedScalars.Object);
+
+        wiring.setRuntimeWiringBuilder(runtimeWiringBuilder);
         wiring.setBindingRegistry(bindingRegistry);
         dataLoaderRegistry = wiring.getDataLoaderRegistry();
+
         context = new ContextProvider(dataLoaderRegistry).newContext();
 
-        SchemaParser schemaParser = new SchemaParser();
+
         SchemaGenerator schemaGenerator = new SchemaGenerator();
-
-        //File schemaFile1 = new File("src/resources/iotcrawler.graphqls");
-        //File schemaFile2 = new File("src/resources/smartHome.graphqls");
-        //File schemaFile3 = loadSchema("starWarsSchemaPart3.graphqls");
-
-        //TypeDefinitionRegistry typeRegistry = new TypeDefinitionRegistry();
-
-// each registry is merged into the main registry
-        //typeRegistry.merge(schemaParser.parse(schemaFile1));
-        //typeRegistry.merge(schemaParser.parse(schemaFile2));
-        //typeRegistry.add(schemaParser.parse(schemaFile2))
-        //typeRegistry.merge(schemaParser.parse(schemaFile3));
-
-
-        //SchemaParser.newParser().scalars(myUuidScalar)
-
-        //typeRegistry.add(type);
-        //RuntimeWiring.newRuntimeWiring().scalar(ExtendedScalars.DateTime);
-
         RuntimeWiring runtimeWiring = wiring.build();
 
 
