@@ -9,11 +9,11 @@ if [ "$1" = "prepare-core" ]; then
 	export CURR=$(pwd) && cd /tmp/orchestrator && git checkout -b 8bb2a51f8e77fc41c09b6b5d0a7c89eb3c9b1cd9 && sh make.sh install && cd ${CURR}
 fi
 
-if [ "$1" = "package" ]; then
+if [ "$1" = "install" ]; then
 	echo "Search enabler: Checking core dependency"
 	(if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
 	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
-	mvn clean package -DskipTests=true
+	mvn clean install -DskipTests=true
 fi
 
 if [ "$1" = "build-image" ]; then
