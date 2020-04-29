@@ -4,7 +4,7 @@
 
 if [ "$1" = "prepare-core" ]; then
 	echo "Search-enabler: Preparing core"
-	rm -rf /tmp/orchestrator && git clone https://orchestrator:weRm4nhQcjTyacFuPbLk@gitlab.iotcrawler.net/orchestrator/orchestrator.git /tmp/orchestrator
+	rm -rf /tmp/orchestrator && git clone https://github.com/IoTCrawler/Orchestrator.git /tmp/orchestrator
 	sed -i 's/<phase>process-sources<\/phase>/<phase>none<\/phase>/' /tmp/orchestrator/IoTCrawler/pom.xml
 	export CURR=$(pwd) && cd /tmp/orchestrator && git checkout -b 8bb2a51f8e77fc41c09b6b5d0a7c89eb3c9b1cd9 && sh make.sh install && cd ${CURR}
 fi

@@ -2,7 +2,7 @@
 
 /*-
  * #%L
- * graphql-enabler
+ * search-enabler
  * %%
  * Copyright (C) 2019 - 2020 AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)
  * %%
@@ -19,6 +19,7 @@
  * limitations under the License.
  * #L%
  */
+
 //
 //import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 //import org.junit.Test;

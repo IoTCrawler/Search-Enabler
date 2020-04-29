@@ -20,6 +20,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
  * #L%
  */
 
+
 import com.agtinternational.iotcrawler.core.models.IoTStream;
 import com.agtinternational.iotcrawler.core.models.ObservableProperty;
 import com.agtinternational.iotcrawler.core.models.Platform;
@@ -43,31 +44,6 @@ public class IoTCrawlerWiring{
 
     public static class Builder{
         public GenericMDRWiring build(){
-            Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
-            String[] dataLoaderConcepts = new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty" };
-
-//            RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
-//                    .type(newTypeWiring("Query")
-//                            .dataFetcher("stream",  GenericMDRWiring.genericDataFetcher("IoTStream", false))
-//                            .dataFetcher("streams", GenericMDRWiring.genericDataFetcher("IoTStream", false))
-//                            .dataFetcher("sensor", GenericMDRWiring.genericDataFetcher("Sensor", false))
-//                            .dataFetcher("sensors", GenericMDRWiring.genericDataFetcher("Sensor", false))
-//                            .dataFetcher("platforms", GenericMDRWiring.genericDataFetcher("Platform", false))
-//                            .dataFetcher("platform", GenericMDRWiring.genericDataFetcher("Platform", false))
-//                            .dataFetcher("observableProperty", GenericMDRWiring.genericDataFetcher("ObservableProperty", false))
-//                            .dataFetcher("observableProperties", GenericMDRWiring.genericDataFetcher("ObservableProperty", false))
-//                            .dataFetcher("entities", GenericMDRWiring.genericDataFetcher("EntityLD", false))
-//
-//                            .dataFetcher("homeState", GenericMDRWiring.genericDataFetcher("HomeState", false))
-//                            .dataFetcher("homeStates", GenericMDRWiring.genericDataFetcher("HomeState", false))
-//                            .dataFetcher("activity", GenericMDRWiring.genericDataFetcher("Activity", false))
-//                            .dataFetcher("activities", GenericMDRWiring.genericDataFetcher("Activity", false))
-//
-//                    )
-//                    .scalar(ExtendedScalars.Object);
-
-
-
             String schemaString = null;
             try {
                 URL url = Resources.getResource("iotcrawler.graphqls");
@@ -79,12 +55,6 @@ public class IoTCrawlerWiring{
             }
             GenericMDRWiring ret = new GenericMDRWiring();
             ret.setSchemaString(schemaString);
-            //ret.setRuntimeWiringBuilder(runtimeWiringBuilder);
-            //ret.setBindingRegistry(bindingRegistry);
-//
-//            for(String concept: dataLoaderConcepts)
-//                ret.registerDataloaderConcept(concept);
-
             return ret;
         }
     }

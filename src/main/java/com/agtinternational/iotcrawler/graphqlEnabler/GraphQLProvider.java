@@ -2,9 +2,9 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 /*-
  * #%L
- * graphql-enabler
+ * search-enabler
  * %%
- * Copyright (C) 2019 AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)
+ * Copyright (C) 2019 - 2020 AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * limitations under the License.
  * #L%
  */
+
 
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
@@ -76,10 +77,14 @@ public class GraphQLProvider {
 
 
     @PostConstruct
-    public void init() throws IOException {
-
-        TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(wiring.getSchemaString());
-
+    public void init() throws Exception {
+        TypeDefinitionRegistry typeRegistry;
+        try {
+            typeRegistry = new SchemaParser().parse(wiring.getSchemaString());
+        }
+        catch (Exception e){
+            throw new Exception("Failed to parse schema", e);
+        }
         TypeRuntimeWiring.Builder wiringBuilder = newTypeWiring("Query");
 
         Map<String, String> bindingRegistry = new LinkedHashMap<>();

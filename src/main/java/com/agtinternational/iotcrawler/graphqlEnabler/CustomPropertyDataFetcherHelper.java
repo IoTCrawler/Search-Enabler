@@ -2,7 +2,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 /*-
  * #%L
- * graphql-enabler
+ * search-enabler
  * %%
  * Copyright (C) 2019 - 2020 AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)
  * %%
@@ -19,6 +19,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * limitations under the License.
  * #L%
  */
+
 
 import com.agtinternational.iotcrawler.core.Utils;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
