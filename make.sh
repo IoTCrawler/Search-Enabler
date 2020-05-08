@@ -13,6 +13,7 @@ if [ "$1" = "install" ]; then
 	echo "Search enabler: Checking core dependency"
 	(if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
 	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
+	echo "Search enabler: Cleaning and packaging"
 	mvn clean install -DskipTests=true
 fi
 
@@ -20,6 +21,7 @@ if [ "$1" = "build-image" ]; then
    echo "Search enabler: Checking core dependency"
    (if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
    (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ] ; then sh make.sh prepare-core; fi);
+	 echo "Search enabler: Cleaning and packaging"
 	 mvn clean package -DskipTests=true jib:dockerBuild -U
 fi
 

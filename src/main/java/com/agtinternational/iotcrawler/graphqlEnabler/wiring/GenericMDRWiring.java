@@ -27,6 +27,7 @@ import com.agtinternational.iotcrawler.core.models.*;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.*;
 
+import com.agtinternational.iotcrawler.graphqlEnabler.Context;
 import graphql.execution.ExecutionTypeInfo;
 import graphql.language.*;
 import graphql.schema.*;
@@ -46,7 +47,6 @@ import java.util.stream.Collectors;
 
 import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
-import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 
 @Component
