@@ -1,6 +1,6 @@
 {
    #streams
-   streams(limit:0,offset:0,
+   streams(limit:1,offset:0,
             generatedBy: {
                        #id: "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2"
                        #id: "urn:ngsi-ld:FibaroWallPlug_FIBARO_System_FGWPE-F_Wall_Plug_Gen5"
@@ -19,11 +19,11 @@
                   generatedBy {
                        id,
                        #label,
-                       #isHostedBy{
-                       #              id,
+                       isHostedBy{
+                                     id,
                        #              label,
-                                      #location
-                       #             },
+                       #               #location
+                                    },
                        observes{
                       #    id,
                           label

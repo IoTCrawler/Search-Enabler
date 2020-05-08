@@ -32,29 +32,39 @@ import com.google.common.io.Resources;
 import graphql.scalars.ExtendedScalars;
 import graphql.schema.idl.RuntimeWiring;
 import org.apache.jena.vocabulary.RDFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 public class IoTCrawlerWiring{
+    static Logger LOGGER = LoggerFactory.getLogger(IoTCrawlerWiring.class);
 
     public static class Builder{
         public GenericMDRWiring build(){
-            String schemaString = null;
-            try {
-                URL url = Resources.getResource("iotcrawler.graphqls");
-                schemaString = Resources.toString(url, Charsets.UTF_8);
 
-            }
-            catch (Exception e){
-                e.printStackTrace();
+            String[] urls = new String[]{ "iotcrawler.graphqls", "smartHome.graphqls"  };
+            Map<String, String> schemasStrings = new HashMap<>();
+            for(String urlStr: urls) {
+                String schemaString = null;
+                try {
+                    URL url = Resources.getResource(urlStr);
+                    schemaString = Resources.toString(url, Charsets.UTF_8);
+                    schemasStrings.put(urlStr, schemaString);
+
+                } catch (Exception e) {
+                    LOGGER.error("Failed to read schema {}: {}", urlStr, e.getLocalizedMessage());
+                }
             }
             GenericMDRWiring ret = new GenericMDRWiring();
-            ret.setSchemaString(schemaString);
+            ret.setSchemaString(schemasStrings);
             return ret;
         }
     }

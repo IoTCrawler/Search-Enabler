@@ -55,23 +55,16 @@ public class GenericMDRWiring implements Wiring {
     static Logger LOGGER = LoggerFactory.getLogger(GenericMDRWiring.class);
     public static final DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
     static IoTCrawlerClient iotCrawlerClient;
-    private String schemaString;
+    private Map<String, String> schemas;
     private RuntimeWiring.Builder runtimeWiringBuilder;
 
     public static Map<String, String> bindingRegistry = new HashMap<>();
 
     public GenericMDRWiring(){
-//        this.schemaString = schemaString;
-//        this.runtimeWiringBuilder = runtimeWiringBuilder;
-//        GenericMDRWiring.bindingRegistry = bindingRegistry;
-//
-//        for(String concept: dataLoaderConcepts)
-//            dataLoaderRegistry.register(concept, new DataLoader(new GenericMDRWiring.GenericLoader(concept)));
-
     }
 
-    public void setSchemaString(String schemaString) {
-        this.schemaString = schemaString;
+    public void setSchemaString(Map<String, String> schemas) {
+        this.schemas = schemas;
     }
 
     public void setRuntimeWiringBuilder(RuntimeWiring.Builder runtimeWiringBuilder) {
@@ -107,8 +100,16 @@ public class GenericMDRWiring implements Wiring {
 
     private static List<Object> getEntitiesViaHTTP(Map<String, Object> query, int offset, int limit, String concept){
         List ret = new ArrayList();
-        String typeURI = bindingRegistry.get(concept);
-        if(query.size()==0)
+        String typeURI=null;
+        try {
+            typeURI = findURI(concept);
+        }
+        catch (Exception e){
+            LOGGER.error("Failed to find URI for {}: {}", concept, e.getLocalizedMessage());
+            return ret;
+        }
+
+        if(query==null || query.size()==0)
             try {
                 List res = getIoTCrawlerClient().getEntities(typeURI, null, null, offset, limit);
                 return res;
@@ -144,7 +145,14 @@ public class GenericMDRWiring implements Wiring {
 
     private static List<Object> getEntitiesViaHTTP(List<String> keys, String concept){
         List enitities = new ArrayList();
-        String typeURI = bindingRegistry.get(concept);
+        String typeURI=null;
+        try {
+            typeURI = findURI(concept);
+        }
+        catch (Exception e){
+            LOGGER.error("Failed to find URI for {}: {}", concept, e.getLocalizedMessage());
+            return enitities;
+        }
         int count=0;
         for(String key : keys) {
             try {
@@ -173,7 +181,7 @@ public class GenericMDRWiring implements Wiring {
         return entities;
     }
 
-    private static Map resolveInput(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> arguments) throws Exception {
+    private static Map resolveInput(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> arguments){
 
         //for(String argName: arguments.keySet()) {
         for(Field field: environment.getFields())
@@ -186,7 +194,13 @@ public class GenericMDRWiring implements Wiring {
                 GraphQLType wrappedType = ((GraphQLModifiedType)environment.getFieldType()).getWrappedType();
                 String typeName = wrappedType.getName();
 
-                String propertyURI = findURI(typeName, argName);
+                String propertyURI = null;
+                try {
+                    propertyURI = findURI(typeName, argName);
+                }
+                catch (Exception e){
+                    //ignoring exception
+                }
 //                if(wrappedType instanceof GraphQLObjectType)
 //                    propertyURI = ((GraphQLObjectType)wrappedType).getDescription();
 //                else throw new NotImplementedException(wrappedType.getClass().getCanonicalName()+" not implemented");
@@ -410,29 +424,38 @@ public class GenericMDRWiring implements Wiring {
     };
 
 
-    @Override
-    public String getSchemaString(){
-        return schemaString;
-    }
 
-    public static String findURI(String type){
+
+    public static String findURI(String type) throws Exception {
         if(bindingRegistry.containsKey(type))
             return bindingRegistry.get(type);
-        LOGGER.warn("Type {} not found in binding registry", type);
+        throw new Exception("Type "+type+" not found in binding registry");
+
+    }
+
+    public static String findURI(String type, String property) throws Exception {
+        if(bindingRegistry.containsKey(type+"."+property))
+            return bindingRegistry.get(type+"."+property);
+        throw new Exception("Type "+type+" not found in binding registry");
+    }
+
+
+    @Override
+    public String getSchemaString() {
         return null;
     }
 
-    public static String findURI(String type, String property){
-        if(bindingRegistry.containsKey(type+"."+property))
-            return bindingRegistry.get(type+"."+property);
-        LOGGER.warn("Type {} not found in binding registry", type+"."+property);
-        return null;
+    //@Override
+    public Map<String, String> getSchemas(){
+        return schemas;
     }
 
     @Override
     public RuntimeWiring build() {
         CustomWiringFactory customWiringFactory = new CustomWiringFactory();
         runtimeWiringBuilder.wiringFactory(customWiringFactory);
+        //runtimeWiringBuilder.directive("class", new DirectivesWiring());
+        //runtimeWiringBuilder.directive("attribute", new DirectivesWiring());
         RuntimeWiring runtimeWiring = runtimeWiringBuilder.build();
         customWiringFactory.setRuntimeWiring(runtimeWiring);
 

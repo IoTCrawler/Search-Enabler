@@ -9,11 +9,14 @@
    #         })
    {
            id,
-           label,
+           #label,
            #location
            hosts{
                 id
-                label
+                #label
+                observes{
+                    id
+                }
            }
    }
 }

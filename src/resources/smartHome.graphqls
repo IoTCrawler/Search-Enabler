@@ -1,0 +1,44 @@
+schema {
+    query: Query
+}
+
+directive @resource(class : String!, subClassOf : String) on OBJECT
+directive @attribute(uri : String!) on FIELD_DEFINITION
+
+type Query {
+    household(id: String): Household
+    households(activity: ActivityInput, activeAppliance: ApplianceInput): [Household]
+    activity(id: String): [Activity]
+    activities(homeId: String, location: String): [Activity]
+    activeAppliances(homeId: String, location: String): [Appliance]
+}
+
+type Household @resource(class : "http://agtinternational/smartHomeApp#Household"){
+     id: String
+     activeAppliances: Appliance @attribute(uri : "http://agtinternational/smartHomeApp#activeAppliances")
+     activities: [Activity]  @attribute(uri : "http://agtinternational/smartHomeApp#activities")
+}
+
+
+type Appliance @resource(class : "http://agtinternational/smartHomeApp#Appliance"){
+     id: String
+     label: String! @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
+     locatedAt: String! @attribute(uri : "http://agtinternational/smartHomeApp#locatedAt")
+     currentConsumption: Int! @attribute(uri : "http://agtinternational/smartHomeApp#currentConsumption")
+}
+
+type Activity @resource(class : "http://agtinternational/smartHomeApp#Activity"){
+      label: String @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
+      relatedTo: Appliance  @attribute(uri : "http://agtinternational/smartHomeApp#relatedTo")
+}
+
+
+input ActivityInput {
+    id: String
+    location: String
+}
+
+input ApplianceInput {
+    id: String
+    location: String
+}
