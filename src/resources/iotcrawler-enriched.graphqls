@@ -5,9 +5,6 @@ schema {
 
 }
 
-directive @resource(class : String!, subClassOf : String) on OBJECT
-directive @attribute(uri : String!) on FIELD_DEFINITION
-
 type Query {
     temperatureSensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [TemperatureSensor]
 }
