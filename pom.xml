@@ -242,6 +242,12 @@
         <directory>src/resources</directory>
       </resource>
     </resources>
+    <testResources>
+      <testResource>
+        <directory>src/resources</directory>
+      </testResource>
+    </testResources>
+
     <finalName>${git.branch}:${git.commit.id}</finalName>
 
     <plugins>

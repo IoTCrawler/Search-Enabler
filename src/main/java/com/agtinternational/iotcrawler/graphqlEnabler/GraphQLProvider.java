@@ -21,6 +21,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
+import com.agtinternational.iotcrawler.core.ontologies.IotStream;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
 import graphql.GraphQL;
@@ -46,6 +47,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.*;
 
+import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.ALT_TYPE;
 import static graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentationOptions.newOptions;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 import static java.util.Arrays.asList;
@@ -181,58 +183,71 @@ public class GraphQLProvider {
 
         TypeRuntimeWiring.Builder wiringBuilder = newTypeWiring("Query");
         Map<String, String> bindingRegistry = new LinkedHashMap<>();
+        Map<String, List<String>> topDownInheritance = new LinkedHashMap<>();
+        Map<String, List<String>> bottomUpHierarchy = new LinkedHashMap<>();
 
-            for (TypeDefinition typeDefinition0 : typeRegistry.types().values()){
+        bindingRegistry.put("altType", ALT_TYPE);
+        for (TypeDefinition typeDefinition0 : typeRegistry.types().values()){
 
-                if (typeDefinition0 instanceof ObjectTypeDefinition) {
+            if (typeDefinition0 instanceof ObjectTypeDefinition) {
 
-                    ObjectTypeDefinition typeDefinition = ((ObjectTypeDefinition) typeDefinition0);
-                    wiring.registerDataloaderConcept(typeDefinition.getName());
-                    //dataLoaderRegistry.register(typeDefinition.getName(), new DataLoader(new GenericMDRWiring.GenericLoader(typeDefinition.getName())));
+                ObjectTypeDefinition typeDefinition = ((ObjectTypeDefinition) typeDefinition0);
+                String typeName = typeDefinition.getName();
+                wiring.registerDataloaderConcept(typeName);
+                //dataLoaderRegistry.register(typeDefinition.getName(), new DataLoader(new GenericMDRWiring.GenericLoader(typeDefinition.getName())));
 
-                    ObjectTypeDefinition parentTypeDefinition = null;
-                    for (Directive directive : ((ObjectTypeDefinition) typeDefinition).getDirectives()) {
-                        if (directive.getArgument("class") != null && directive.getArgument("class").getValue() != null)
-                            bindingRegistry.put(typeDefinition.getName(), ((StringValue) directive.getArgument("class").getValue()).getValue());
+                ObjectTypeDefinition parentTypeDefinition = null;
+                for (Directive directive : ((ObjectTypeDefinition) typeDefinition).getDirectives()) {
+                    if (directive.getArgument("class") != null && directive.getArgument("class").getValue() != null)
+                        bindingRegistry.put(typeName, ((StringValue) directive.getArgument("class").getValue()).getValue());
 
+
+                    if (directive.getArgument("altType") != null){
+                        String parentTypeName = ((StringValue) directive.getArgument("altType").getValue()).getValue();
+                        parentTypeDefinition = (ObjectTypeDefinition) typeRegistry.getType(parentTypeName).get();
+                        List<String> childClasses = (topDownInheritance.containsKey(parentTypeName)? topDownInheritance.get(parentTypeName): new ArrayList<>());
+                        childClasses.add(typeName);
+                        topDownInheritance.put(parentTypeName, childClasses);
+
+                        List<String> parentClasses = (bottomUpHierarchy.containsKey(typeName)? topDownInheritance.get(typeName): new ArrayList<>());
+                        parentClasses.add(parentTypeName);
+                        bottomUpHierarchy.put(typeName, parentClasses);
                         //Filling subclass with parent type properties
-                        if (directive.getArgument("subClassOf") != null) {
-                            String parentTypeName = ((StringValue) directive.getArgument("subClassOf").getValue()).getValue();
-                            parentTypeDefinition = (ObjectTypeDefinition) typeRegistry.getType(parentTypeName).get();
-                            if (parentTypeDefinition != null)
-                                typeDefinition.getFieldDefinitions().addAll(parentTypeDefinition.getFieldDefinitions());
-                        }
+                        if (parentTypeDefinition != null)
+                            typeDefinition.getFieldDefinitions().addAll(parentTypeDefinition.getFieldDefinitions());
+                    }
+                }
+
+                for (FieldDefinition fieldDefinition : ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions()) {
+                    String name2 = fieldDefinition.getName();
+
+                    //extending parent type with child properties
+//                        if (parentTypeDefinition != null && !parentTypeDefinition.getFieldDefinitions().contains(fieldDefinition))
+//                            parentTypeDefinition.getFieldDefinitions().add(fieldDefinition);
+
+                    if (typeName.toLowerCase().equals("query")) {
+                        Object type = fieldDefinition.getType();
+                        String fieldTypeName = null;
+                        if (type instanceof ListType)
+                            type = ((ListType) type).getType();
+
+                        if (type instanceof TypeName)
+                            fieldTypeName = ((TypeName) type).getName();
+                        else
+                            throw new NotImplementedException(type.getClass().getCanonicalName());
+                        wiringBuilder.dataFetcher(name2, GenericMDRWiring.genericDataFetcher(fieldTypeName, false, new ArrayList<>()));
                     }
 
-                    for (FieldDefinition fieldDefinition : ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions()) {
-                        String name2 = fieldDefinition.getName();
-
-                        if (parentTypeDefinition != null && !parentTypeDefinition.getFieldDefinitions().contains(fieldDefinition))
-                            parentTypeDefinition.getFieldDefinitions().add(fieldDefinition);
-
-                        if (typeDefinition.getName().toLowerCase().equals("query")) {
-                            Object type = fieldDefinition.getType();
-                            String typeName = null;
-                            if (type instanceof ListType)
-                                type = ((ListType) type).getType();
-
-                            if (type instanceof TypeName)
-                                typeName = ((TypeName) type).getName();
-                            else
-                                throw new NotImplementedException(type.getClass().getCanonicalName());
-                            wiringBuilder.dataFetcher(name2, GenericMDRWiring.genericDataFetcher(typeName, false));
-                        }
-
-                        for (Directive directive : fieldDefinition.getDirectives())
-                            if (directive.getArgument("uri") != null && directive.getArgument("uri").getValue() != null)
-                                bindingRegistry.put(typeDefinition.getName() + "." + name2, ((StringValue) directive.getArgument("uri").getValue()).getValue());
-                    }
+                    for (Directive directive : fieldDefinition.getDirectives())
+                        if (directive.getArgument("uri") != null && directive.getArgument("uri").getValue() != null)
+                            bindingRegistry.put(typeName + "." + name2, ((StringValue) directive.getArgument("uri").getValue()).getValue());
+                }
 
 //                    SchemaDefinition schemaDefinition = typeDefinition.transform();
 //                    typeRegistry.add(schemaDefinition);
-                }
-
             }
+
+        }
 
 
 
@@ -240,6 +255,8 @@ public class GraphQLProvider {
 
         wiring.setRuntimeWiringBuilder(runtimeWiringBuilder);
         wiring.setBindingRegistry(bindingRegistry);
+        wiring.setInheritanceRegistry(topDownInheritance);
+        wiring.setBottomUpHierarchy(bottomUpHierarchy);
         dataLoaderRegistry = wiring.getDataLoaderRegistry();
 
         context = new ContextProvider(dataLoaderRegistry).newContext();

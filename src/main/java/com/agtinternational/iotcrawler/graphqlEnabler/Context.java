@@ -20,6 +20,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * #L%
  */
 
+import org.apache.jena.vocabulary.RDFS;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 public class Context {

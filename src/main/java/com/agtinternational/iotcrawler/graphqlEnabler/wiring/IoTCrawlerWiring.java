@@ -50,7 +50,11 @@ public class IoTCrawlerWiring{
     public static class Builder{
         public GenericMDRWiring build(){
 
-            String[] urls = new String[]{ "iotcrawler.graphqls", "smartHome.graphqls"  };
+            String[] urls = new String[]{
+                    "iotcrawler.graphqls",
+                    "iotcrawler-enriched.graphqls",
+                    //"smartHome.graphqls"
+            };
             Map<String, String> schemasStrings = new HashMap<>();
             for(String urlStr: urls) {
                 String schemaString = null;

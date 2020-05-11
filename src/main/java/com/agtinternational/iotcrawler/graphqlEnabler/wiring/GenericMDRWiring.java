@@ -32,6 +32,7 @@ import graphql.execution.ExecutionTypeInfo;
 import graphql.language.*;
 import graphql.schema.*;
 import graphql.schema.idl.*;
+import org.apache.jena.vocabulary.RDFS;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.slf4j.Logger;
@@ -43,10 +44,12 @@ import org.apache.commons.lang.NotImplementedException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
+import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.ALT_TYPE;
 
 
 @Component
@@ -58,7 +61,9 @@ public class GenericMDRWiring implements Wiring {
     private Map<String, String> schemas;
     private RuntimeWiring.Builder runtimeWiringBuilder;
 
-    public static Map<String, String> bindingRegistry = new HashMap<>();
+    private static Map<String, String> bindingRegistry = new HashMap<>();
+    private static Map<String, List<String>> topDownInheritance = new HashMap<>();
+    private static Map<String, List<String>> bottomUpHierarchy = new HashMap<>();
 
     public GenericMDRWiring(){
     }
@@ -98,52 +103,45 @@ public class GenericMDRWiring implements Wiring {
         return dataLoaderRegistry;
     }
 
-    private static List<Object> getEntitiesViaHTTP(Map<String, Object> query, int offset, int limit, String concept){
+    private static List<Object> serveQuery(String typeURI, Map<String, Object> query, int offset, int limit){
         List ret = new ArrayList();
-        String typeURI=null;
-        try {
-            typeURI = findURI(concept);
-        }
-        catch (Exception e){
-            LOGGER.error("Failed to find URI for {}: {}", concept, e.getLocalizedMessage());
-            return ret;
-        }
 
-        if(query==null || query.size()==0)
+        if (query == null || query.size() == 0)
             try {
                 List res = getIoTCrawlerClient().getEntities(typeURI, null, null, offset, limit);
                 return res;
             } catch (Exception e) {
-                LOGGER.error("Failed to get {} entities", concept);
+                LOGGER.error("Failed to get entities of type {}", typeURI);
                 e.printStackTrace();
                 return null;
             }
+        else
+            for (String key : query.keySet()) {
+                Object value = query.get(key);
+                if (!(value instanceof Iterable))
+                    value = Arrays.asList(new Object[]{value});
 
-        for(String key: query.keySet()){
-            Object value = query.get(key);
-            if(!(value instanceof Iterable))
-                value = Arrays.asList(new Object[]{ value });
-
-            Iterator iterator = ((Iterable) value).iterator();
-            while (iterator.hasNext()) {
-                Map query2 = new HashMap();
-                query2.put(key, iterator.next());
-                try {
-                    List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
-                    ret.addAll(res);
-                } catch (Exception e) {
-                    LOGGER.error("Failed to get {} entities", concept);
-                    e.printStackTrace();
+                Iterator iterator = ((Iterable) value).iterator();
+                while (iterator.hasNext()) {
+                    Map query2 = new HashMap();
+                    query2.put(key, iterator.next());
+                    try {
+                        List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
+                        ret.addAll(res);
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to get entities of type {}", typeURI);
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
+
 
         //List augmented = augmentEntities(ret, concept);
         //return augmented;
         return ret;
     }
 
-    private static List<Object> getEntitiesViaHTTP(List<String> keys, String concept){
+    private static List<Object> getConceptsByIds(List<String> keys, String concept){
         List enitities = new ArrayList();
         String typeURI=null;
         try {
@@ -176,13 +174,17 @@ public class GenericMDRWiring implements Wiring {
     }
 
 
-    private static List serveQuery(Map<String, Object> query, String concept, int offset, int limit){
-        List entities = getEntitiesViaHTTP(query, offset,limit, concept);
-        return entities;
-    }
+    private static Map resolveFilters(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> arguments){
 
-    private static Map resolveInput(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> arguments){
-
+        if(environment.getArgument("altType")!=null) {
+            String altTypeName = environment.getArgument("altType");
+            try {
+                String typeURI = findURI(altTypeName);
+                query.put(ALT_TYPE, "\"" + typeURI + "\"");
+            } catch (Exception e) {
+                LOGGER.warn("Failed to find URI for {}", altTypeName);
+            }
+        }
         //for(String argName: arguments.keySet()) {
         for(Field field: environment.getFields())
             for(Argument argument: field.getArguments()){
@@ -241,12 +243,15 @@ public class GenericMDRWiring implements Wiring {
                         continue;
                     }
 
-                    LOGGER.info("Initializing {} fetcher to resolve {}", targetType.getName(), typeName+"."+argName);
-                    DataFetcher dataFetcher = genericDataFetcher(targetType.getName(), true);
+
 
                     GraphQLList graphQLType = new GraphQLList(targetType);
                     GraphQLObjectType graphQLObjectType = (GraphQLObjectType) environment.getGraphQLSchema().getType(inputTypeName);
                     GraphQLFieldDefinition fieldDefinition = graphQLObjectType.getFieldDefinition(field1.getName());
+
+                    LOGGER.debug("Preparing {} fetcher to resolve {}", targetType.getName(), typeName+"."+argName);
+
+                    DataFetcher dataFetcher = genericDataFetcher(targetType.getName(), true, new ArrayList<>());
 
                     ExecutionTypeInfo fieldTypeInfo = ExecutionTypeInfo.newTypeInfo()
                             .field(field1)
@@ -277,7 +282,7 @@ public class GenericMDRWiring implements Wiring {
                             environment.getExecutionContext()
                     );
 
-                    LOGGER.info("Executing {} fetcher", targetType.getName());
+                    LOGGER.debug("Executing {} fetcher with args {}", targetType.getName(), argValue.toString());
                     CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
                     try {
                         Object entities = future.get();
@@ -291,10 +296,10 @@ public class GenericMDRWiring implements Wiring {
                             if (size == 0)
                                 return null;
 
-                            LOGGER.info("{} fetcher executed. {} entities returned", targetType.getName(), size);
+                            LOGGER.debug("{} fetcher executed. {} entities returned", targetType.getName(), size);
                             query.put(propertyURI, entityIds);
                         } else {
-                            LOGGER.info("{} fetcher executed. One entity returned", targetType.getName());
+                            LOGGER.debug("{} fetcher executed. One entity returned", targetType.getName());
                             query.put(propertyURI, ((EntityLD) entities).getId());
                         }
                         //                                query.remove(key);
@@ -310,13 +315,18 @@ public class GenericMDRWiring implements Wiring {
 
         }
 
+
+
         return query;
     }
 
+
+
     //public static DataFetcher genericDataFetcher(Class targetClass, boolean resolvingInput) {
-    public static DataFetcher genericDataFetcher(String concept, boolean resolvingInput) {
+    public static DataFetcher genericDataFetcher(String concept, boolean resolvingInput, List<String> resolvedConcepts) {
 
         return environment -> {
+            Boolean topLevelQuery = (resolvedConcepts.size()==0?true: false);
             Context ctx = environment.getContext();
             DataLoader<String, Object> loader = ctx.getLoader(concept);
             if(loader==null) {
@@ -330,7 +340,7 @@ public class GenericMDRWiring implements Wiring {
 
                 if(id!=null) {
                  if (resolvingInput){
-                     List<Object> entities = getEntitiesViaHTTP(Arrays.asList(id), concept);
+                     List<Object> entities = getConceptsByIds(Arrays.asList(id), concept);
                      List<String> ids = new ArrayList<>();
                      entities.stream().forEach(entity0 -> {
                          EntityLD entity = ((EntityLD) entity0);
@@ -352,21 +362,103 @@ public class GenericMDRWiring implements Wiring {
 
             int offset = 0;
             int limit = 0;
-            if(environment.getArguments().size()>0){
-                Map<String, Object> arguments = environment.getArguments();
+
+            Map<String, Object> argumentsToResolve = environment.getArguments();
+            if(argumentsToResolve.containsKey("offset")){
+                offset = environment.getArgument("offset");
+                argumentsToResolve.remove("offset");
+            }
+            if(environment.getArgument("limit")!=null) {
+                limit = environment.getArgument("limit");
+                argumentsToResolve.remove("limit");
+            }
+
+            if(argumentsToResolve.size()>0){
                 try {
-                    query = resolveInput(query, environment, arguments);
+                    query = resolveFilters(query, environment, argumentsToResolve);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                if(environment.getArgument("offset")!=null)
-                    offset = environment.getArgument("offset");
-                if(environment.getArgument("limit")!=null)
-                    limit = environment.getArgument("limit");
+
+            }
+
+            //environment.getGraphQLSchema().getType(concept)
+
+            String typeURI = null;
+            try {
+                typeURI = findURI(concept);
+            } catch (Exception e) {
+                LOGGER.error("Failed to find URI for {}: {}", concept, e.getLocalizedMessage());
             }
 
 
-            List entities = serveQuery(query, concept, offset, limit);
+            List entities = new ArrayList(serveQuery(typeURI, query, offset, limit));
+
+            resolvedConcepts.add(concept);
+            //Include all entities from child (TemperatureSenror) and to parent (SSNSystem) classes
+            Map<String, Map<String, Object>> adjacentConcepts = new LinkedHashMap<>();
+
+            //include all parentClasses with filtering by alt type(e.g. TemperatureSensor into Sensor)
+            if(bottomUpHierarchy.containsKey(concept)) {
+                Map extraQuery = new HashMap();
+                //extraQuery.put("altType", "\""+typeURI+"\"");
+                extraQuery.put("altType", concept);
+                for (String parentClass : bottomUpHierarchy.get(concept))
+                    if(!resolvedConcepts.contains(parentClass))
+                        adjacentConcepts.put(parentClass, extraQuery);
+            }
+            //include all entities of a subclasses without any filtering (e.g. Sensor into SsnSystem)
+            if(topDownInheritance.containsKey(concept))
+                for (String childClass : topDownInheritance.get(concept))
+                    if(!resolvedConcepts.contains(childClass))
+                        adjacentConcepts.put(childClass, null);
+
+            for(String adjacentConcept: adjacentConcepts.keySet()){
+                Map adjacentTypeArguments = new HashMap(query);
+                //removing already resolved
+                if(adjacentTypeArguments.containsKey(ALT_TYPE))
+                    adjacentTypeArguments.remove(ALT_TYPE);
+
+                if(adjacentConcepts.get(adjacentConcept)!=null)
+                    adjacentTypeArguments.putAll(adjacentConcepts.get(adjacentConcept));
+
+
+                //List<EntityLD> adjacentEntities = serveQuery(typeURI, extendedQuery, offset, limit);
+
+                DataFetcher dataFetcher = genericDataFetcher(adjacentConcept,false, resolvedConcepts);
+                DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
+                        environment.getSource(),
+                        (Map) adjacentTypeArguments,
+                        environment.getContext(),
+                        environment.getRoot(),
+
+                        //fieldDefinition,
+                        environment.getFieldDefinition(),
+                        //fields,
+                        environment.getFields(),
+                        environment.getFieldType(),
+                        //graphQLType,
+
+                        environment.getParentType(),
+                        environment.getGraphQLSchema(),
+                        environment.getFragmentsByName(),
+                        environment.getExecutionId(),
+                        environment.getSelectionSet(),
+                        environment.getFieldTypeInfo(),
+                        //fieldTypeInfo,
+                        environment.getExecutionContext()
+                );
+                CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
+                try {
+                    LOGGER.debug("Executing adjacent {} fetcher with args {}", adjacentConcept, adjacentTypeArguments.toString());
+                    List<EntityLD> adjacentEntities = (List<EntityLD>)future.get();
+                    entities.addAll(adjacentEntities);
+                }
+                catch (Exception e){
+                    LOGGER.error("Failed to execute adjacent fetcher for {}: {}", adjacentConcept, e.getLocalizedMessage());
+                }
+            }
+
             List<String> ids = new ArrayList<>();
             entities.stream().forEach(entity0->{
                 EntityLD entity = ((EntityLD)entity0);
@@ -374,40 +466,13 @@ public class GenericMDRWiring implements Wiring {
                 ids.add(entity.getId());
             });
 
-//            if(resolvingInput)
-//                return entities;
+            if(topLevelQuery)
+                resolvedConcepts.clear();
 
             return loader.loadMany(ids);
 
         };
     }
-
-
-//    public static DataFetcher entitiesDataFetcher() {
-//        return environment -> {
-//            String type = environment.getArgument("type");
-//            String query = environment.getArgument("query");
-//            int offset = environment.getArgument("offset");
-//            int limit = environment.getArgument("limit");
-//            Object ret=null;
-//
-//            //JsonObject jsonObject = (JsonObject) jsonParser.parse(query);
-//
-//            try {
-//                ret = getIoTCrawlerClient().getEntities(type, query, null, offset, limit);
-//            } catch (Exception e) {
-//                LOGGER.error("Failed to get entities");
-//                e.printStackTrace();
-//            }
-////            Context ctx = environment.getContext();
-////            DataLoader<String, Object> loader = ctx.getLoader("sensors");
-////            CompletableFuture ret = loader.load(id);
-//            return ret;
-//        };
-//    }
-
-
-
 
 
     TypeResolver typesResolver = environment -> {
@@ -462,6 +527,14 @@ public class GenericMDRWiring implements Wiring {
         return runtimeWiring;
     }
 
+    public void setInheritanceRegistry(Map<String, List<String>> topDownInheritance) {
+        this.topDownInheritance = topDownInheritance;
+    }
+
+    public void setBottomUpHierarchy(Map<String, List<String>> bottomUpHierarchy) {
+        this.bottomUpHierarchy = bottomUpHierarchy;
+    }
+
     public static class GenericLoader implements org.dataloader.BatchLoader {
 
         String concept;
@@ -473,7 +546,7 @@ public class GenericMDRWiring implements Wiring {
         public CompletionStage<List> load(List list) {
             String test = "123";
             return CompletableFuture.supplyAsync(() ->
-                    getEntitiesViaHTTP(list, concept));
+                    getConceptsByIds(list, concept));
         }
     }
 

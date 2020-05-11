@@ -264,7 +264,6 @@ public class IoTCrawlerWiringTests {
 
 	}
 
-
 	@Test
 	public void getSensorByIdTest() throws Exception {
 		String query = getQuery("queries/getSensorById");
@@ -292,6 +291,63 @@ public class IoTCrawlerWiringTests {
 	@Test
 	public void getSensorsTest() throws Exception {
 		String query = getQuery("queries/getSensors");
+
+		Map<String, Object> variables = new HashMap<>();
+		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
+
+		ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+				.query(query)
+				.variables(variables)
+				.operationName(null)
+				.context(context)
+				.build();
+
+		LOGGER.info("Executing query");
+		ExecutionResult executionResult = graphql.execute(executionInput);
+		Map data = executionResult.getData();
+		Object results = ((Map)data).values().iterator().next();
+		Assert.notNull(results);
+
+//		for(Object result: (List)results)
+//			Assert.notNull(result);
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.putAll(data);
+		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
+	}
+
+	@Test
+	public void getTemperatureSensorsTest() throws Exception {
+		String query = getQuery("queries/getTemperatureSensors");
+
+		Map<String, Object> variables = new HashMap<>();
+		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
+
+		ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+				.query(query)
+				.variables(variables)
+				.operationName(null)
+				.context(context)
+				.build();
+
+		LOGGER.info("Executing query");
+		ExecutionResult executionResult = graphql.execute(executionInput);
+		Map data = executionResult.getData();
+		Object results = ((Map)data).values().iterator().next();
+		Assert.notNull(results);
+
+//		for(Object result: (List)results)
+//			Assert.notNull(result);
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.putAll(data);
+		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
+	}
+
+
+	@Test
+	public void getSystemsTest() throws Exception {
+		String query = getQuery("queries/getSystems");
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");

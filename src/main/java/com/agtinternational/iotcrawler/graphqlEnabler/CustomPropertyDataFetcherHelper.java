@@ -104,35 +104,37 @@ public class CustomPropertyDataFetcherHelper {
 //                            Object ret = getPropertyViaGetterMethod(object0, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
 //                            value = ret;
 //                        } catch (NoSuchMethodException ignored) {
-                            String propertyNameURI = GenericMDRWiring.bindingRegistry.get(Utils.getFragment(((EntityLD) object0).getType()) + "." + propertyName);
-                            if (propertyNameURI == null)
-                                //Getting parent type Might be problematic!
-                                propertyNameURI = GenericMDRWiring.findURI(environment.getParentType().getName(), propertyName);
+                            //String objectType = Utils.getFragment(((EntityLD) object0).getType());
+                        String objectType = environment.getParentType().getName();
+                        String propertyNameURI = GenericMDRWiring.findURI(objectType, propertyName);
+                        //if (propertyNameURI == null)
+                            //Getting parent type Might be problematic!
+                            //propertyNameURI = GenericMDRWiring.findURI(environment.getParentType().getName(), propertyName);
 
-                            if (propertyNameURI != null) {
-                                Attribute attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                                //processing only relations
+                        if (propertyNameURI != null) {
+                            Attribute attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                            //processing only relations
 
-                                    if (propertyNameURI.startsWith("http://") && attribute == null)
-                                        attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                                    if (attribute == null)
-                                        LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
-                                        //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
-                                    else {
-                                        value = attribute.getValue();
+                                if (propertyNameURI.startsWith("http://") && attribute == null)
+                                    attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                                if (attribute == null)
+                                    LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                                    //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                                else {
+                                    value = attribute.getValue();
 //                            if(graphQLType instanceof GraphQLList && !(value instanceof List))
 //                                value = Arrays.asList(new Object[]{ value });
-                                        if(attribute.getType().get().equals("Relationship")){
-                                            if (value instanceof List)
-                                                referenceIDs.addAll((List) value);
-                                            else
-                                                referenceIDs.add(value);
-                                        }
+                                    if(attribute.getType().get().equals("Relationship")){
+                                        if (value instanceof List)
+                                            referenceIDs.addAll((List) value);
+                                        else
+                                            referenceIDs.add(value);
                                     }
+                                }
 
-                            } else
-                                LOGGER.warn("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
-                        //}
+                        } else
+                            LOGGER.warn("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
+                    //}
                     } else
                         throw new NotImplementedException();
             }

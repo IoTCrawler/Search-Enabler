@@ -1,0 +1,36 @@
+{
+  "id": "urn:ngsi-ld:TempSensor",
+  "type": "http://www.w3.org/ns/sosa/Sensor",
+  "location": {
+      "type": "GeoProperty",
+      "value": {
+        "type": "Point",
+        "coordinates": [
+          52.28267,
+          8.023755
+        ]
+      }
+    },
+  "@context": {
+    "agt-smarthome": "http://www.agtinternational.com/ontologies/SmartHome#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  },
+  "http://search-enabler.iotcrawler/altType": {
+    "type": "Property",
+    "value": "http://agt/TemperatureSensor"
+  },
+  "http://www.w3.org/ns/sosa/observes": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:ColorTemperature"
+  },
+  "http://www.w3.org/ns/sosa/isHostedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Platform_homee_00055110D732"
+  },
+  "http://www.w3.org/2000/01/rdf-schema#label": {
+    "type": "Property",
+    "value": "Temperature Sensor"
+  }
+}

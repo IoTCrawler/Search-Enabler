@@ -1,0 +1,17 @@
+scalar Object
+
+schema {
+    query: Query
+
+}
+
+directive @resource(class : String!, subClassOf : String) on OBJECT
+directive @attribute(uri : String!) on FIELD_DEFINITION
+
+type Query {
+    temperatureSensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [TemperatureSensor]
+}
+
+type TemperatureSensor @resource(class : "http://agt/TemperatureSensor", altType: "Sensor"){
+    altType: String! @attribute(uri : "http://search-enabler.iotcrawler/altType")
+}
