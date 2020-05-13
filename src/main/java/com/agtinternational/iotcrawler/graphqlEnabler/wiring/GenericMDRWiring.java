@@ -24,6 +24,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
 import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.core.interfaces.IoTCrawlerClient;
 import com.agtinternational.iotcrawler.core.models.*;
+import com.agtinternational.iotcrawler.core.ontologies.IotStream;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.*;
 
@@ -49,7 +50,6 @@ import java.util.stream.Collectors;
 
 import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
-import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.ALT_TYPE;
 
 
 @Component
@@ -64,9 +64,14 @@ public class GenericMDRWiring implements Wiring {
     private static Map<String, String> bindingRegistry = new HashMap<>();
     private static Map<String, List<String>> topDownInheritance = new HashMap<>();
     private static Map<String, List<String>> bottomUpHierarchy = new HashMap<>();
+    private static List<String> coreTypes = Arrays.asList(new String[]{ "IoTStream", "Sensor", "ObservableProperty" });
 
     public GenericMDRWiring(){
     }
+
+//    public void setCoreTypes(List<String> coreTypes) {
+//        this.coreTypes = coreTypes;
+//    }
 
     public void setSchemaString(Map<String, String> schemas) {
         this.schemas = schemas;
@@ -158,7 +163,7 @@ public class GenericMDRWiring implements Wiring {
                 enitities.addAll(entities);
             } catch (Exception e) {
                 LOGGER.error("Failed to get entity {}", key, concept);
-                //e.printStackTrace();
+                e.printStackTrace();
             }
             count++;
         }
@@ -174,25 +179,25 @@ public class GenericMDRWiring implements Wiring {
     }
 
 
-    private static Map resolveFilters(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> arguments){
+    private static Map resolveFilters(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve){
 
-        if(environment.getArgument("altType")!=null) {
-            String altTypeName = environment.getArgument("altType");
+        if(environment.getArgument("subClassOf")!=null) {
+            String parentTypeName = environment.getArgument("subClassOf");
             try {
-                String typeURI = findURI(altTypeName);
-                query.put(ALT_TYPE, "\"" + typeURI + "\"");
+                String parentTypeURI = findURI(parentTypeName);
+                query.put(IotStream.alternativeType, "\"" + parentTypeURI + "\"");
             } catch (Exception e) {
-                LOGGER.warn("Failed to find URI for {}", altTypeName);
+                LOGGER.warn("Failed to find URI for {}", parentTypeName);
             }
         }
         //for(String argName: arguments.keySet()) {
         for(Field field: environment.getFields())
-            for(Argument argument: field.getArguments()){
+            for(Argument argument: field.getArguments())
+            if(argumentsToResolve.containsKey(argument.getName())){
 
                 String argName = argument.getName();
 
-
-                Object argValue = arguments.get(argName);
+                Object argValue = argumentsToResolve.get(argName);
                 GraphQLType wrappedType = ((GraphQLModifiedType)environment.getFieldType()).getWrappedType();
                 String typeName = wrappedType.getName();
 
@@ -327,6 +332,9 @@ public class GenericMDRWiring implements Wiring {
 
         return environment -> {
             Boolean topLevelQuery = (resolvedConcepts.size()==0?true: false);
+            if(topLevelQuery) {
+                String test1 = "123";
+            }
             Context ctx = environment.getContext();
             DataLoader<String, Object> loader = ctx.getLoader(concept);
             if(loader==null) {
@@ -383,6 +391,8 @@ public class GenericMDRWiring implements Wiring {
             }
 
             //environment.getGraphQLSchema().getType(concept)
+            //String currentType = concept;
+
 
             String typeURI = null;
             try {
@@ -391,33 +401,76 @@ public class GenericMDRWiring implements Wiring {
                 LOGGER.error("Failed to find URI for {}: {}", concept, e.getLocalizedMessage());
             }
 
-
             List entities = new ArrayList(serveQuery(typeURI, query, offset, limit));
-
             resolvedConcepts.add(concept);
-            //Include all entities from child (TemperatureSenror) and to parent (SSNSystem) classes
-            Map<String, Map<String, Object>> adjacentConcepts = new LinkedHashMap<>();
 
-            //include all parentClasses with filtering by alt type(e.g. TemperatureSensor into Sensor)
-            if(bottomUpHierarchy.containsKey(concept)) {
+            entities.addAll(getAdjacentEntities(concept, query, resolvedConcepts, environment));
+
+            List<String> ids = new ArrayList<>();
+            entities.stream().forEach(entity0->{
+                EntityLD entity = ((EntityLD)entity0);
+                loader.prime(entity.getId(), entity);
+                ids.add(entity.getId());
+            });
+
+            if(topLevelQuery)
+                resolvedConcepts.clear();
+
+            return loader.loadMany(ids);
+
+        };
+    }
+
+    static List<EntityLD> getAdjacentEntities(String concept, Map<String,Object> query, List<String> resolvedConcepts, DataFetchingEnvironment environment){
+        List<EntityLD> ret = new ArrayList<>();
+
+        Map<String, Map<String, Object>> adjacentConcepts = new LinkedHashMap<>();
+
+
+        Map<String, Map<String, Object>> typesToTry  = new LinkedHashMap<>();
+        typesToTry.put(concept, null);
+        List<String> triedTypes = new ArrayList<>();
+        while (typesToTry.keySet().size()>0){
+            String typeToTry = typesToTry.keySet().iterator().next();
+            //if(coreTypes.contains(typeToTry))
+            if(!resolvedConcepts.contains(typeToTry))
+                adjacentConcepts.put(typeToTry, typesToTry.get(typeToTry));
+
+            triedTypes.add(typeToTry);
+
+            if(topDownInheritance.containsKey(typeToTry))  //adding sensors/actuators/samples
+                topDownInheritance.get(typeToTry).forEach(t2->{
+                    if(!triedTypes.contains(t2) && !resolvedConcepts.contains(t2))
+                        typesToTry.put(t2, null);
+                });
+
+
+            if(bottomUpHierarchy.containsKey(typeToTry)) { //adding more generic type
                 Map extraQuery = new HashMap();
                 //extraQuery.put("altType", "\""+typeURI+"\"");
-                extraQuery.put("altType", concept);
-                for (String parentClass : bottomUpHierarchy.get(concept))
-                    if(!resolvedConcepts.contains(parentClass))
-                        adjacentConcepts.put(parentClass, extraQuery);
-            }
-            //include all entities of a subclasses without any filtering (e.g. Sensor into SsnSystem)
-            if(topDownInheritance.containsKey(concept))
-                for (String childClass : topDownInheritance.get(concept))
-                    if(!resolvedConcepts.contains(childClass))
-                        adjacentConcepts.put(childClass, null);
+                //extraQuery.put("subClassOf", concept);
+                if(typesToTry.get(typeToTry)!=null){ //traversing filter to uppler layer
+                    extraQuery.putAll(typesToTry.get(typeToTry));
+                }else
+                    extraQuery.put("subClassOf", typeToTry);
+                bottomUpHierarchy.get(typeToTry).forEach(t2->{
+                    if(!triedTypes.contains(t2) && !resolvedConcepts.contains(t2))
+                        typesToTry.put(t2, extraQuery);
+                });
 
-            for(String adjacentConcept: adjacentConcepts.keySet()){
-                Map adjacentTypeArguments = new HashMap(query);
+            }
+
+            //triedTypes.add(typeToTry);
+            typesToTry.remove(typeToTry);
+        }
+
+
+        for(String adjacentConcept: adjacentConcepts.keySet()){
+            //if(!resolvedConcepts.contains(adjacentConcept)){
+                Map adjacentTypeArguments = (query!=null?new HashMap(query): new HashMap());
                 //removing already resolved
-                if(adjacentTypeArguments.containsKey(ALT_TYPE))
-                    adjacentTypeArguments.remove(ALT_TYPE);
+                if(adjacentTypeArguments.containsKey(IotStream.alternativeType))
+                    adjacentTypeArguments.remove(IotStream.alternativeType);
 
                 if(adjacentConcepts.get(adjacentConcept)!=null)
                     adjacentTypeArguments.putAll(adjacentConcepts.get(adjacentConcept));
@@ -449,31 +502,18 @@ public class GenericMDRWiring implements Wiring {
                         environment.getExecutionContext()
                 );
                 CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
+                resolvedConcepts.add(adjacentConcept);
                 try {
                     LOGGER.debug("Executing adjacent {} fetcher with args {}", adjacentConcept, adjacentTypeArguments.toString());
-                    List<EntityLD> adjacentEntities = (List<EntityLD>)future.get();
-                    entities.addAll(adjacentEntities);
+                    ret = (List<EntityLD>)future.get();
                 }
                 catch (Exception e){
                     LOGGER.error("Failed to execute adjacent fetcher for {}: {}", adjacentConcept, e.getLocalizedMessage());
                 }
+                resolvedConcepts.add(adjacentConcept);
             }
-
-            List<String> ids = new ArrayList<>();
-            entities.stream().forEach(entity0->{
-                EntityLD entity = ((EntityLD)entity0);
-                loader.prime(entity.getId(), entity);
-                ids.add(entity.getId());
-            });
-
-            if(topLevelQuery)
-                resolvedConcepts.clear();
-
-            return loader.loadMany(ids);
-
-        };
+        return ret;
     }
-
 
     TypeResolver typesResolver = environment -> {
         Object object = environment.getObject();
@@ -501,7 +541,7 @@ public class GenericMDRWiring implements Wiring {
     public static String findURI(String type, String property) throws Exception {
         if(bindingRegistry.containsKey(type+"."+property))
             return bindingRegistry.get(type+"."+property);
-        throw new Exception("Type "+type+" not found in binding registry");
+        throw new Exception("Type "+type+"."+property+" not found in binding registry");
     }
 
 

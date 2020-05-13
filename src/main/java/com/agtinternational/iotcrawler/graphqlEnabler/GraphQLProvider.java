@@ -47,7 +47,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.*;
 
-import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.ALT_TYPE;
 import static graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentationOptions.newOptions;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 import static java.util.Arrays.asList;
@@ -62,6 +61,13 @@ public class GraphQLProvider {
     private DataLoaderRegistry dataLoaderRegistry;
     private GenericMDRWiring wiring;
     private Context context;
+
+    TypeDefinitionRegistry typeRegistry;
+    Map<String, String> bindingRegistry = new LinkedHashMap<>();
+    Map<String, List<String>> topDownInheritance = new LinkedHashMap<>();
+    Map<String, List<String>> bottomUpHierarchy = new LinkedHashMap<>();
+    List<String> coreTypes = new ArrayList<>();
+    TypeRuntimeWiring.Builder wiringBuilder;
 
     //@Autowired
 //    public GraphQLProvider(){
@@ -80,113 +86,154 @@ public class GraphQLProvider {
     }
 
 
-
     @PostConstruct
     public void init() throws Exception {
 
+        bindingRegistry.put("altType", IotStream.alternativeType);
+        typeRegistry = mergeSchemas(wiring.getSchemas());
+        wiringBuilder = newTypeWiring("Query");
+
+        processDirectives();
+
+        RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring().type(wiringBuilder).scalar(ExtendedScalars.Object);
+
+        wiring.setRuntimeWiringBuilder(runtimeWiringBuilder);
+        wiring.setBindingRegistry(bindingRegistry);
+        wiring.setInheritanceRegistry(topDownInheritance);
+        wiring.setBottomUpHierarchy(bottomUpHierarchy);
+        //wiring.setCoreTypes(coreTypes);
+        dataLoaderRegistry = wiring.getDataLoaderRegistry();
+
+        context = new ContextProvider(dataLoaderRegistry).newContext();
+
+        SchemaGenerator schemaGenerator = new SchemaGenerator();
+        RuntimeWiring runtimeWiring = wiring.build();
+        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
+
+
+        DataLoaderDispatcherInstrumentation dlInstrumentation =
+                //new DataLoaderDispatcherInstrumentation(newOptions().includeStatistics(true));
+                new DataLoaderDispatcherInstrumentation(dataLoaderRegistry, newOptions().includeStatistics(true));
+
+        Instrumentation instrumentation = new ChainedInstrumentation(
+                asList(new TracingInstrumentation(), dlInstrumentation)
+        );
+
+
+        this.graphQL = GraphQL.newGraphQL(graphQLSchema)
+                              .instrumentation(instrumentation)
+                              //.queryExecutionStrategy()
+                              .build();
+    }
+
+    private TypeDefinitionRegistry mergeSchemas(Map<String, String> schemas){
         TypeDefinitionRegistry typeRegistry = new TypeDefinitionRegistry();
-        for (String key: wiring.getSchemas().keySet()) {
-            String schemaStr = wiring.getSchemas().get(key);
+        for (String schemaName:schemas.keySet()) {
+            String schemaStr = schemas.get(schemaName);
             TypeDefinitionRegistry schemaTypeRegistry;
             try {
                 schemaTypeRegistry = new SchemaParser().parse(schemaStr);
             } catch (Exception e) {
-                LOGGER.error("Failed to parse schema {}: {}", key, e.getLocalizedMessage());
+                LOGGER.error("Failed to parse schema {}: {}", schemaName, e.getLocalizedMessage());
                 continue;
             }
 
 //            try {
 //                schemaTypeRegistry.remove(schemaTypeRegistry.schemaDefinition().get());
-                //typeRegistry.merge(schemaTypeRegistry);
+            //typeRegistry.merge(schemaTypeRegistry);
 //            } catch (Exception e) {
 //                LOGGER.error("Failed to merge schema {} into common one: {}", key, e.getLocalizedMessage());
 //                continue;
 //            }
-            //Merging everything
 
-                schemaTypeRegistry.types().values().forEach(newEntry -> {
-                    try {
-                        String name = newEntry.getName();
-                        if (typeRegistry.getType(name).isPresent()) {
-                            TypeDefinition typeDefinition = typeRegistry.getType(name).get();
+            schemaTypeRegistry.types().values().forEach(newEntry -> {
+                String name = newEntry.getName();
 
-                            if (typeDefinition instanceof ObjectTypeDefinition) {
-                                List<FieldDefinition> mergedDefinitions = ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions();
-                                mergedDefinitions.addAll(((ObjectTypeDefinition) newEntry).getFieldDefinitions());
-                                typeRegistry.add(typeDefinition);
-                            } else
-                                throw new NotImplementedException(typeDefinition.getClass().getCanonicalName());
+                try {
 
+                    if(schemaTypeRegistry.getType(name).get() instanceof ObjectTypeDefinition && schemaName.equals("iotcrawler.graphqls"))
+                        if(!coreTypes.contains(name))
+                            coreTypes.add(name);
+
+                    if (typeRegistry.getType(name).isPresent()){
+                        TypeDefinition alreadyPresetentTypeDefinition = typeRegistry.getType(name).get();
+                        if (alreadyPresetentTypeDefinition instanceof ObjectTypeDefinition) {
+                            List<FieldDefinition> mergedDefinitions = ((ObjectTypeDefinition) alreadyPresetentTypeDefinition).getFieldDefinitions();
+                            mergedDefinitions.addAll(((ObjectTypeDefinition) newEntry).getFieldDefinitions());
+                            typeRegistry.add(alreadyPresetentTypeDefinition);
                         } else
-                            typeRegistry.add(newEntry);
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to merge field {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
-                    }
-                });
+                            throw new NotImplementedException(alreadyPresetentTypeDefinition.getClass().getCanonicalName());
 
-
-                Map<String, DirectiveDefinition> tempDirectiveDefs = new LinkedHashMap<>();
-                schemaTypeRegistry.getDirectiveDefinitions().values().forEach(newEntry -> {
-                    try {
+                    } else
                         typeRegistry.add(newEntry);
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to merge directive {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
-                    }
-                });
+                } catch (Exception e) {
+                    LOGGER.error("Failed to merge field {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
+                }
+            });
 
-                Map<String, ScalarTypeDefinition> tempScalarTypes = new LinkedHashMap<>();
-                schemaTypeRegistry.scalars().values().forEach(newEntry -> {
-                    try {
-                        typeRegistry.add(newEntry);
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to merge scalar {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
-                    }
-                });
 
-                //
+            Map<String, DirectiveDefinition> tempDirectiveDefs = new LinkedHashMap<>();
+            schemaTypeRegistry.getDirectiveDefinitions().values().forEach(newEntry -> {
+                try {
+                    typeRegistry.add(newEntry);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to merge directive {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
+                }
+            });
+
+            Map<String, ScalarTypeDefinition> tempScalarTypes = new LinkedHashMap<>();
+            schemaTypeRegistry.scalars().values().forEach(newEntry -> {
+                try {
+                    typeRegistry.add(newEntry);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to merge scalar {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
+                }
+            });
+
+            //
 //            // merge type extensions since they can be redefined by design
-//            schemaTypeRegistry.objectTypeExtensions().forEach((key, value) -> {
-////                List<ObjectTypeExtensionDefinition> currentList = this.objectTypeExtensions
-////                        .computeIfAbsent(key, k -> new ArrayList<>());
-////                currentList.addAll(value);
-//            });
-//            schemaTypeRegistry.interfaceTypeExtensions().forEach((key, value) -> {
-////                List<InterfaceTypeExtensionDefinition> currentList = this.interfaceTypeExtensions
-////                        .computeIfAbsent(key, k -> new ArrayList<>());
-////                currentList.addAll(value);
-//            });
-//            schemaTypeRegistry.unionTypeExtensions().forEach((key, value) -> {
-//                String test = "123";
-////                List<UnionTypeExtensionDefinition> currentList = this.unionTypeExtensions
-////                        .computeIfAbsent(key, k -> new ArrayList<>());
-////                currentList.addAll(value);
-//            });
-//            schemaTypeRegistry.enumTypeExtensions().forEach((key, value) -> {
-////                List<EnumTypeExtensionDefinition> currentList = this.enumTypeExtensions
-////                        .computeIfAbsent(key, k -> new ArrayList<>());
-////                currentList.addAll(value);
-//            });
-//            schemaTypeRegistry.scalarTypeExtensions().forEach((key, value) -> {
-////                List<ScalarTypeExtensionDefinition> currentList = this.scalarTypeExtensions
-////                        .computeIfAbsent(key, k -> new ArrayList<>());
-////                currentList.addAll(value);
-//            });
-//            schemaTypeRegistry.inputObjectTypeExtensions().forEach((key, value) -> {
-////                List<InputObjectTypeExtensionDefinition> currentList = this.inputObjectTypeExtensions
-////                        .computeIfAbsent(key, k -> new ArrayList<>());
-////                currentList.addAll(value);
-//            });
-
-
+            schemaTypeRegistry.objectTypeExtensions().forEach((key, value) -> {
+                throw new NotImplementedException("objectTypeExtensions");
+//                List<ObjectTypeExtensionDefinition> currentList = this.objectTypeExtensions
+//                        .computeIfAbsent(key, k -> new ArrayList<>());
+//                currentList.addAll(value);
+            });
+            schemaTypeRegistry.interfaceTypeExtensions().forEach((key, value) -> {
+                throw new NotImplementedException("interfaceTypeExtensions");
+//                List<InterfaceTypeExtensionDefinition> currentList = this.interfaceTypeExtensions
+//                        .computeIfAbsent(key, k -> new ArrayList<>());
+//                currentList.addAll(value);
+            });
+            schemaTypeRegistry.unionTypeExtensions().forEach((key, value) -> {
+                throw new NotImplementedException("unionTypeExtensions");
+//                List<UnionTypeExtensionDefinition> currentList = this.unionTypeExtensions
+//                        .computeIfAbsent(key, k -> new ArrayList<>());
+//                currentList.addAll(value);
+            });
+            schemaTypeRegistry.enumTypeExtensions().forEach((key, value) -> {
+                throw new NotImplementedException("enumTypeExtensions");
+//                List<EnumTypeExtensionDefinition> currentList = this.enumTypeExtensions
+//                        .computeIfAbsent(key, k -> new ArrayList<>());
+//                currentList.addAll(value);
+            });
+            schemaTypeRegistry.scalarTypeExtensions().forEach((key, value) -> {
+                throw new NotImplementedException("scalarTypeExtensions");
+//                List<ScalarTypeExtensionDefinition> currentList = this.scalarTypeExtensions
+//                        .computeIfAbsent(key, k -> new ArrayList<>());
+//                currentList.addAll(value);
+            });
+            schemaTypeRegistry.inputObjectTypeExtensions().forEach((key, value) -> {
+                throw new NotImplementedException("inputObjectTypeExtensions");
+//                List<InputObjectTypeExtensionDefinition> currentList = this.inputObjectTypeExtensions
+//                        .computeIfAbsent(key, k -> new ArrayList<>());
+//                currentList.addAll(value);
+            });
 
         }
+        return typeRegistry;
+    }
 
-        TypeRuntimeWiring.Builder wiringBuilder = newTypeWiring("Query");
-        Map<String, String> bindingRegistry = new LinkedHashMap<>();
-        Map<String, List<String>> topDownInheritance = new LinkedHashMap<>();
-        Map<String, List<String>> bottomUpHierarchy = new LinkedHashMap<>();
-
-        bindingRegistry.put("altType", ALT_TYPE);
+    private void processDirectives(){
         for (TypeDefinition typeDefinition0 : typeRegistry.types().values()){
 
             if (typeDefinition0 instanceof ObjectTypeDefinition) {
@@ -201,20 +248,23 @@ public class GraphQLProvider {
                     if (directive.getArgument("class") != null && directive.getArgument("class").getValue() != null)
                         bindingRegistry.put(typeName, ((StringValue) directive.getArgument("class").getValue()).getValue());
 
+                    if (directive.getArgument("subClassOf") != null){
+                        Value value = directive.getArgument("subClassOf").getValue();
+                        List<String> parentTypeNames = Utils.extractValues(value);
 
-                    if (directive.getArgument("altType") != null){
-                        String parentTypeName = ((StringValue) directive.getArgument("altType").getValue()).getValue();
-                        parentTypeDefinition = (ObjectTypeDefinition) typeRegistry.getType(parentTypeName).get();
-                        List<String> childClasses = (topDownInheritance.containsKey(parentTypeName)? topDownInheritance.get(parentTypeName): new ArrayList<>());
-                        childClasses.add(typeName);
-                        topDownInheritance.put(parentTypeName, childClasses);
+                        for(String parentTypeName: parentTypeNames) {
+                            parentTypeDefinition = (ObjectTypeDefinition) typeRegistry.getType(parentTypeName).get();
+                            List<String> childClasses = (topDownInheritance.containsKey(parentTypeName) ? topDownInheritance.get(parentTypeName) : new ArrayList<>());
+                            childClasses.add(typeName);
+                            topDownInheritance.put(parentTypeName, childClasses);
 
-                        List<String> parentClasses = (bottomUpHierarchy.containsKey(typeName)? topDownInheritance.get(typeName): new ArrayList<>());
-                        parentClasses.add(parentTypeName);
-                        bottomUpHierarchy.put(typeName, parentClasses);
-                        //Filling subclass with parent type properties
-                        if (parentTypeDefinition != null)
-                            typeDefinition.getFieldDefinitions().addAll(parentTypeDefinition.getFieldDefinitions());
+                            List<String> parentClasses = (bottomUpHierarchy.containsKey(typeName) ? topDownInheritance.get(typeName) : new ArrayList<>());
+                            parentClasses.add(parentTypeName);
+                            bottomUpHierarchy.put(typeName, parentClasses);
+                            //Filling subclass with parent type properties
+                            if (parentTypeDefinition != null)
+                                typeDefinition.getFieldDefinitions().addAll(parentTypeDefinition.getFieldDefinitions());
+                        }
                     }
                 }
 
@@ -248,44 +298,7 @@ public class GraphQLProvider {
             }
 
         }
-
-
-
-        RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring().type(wiringBuilder).scalar(ExtendedScalars.Object);
-
-        wiring.setRuntimeWiringBuilder(runtimeWiringBuilder);
-        wiring.setBindingRegistry(bindingRegistry);
-        wiring.setInheritanceRegistry(topDownInheritance);
-        wiring.setBottomUpHierarchy(bottomUpHierarchy);
-        dataLoaderRegistry = wiring.getDataLoaderRegistry();
-
-        context = new ContextProvider(dataLoaderRegistry).newContext();
-
-        SchemaGenerator schemaGenerator = new SchemaGenerator();
-        RuntimeWiring runtimeWiring = wiring.build();
-
-
-        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
-
-
-        //GraphQLSchema graphQLSchema = buildSchema(wiring.getSchemaString());
-
-        DataLoaderDispatcherInstrumentation dlInstrumentation =
-                //new DataLoaderDispatcherInstrumentation(newOptions().includeStatistics(true));
-                new DataLoaderDispatcherInstrumentation(dataLoaderRegistry, newOptions().includeStatistics(true));
-
-        Instrumentation instrumentation = new ChainedInstrumentation(
-                asList(new TracingInstrumentation(), dlInstrumentation)
-        );
-
-
-        this.graphQL = GraphQL.newGraphQL(graphQLSchema)
-                              .instrumentation(instrumentation)
-                              //.queryExecutionStrategy()
-                              .build();
     }
-
-
 
     public GraphQLSchema getGraphQLSchema() {
         return graphQLSchema;

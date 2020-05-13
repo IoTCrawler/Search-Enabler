@@ -7,8 +7,13 @@ schema {
 
 type Query {
     temperatureSensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [TemperatureSensor]
+    indoorTemperatureSensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [IndoorTemperatureSensor]
 }
 
-type TemperatureSensor @resource(class : "http://agt/TemperatureSensor", altType: "Sensor"){
-    altType: String! @attribute(uri : "http://search-enabler.iotcrawler/altType")
+type TemperatureSensor @resource(class : "http://Agt/TemperatureSensor", subClassOf: ["Sensor"]){
+    altType: [String]  @attribute(uri : "http://purl.org/iot/ontology/iot-stream#alternativeType")
+}
+
+type IndoorTemperatureSensor @resource(class : "http://Agt/IndoorTemperatureSensor", subClassOf: ["TemperatureSensor"]){
+
 }

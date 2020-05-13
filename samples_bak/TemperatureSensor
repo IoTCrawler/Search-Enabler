@@ -15,12 +15,18 @@
     "agt-smarthome": "http://www.agtinternational.com/ontologies/SmartHome#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
-    "sosa": "http://www.w3.org/ns/sosa/"
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "altType": "http://search-enabler.iotcrawler/altType",
+    "altType#2": "http://search-enabler.iotcrawler/altType"
   },
-  "http://search-enabler.iotcrawler/altType": {
+  "altType": {
     "type": "Property",
     "value": "http://agt/TemperatureSensor"
   },
+  "altType#2": {
+      "type": "Property",
+      "value": "http://www.w3.org/ns/ssn/System"
+    },
   "http://www.w3.org/ns/sosa/observes": {
     "type": "Relationship",
     "object": "urn:ngsi-ld:ColorTemperature"

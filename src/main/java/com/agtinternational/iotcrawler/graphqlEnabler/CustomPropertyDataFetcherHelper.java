@@ -112,7 +112,7 @@ public class CustomPropertyDataFetcherHelper {
                             //propertyNameURI = GenericMDRWiring.findURI(environment.getParentType().getName(), propertyName);
 
                         if (propertyNameURI != null) {
-                            Attribute attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                            Object attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
                             //processing only relations
 
                                 if (propertyNameURI.startsWith("http://") && attribute == null)
@@ -121,14 +121,26 @@ public class CustomPropertyDataFetcherHelper {
                                     LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
                                     //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
                                 else {
-                                    value = attribute.getValue();
+                                    if(!(attribute instanceof Iterable)) {
+                                        List list = new ArrayList();
+                                        list.add(attribute);
+                                        attribute = list;
+                                    }
+                                    Iterator iterator1 = ((Iterable)attribute).iterator();
+                                    while(iterator1.hasNext()){
+                                        attribute = iterator1.next();
+                                        if (attribute instanceof Attribute) {
+                                            value = ((Attribute) attribute).getValue();
 //                            if(graphQLType instanceof GraphQLList && !(value instanceof List))
 //                                value = Arrays.asList(new Object[]{ value });
-                                    if(attribute.getType().get().equals("Relationship")){
-                                        if (value instanceof List)
-                                            referenceIDs.addAll((List) value);
-                                        else
-                                            referenceIDs.add(value);
+                                            if (((Attribute) attribute).getType().get().equals("Relationship")) {
+                                                if (value instanceof List)
+                                                    referenceIDs.addAll((List) value);
+                                                else
+                                                    referenceIDs.add(value);
+                                            }
+                                        } else
+                                            throw new NotImplementedException(attribute.getClass().getCanonicalName() + " as attribute type");
                                     }
                                 }
 

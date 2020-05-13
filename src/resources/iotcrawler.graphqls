@@ -5,7 +5,7 @@ schema {
 
 }
 
-directive @resource(class : String!, altType : String) on OBJECT
+directive @resource(class : String!, subClassOf : [String]) on OBJECT
 directive @attribute(uri : String!) on FIELD_DEFINITION
 
 type Query {
@@ -69,7 +69,7 @@ type System @resource(class : "http://www.w3.org/ns/ssn/System"){
     location: String
 }
 
-type Sensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", altType: "System"){
+type Sensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", subClassOf: ["System"]){
     madeObservation: StreamObservation  @attribute(uri : "http://www.w3.org/ns/sosa/madeObservation")
     observes: ObservableProperty    @attribute(uri : "http://www.w3.org/ns/sosa/observes")
 }

@@ -12,11 +12,12 @@
            #label,
            #location
            hosts{
-                id
+                id,
+                type
                 #label
-                observes{
-                    id
-                }
+                #observes{
+                #    id
+                #}
            }
    }
 }
