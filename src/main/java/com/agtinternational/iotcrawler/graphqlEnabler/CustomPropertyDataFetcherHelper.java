@@ -113,8 +113,7 @@ public class CustomPropertyDataFetcherHelper {
 
                         if (propertyNameURI != null) {
                             Object attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                            if(attribute instanceof Attribute) {
-                                //processing only relations
+                            //processing only relations
 
                                 if (propertyNameURI.startsWith("http://") && attribute == null)
                                     attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
@@ -122,18 +121,30 @@ public class CustomPropertyDataFetcherHelper {
                                     LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
                                     //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
                                 else {
-                                    value = ((Attribute)attribute).getValue();
+                                    if(!(attribute instanceof Iterable)) {
+                                        List list = new ArrayList();
+                                        list.add(attribute);
+                                        attribute = list;
+                                    }
+                                    Iterator iterator1 = ((Iterable)attribute).iterator();
+                                    while(iterator1.hasNext()){
+                                        attribute = iterator1.next();
+                                        if (attribute instanceof Attribute) {
+                                            value = ((Attribute) attribute).getValue();
 //                            if(graphQLType instanceof GraphQLList && !(value instanceof List))
 //                                value = Arrays.asList(new Object[]{ value });
-                                    if (((Attribute)attribute).getType().get().equals("Relationship")) {
-                                        if (value instanceof List)
-                                            referenceIDs.addAll((List) value);
-                                        else
-                                            referenceIDs.add(value);
+                                            if (((Attribute) attribute).getType().get().equals("Relationship")) {
+                                                if (value instanceof List)
+                                                    referenceIDs.addAll((List) value);
+                                                else
+                                                    referenceIDs.add(value);
+                                            }else
+                                                return value;
+
+                                        } else
+                                            throw new NotImplementedException(attribute.getClass().getCanonicalName() + " as attribute type");
                                     }
                                 }
-                            }else
-                                throw new NotImplementedException(attribute.getClass().getCanonicalName());
 
                         } else
                             LOGGER.warn("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());

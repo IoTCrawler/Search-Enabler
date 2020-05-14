@@ -21,27 +21,15 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
  */
 
 
-import com.agtinternational.iotcrawler.core.models.IoTStream;
-import com.agtinternational.iotcrawler.core.models.ObservableProperty;
-import com.agtinternational.iotcrawler.core.models.Platform;
-import com.agtinternational.iotcrawler.core.models.Sensor;
-import com.agtinternational.iotcrawler.core.ontologies.IotStream;
-import com.agtinternational.iotcrawler.core.ontologies.SOSA;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import graphql.scalars.ExtendedScalars;
-import graphql.schema.idl.RuntimeWiring;
-import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 public class IoTCrawlerWiring{
@@ -52,7 +40,7 @@ public class IoTCrawlerWiring{
 
             String[] urls = new String[]{
                     "iotcrawler.graphqls",
-                    "iotcrawler-enriched.graphqls",
+                    "smartConnect.graphqls",
                     //"smartHome.graphqls"
             };
             Map<String, String> schemasStrings = new HashMap<>();
