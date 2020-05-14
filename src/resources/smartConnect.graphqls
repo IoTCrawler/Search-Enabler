@@ -11,7 +11,7 @@ type Query {
 }
 
 type TemperatureSensor @resource(class : "http://Agt/TemperatureSensor", subClassOf: ["Sensor"]){
-    altType: [String]  @attribute(uri : "http://purl.org/iot/ontology/iot-stream#alternativeType")
+
 }
 
 type IndoorTemperatureSensor @resource(class : "http://Agt/IndoorTemperatureSensor", subClassOf: ["TemperatureSensor"]){

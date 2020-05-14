@@ -138,7 +138,9 @@ public class CustomPropertyDataFetcherHelper {
                                                     referenceIDs.addAll((List) value);
                                                 else
                                                     referenceIDs.add(value);
-                                            }
+                                            }else
+                                                return value;
+
                                         } else
                                             throw new NotImplementedException(attribute.getClass().getCanonicalName() + " as attribute type");
                                     }
