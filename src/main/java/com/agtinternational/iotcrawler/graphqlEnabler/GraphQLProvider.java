@@ -285,7 +285,7 @@ public class GraphQLProvider {
                             fieldTypeName = ((TypeName) type).getName();
                         else
                             throw new NotImplementedException(type.getClass().getCanonicalName());
-                        wiringBuilder.dataFetcher(name2, GenericMDRWiring.genericDataFetcher(fieldTypeName, false, new ArrayList<>()));
+                        wiringBuilder.dataFetcher(name2, GenericMDRWiring.genericDataFetcher(fieldTypeName, false));
                     }
 
                     for (Directive directive : fieldDefinition.getDirectives())

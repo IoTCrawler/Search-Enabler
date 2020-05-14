@@ -74,6 +74,10 @@ type Sensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", subClassOf: ["
     observes: ObservableProperty    @attribute(uri : "http://www.w3.org/ns/sosa/observes")
 }
 
+type Actuator @resource(class : "http://www.w3.org/ns/sosa/Actuator", subClassOf: ["System"]){
+
+ }
+
 type Platform @resource(class : "http://www.w3.org/ns/sosa/Platform"){
     id: String!
     type: String!
