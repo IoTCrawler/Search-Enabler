@@ -10,5 +10,9 @@ type Query {
 }
 
 type TemperatureSensor @resource(class : "http://agt/TemperatureSensor", altType: "Sensor"){
-    altType: String! @attribute(uri : "http://search-enabler.iotcrawler/altType")
+
+}
+
+type IndoorTemperatureSensor @resource(class : "http://Agt/IndoorTemperatureSensor", subClassOf: ["TemperatureSensor"]){
+
 }
