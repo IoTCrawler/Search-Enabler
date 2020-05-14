@@ -2,8 +2,6 @@ schema {
     query: Query
 }
 
-directive @resource(class : String!, subClassOf : String) on OBJECT
-directive @attribute(uri : String!) on FIELD_DEFINITION
 
 type Query {
     household(id: String): Household

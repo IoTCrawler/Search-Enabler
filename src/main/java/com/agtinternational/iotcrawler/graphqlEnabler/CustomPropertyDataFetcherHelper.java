@@ -9,9 +9,9 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -104,40 +104,51 @@ public class CustomPropertyDataFetcherHelper {
 //                            Object ret = getPropertyViaGetterMethod(object0, propertyName, graphQLType, (root, methodName) -> findPubliclyAccessibleMethod(propertyName, root, methodName, dfeInUse), environment);
 //                            value = ret;
 //                        } catch (NoSuchMethodException ignored) {
-                            //String objectType = Utils.getFragment(((EntityLD) object0).getType());
+                        //String objectType = Utils.getFragment(((EntityLD) object0).getType());
                         String objectType = environment.getParentType().getName();
                         String propertyNameURI = GenericMDRWiring.findURI(objectType, propertyName);
                         //if (propertyNameURI == null)
-                            //Getting parent type Might be problematic!
-                            //propertyNameURI = GenericMDRWiring.findURI(environment.getParentType().getName(), propertyName);
+                        //Getting parent type Might be problematic!
+                        //propertyNameURI = GenericMDRWiring.findURI(environment.getParentType().getName(), propertyName);
 
                         if (propertyNameURI != null) {
                             Object attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                            if(attribute instanceof Attribute) {
-                                //processing only relations
+                            //processing only relations
 
-                                if (propertyNameURI.startsWith("http://") && attribute == null)
-                                    attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
-                                if (attribute == null)
-                                    LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
-                                    //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
-                                else {
-                                    value = ((Attribute)attribute).getValue();
+                            if (propertyNameURI.startsWith("http://") && attribute == null)
+                                attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+                            if (attribute == null)
+                                LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                                //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
+                            else {
+                                if(!(attribute instanceof Iterable)) {
+                                    List list = new ArrayList();
+                                    list.add(attribute);
+                                    attribute = list;
+                                }
+                                Iterator iterator1 = ((Iterable)attribute).iterator();
+                                while(iterator1.hasNext()){
+                                    attribute = iterator1.next();
+                                    if (attribute instanceof Attribute) {
+                                        value = ((Attribute) attribute).getValue();
 //                            if(graphQLType instanceof GraphQLList && !(value instanceof List))
 //                                value = Arrays.asList(new Object[]{ value });
-                                    if (((Attribute)attribute).getType().get().equals("Relationship")) {
-                                        if (value instanceof List)
-                                            referenceIDs.addAll((List) value);
-                                        else
-                                            referenceIDs.add(value);
-                                    }
+                                        if (((Attribute) attribute).getType().get().equals("Relationship")) {
+                                            if (value instanceof List)
+                                                referenceIDs.addAll((List) value);
+                                            else
+                                                referenceIDs.add(value);
+                                        }else
+                                            return value;
+
+                                    } else
+                                        throw new NotImplementedException(attribute.getClass().getCanonicalName() + " as attribute type");
                                 }
-                            }else
-                                throw new NotImplementedException(attribute.getClass().getCanonicalName());
+                            }
 
                         } else
                             LOGGER.warn("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
-                    //}
+                        //}
                     } else
                         throw new NotImplementedException();
             }

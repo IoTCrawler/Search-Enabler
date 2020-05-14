@@ -13,10 +13,10 @@
            #location
            hosts{
                 id
-                #label
-                observes{
-                    id
-                }
+                label
+                #observes{
+                #    id
+                #}
            }
    }
 }

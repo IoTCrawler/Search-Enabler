@@ -21,17 +21,9 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
  */
 
 
-import com.agtinternational.iotcrawler.core.models.IoTStream;
-import com.agtinternational.iotcrawler.core.models.ObservableProperty;
-import com.agtinternational.iotcrawler.core.models.Platform;
-import com.agtinternational.iotcrawler.core.models.Sensor;
-import com.agtinternational.iotcrawler.core.ontologies.IotStream;
-import com.agtinternational.iotcrawler.core.ontologies.SOSA;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import graphql.scalars.ExtendedScalars;
-import graphql.schema.idl.RuntimeWiring;
-import org.apache.jena.vocabulary.RDFS;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 public class IoTCrawlerWiring{
@@ -49,14 +40,22 @@ public class IoTCrawlerWiring{
 
     public static class Builder{
         public GenericMDRWiring build(){
+            String folderName = "schemas/";
+            List<String> files = new ArrayList<>();
+            files.add(folderName+"iotcrawler.graphqls");
+            try {
+                List<String> files2 = IOUtils.readLines(this.getClass().getClassLoader().getResourceAsStream(folderName), Charsets.UTF_8);
+                for(String file: files2)
+                    if(!files.contains(file))
+                        files.add(folderName+file);
+            }
+            catch (Exception e){
+                LOGGER.error("Failed to read resources");
+            }
 
-            String[] urls = new String[]{
-                    "iotcrawler.graphqls",
-                    "iotcrawler-enriched.graphqls",
-                    //"smartHome.graphqls"
-            };
             Map<String, String> schemasStrings = new HashMap<>();
-            for(String urlStr: urls) {
+            for(String urlStr: files) {
+                LOGGER.debug("Trying to read schema {}", urlStr);
                 String schemaString = null;
                 try {
                     URL url = Resources.getResource(urlStr);
@@ -67,6 +66,7 @@ public class IoTCrawlerWiring{
                     LOGGER.error("Failed to read schema {}: {}", urlStr, e.getLocalizedMessage());
                 }
             }
+            LOGGER.debug("Schemas readed: {}", schemasStrings.size());
             GenericMDRWiring ret = new GenericMDRWiring();
             ret.setSchemaString(schemasStrings);
             return ret;

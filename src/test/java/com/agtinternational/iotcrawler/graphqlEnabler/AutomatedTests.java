@@ -33,6 +33,8 @@ import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -42,19 +44,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.agtinternational.iotcrawler.fiware.clients.Constants.NGSILD_BROKER_URL;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
-public class IoTCrawlerWiringTests {
-	protected Logger LOGGER = LoggerFactory.getLogger(IoTCrawlerWiringTests.class);
-
+@RunWith(Parameterized.class)
+public class AutomatedTests {
+	protected static Logger LOGGER = LoggerFactory.getLogger(AutomatedTests.class);
+	private Path queryFilePath;
 
 	GraphQLProvider graphQLProvider;
 	GraphQL graphql;
@@ -74,10 +74,30 @@ public class IoTCrawlerWiringTests {
 
 	}
 
+	@Parameterized.Parameters
+	public static Collection parameters() throws Exception {
 
+		List<Object[]> objects = new ArrayList<>();
+		File folder = new File("queries/core");
+		if(folder.exists()) {
+			//try {
+			Files.list(folder.toPath()).forEach(file->{
+				objects.add(new Object[]{ file });
+			});
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+		}
+		return objects;
 
-	private String getQuery(String resourcePath) throws IOException {
-		String ret = new String(Files.readAllBytes(Paths.get(resourcePath)));
+	}
+
+	public AutomatedTests(Path queryFilePath){
+		this.queryFilePath = queryFilePath;
+	}
+
+	private String readQuery(Path resourcePath) throws IOException {
+		String ret = new String(Files.readAllBytes(resourcePath));
 //		URL url = Resources.getResource(resourcePath);
 //		String sdl = Resources.toString(url, Charsets.UTF_8);
 		return ret;
@@ -180,8 +200,41 @@ public class IoTCrawlerWiringTests {
 	}
 
 	@Test
+	public void executeQueryTest() throws Exception {
+		executeQuery(queryFilePath);
+	}
+
+	protected void executeQuery(Path filePath) throws IOException {
+		LOGGER.info("Executing {}", filePath);
+		String query = readQuery(filePath);
+		Map<String, Object> variables = new HashMap<>();
+		//variables.put("id", "iotc:Stream_1");
+		//variables.put("episode", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
+//		variables.put("withFriends", false);
+
+		ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+				.query(query)
+				.variables(variables)
+				.operationName(null)
+				.context(context)
+				.build();
+
+		LOGGER.info("Executing query");
+		ExecutionResult executionResult = graphql.execute(executionInput);
+		Map data = executionResult.getData();
+		Assert.notNull(data);
+
+		Assert.notNull(data.get("stream"));
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.putAll(data);
+		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
+	}
+
+	@Test
+	@Ignore
 	public void getStreamByIdTest() throws Exception {
-		String query = getQuery("queries/getStreamById");
+		String query = readQuery(Paths.get("queries","core","getStreamById"));
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "iotc:Stream_1");
@@ -209,7 +262,7 @@ public class IoTCrawlerWiringTests {
 
 //	@Test
 //	public void getEntitiesByAttributeValueTest() throws Exception {
-//		String query = getQuery("getEntityByAttribute");
+//		String query = readQuery("getEntityByAttribute");
 //
 //		Map<String, Object> variables = new HashMap<>();
 //		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -234,8 +287,10 @@ public class IoTCrawlerWiringTests {
 //	}
 
 	@Test
+	@Ignore
 	public void getStreamsTest() throws Exception {
-		String query = getQuery("queries/getStreams");
+		String query = readQuery(Paths.get("queries","core","getStreams"));
+
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -265,8 +320,10 @@ public class IoTCrawlerWiringTests {
 	}
 
 	@Test
+	@Ignore
 	public void getSensorByIdTest() throws Exception {
-		String query = getQuery("queries/getSensorById");
+		String query = readQuery(Paths.get("queries","core","getSensorById"));
+
 		Map<String, Object> variables = new HashMap<>();
 
 		ExecutionInput executionInput = ExecutionInput.newExecutionInput()
@@ -289,8 +346,9 @@ public class IoTCrawlerWiringTests {
 	}
 
 	@Test
+	@Ignore
 	public void getSensorsTest() throws Exception {
-		String query = getQuery("queries/getSensors");
+		String query = readQuery(Paths.get("queries","core","getSensors"));
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -317,8 +375,9 @@ public class IoTCrawlerWiringTests {
 	}
 
 	@Test
+	@Ignore
 	public void getTemperatureSensorsTest() throws Exception {
-		String query = getQuery("queries/getTemperatureSensors");
+		String query = readQuery(Paths.get("queries","core","getTemperatureSensors"));
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -346,8 +405,9 @@ public class IoTCrawlerWiringTests {
 
 
 	@Test
+	@Ignore
 	public void getSystemsTest() throws Exception {
-		String query = getQuery("queries/getSystems");
+		String query = readQuery(Paths.get("queries","core","getSystems"));
 
 		Map<String, Object> variables = new HashMap<>();
 		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
@@ -374,8 +434,9 @@ public class IoTCrawlerWiringTests {
 	}
 
 	@Test
+	@Ignore
 	public void getPlatformByIdTest() throws Exception {
-		String query = getQuery("queries/getPlatformById");
+		String query = readQuery(Paths.get("queries","core","getPlatformById"));
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -398,8 +459,9 @@ public class IoTCrawlerWiringTests {
 	}
 
 	@Test
+	@Ignore
 	public void getPlatformsTest() throws Exception {
-		String query = getQuery("queries/getPlatforms");
+		String query = readQuery(Paths.get("queries","core","getPlatforms"));
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -428,8 +490,9 @@ public class IoTCrawlerWiringTests {
 
 
 	@Test
+	@Ignore
 	public void getObservablePropertyByIdTest() throws Exception {
-		String query = getQuery("queries/getObservablePropertyById");
+		String query = readQuery(Paths.get("queries","core","getObservablePropertyById"));
 
 		Map<String, Object> variables = new HashMap<>();
 
@@ -452,8 +515,9 @@ public class IoTCrawlerWiringTests {
 
 
 	@Test
+	@Ignore
 	public void getObservablePropertiesTest() throws Exception {
-		String query = getQuery("queries/getObservableProperties");
+		String query = readQuery(Paths.get("queries","core","getObservableProperties"));
 
 		Map<String, Object> variables = new HashMap<>();
 
