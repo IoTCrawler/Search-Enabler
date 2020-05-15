@@ -53,7 +53,7 @@ import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
 @RunWith(Parameterized.class)
-public class AutomatedTests {
+public class AutomatedTests extends SchemasTests{
 	protected static Logger LOGGER = LoggerFactory.getLogger(AutomatedTests.class);
 	private Path queryFilePath;
 
@@ -61,21 +61,6 @@ public class AutomatedTests {
 	GraphQL graphql;
 	Context context;
 	List<EntityLD> entities = new ArrayList<>();
-
-	@Before
-	public void init() throws Exception {
-		EnvVariablesSetter.init();
-
-		LOGGER.info("Initing graphql provider");
-
-		graphQLProvider = new GraphQLProvider(new IoTCrawlerWiring.Builder().build());
-		graphQLProvider.init();
-		graphql = graphQLProvider.graphQL();
-
-		context = graphQLProvider.getContext();
-		//entities = readEntitiesFileFiles();
-
-	}
 
 	@Parameterized.Parameters
 	public static Collection parameters() throws Exception {
@@ -97,7 +82,8 @@ public class AutomatedTests {
 
 	@Test
 	public void executeQueryTest() throws Exception {
-		TestUtils.executeQuery(queryFilePath, graphql, context);
+		initGraphQL();
+		executeQuery(queryFilePath);
 	}
 
 }

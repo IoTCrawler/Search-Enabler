@@ -53,7 +53,7 @@ import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
-public class ManualTests {
+public class ManualTests extends SchemasTests {
     protected static Logger LOGGER = LoggerFactory.getLogger(AutomatedTests.class);
     private Path queryFilePath;
 
@@ -61,22 +61,6 @@ public class ManualTests {
     GraphQL graphql;
     Context context;
     private List<EntityLD> entities;
-
-    @Before
-    public void init() throws Exception {
-        EnvVariablesSetter.init();
-
-        LOGGER.info("Initing graphql provider");
-
-        graphQLProvider = new GraphQLProvider(new IoTCrawlerWiring.Builder().build());
-        graphQLProvider.init();
-        graphql = graphQLProvider.graphQL();
-
-        context = graphQLProvider.getContext();
-
-    }
-
-
 
     @Test
     @Ignore
@@ -100,32 +84,6 @@ public class ManualTests {
         }
         Assert.isTrue(exceptions.size()==0);
         LOGGER.info("Entities were registered");
-    }
-
-    List<EntityLD> readEntitiesFromFiles() throws Exception {
-        LOGGER.info("read Entities from files");
-
-        List<Path> filesToRead= new ArrayList<>();
-        File folder = new File("samples");
-        if(folder.exists()) {
-            try {
-                Files.list(folder.toPath()).forEach(file->{
-                    filesToRead.add(file);
-                });
-            } catch (IOException e) {
-                LOGGER.error("Failed to list directory {}", folder.getAbsolutePath());
-                e.printStackTrace();
-            }
-        }
-
-        int exceptions=0;
-        List<EntityLD> entities = new ArrayList<>();
-        for(Path path : filesToRead) {
-            byte[] modelJson = Files.readAllBytes(path);
-            EntityLD entityLD = EntityLD.fromJsonString(new String(modelJson));
-            entities.add(entityLD);
-        }
-        return entities;
     }
 
     List<EntityLD> generateEntities(){
@@ -227,61 +185,72 @@ public class ManualTests {
 
     @Test
     public void getStreamByIdTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getStreamById"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getStreamById"));
     }
 
     @Test
     public void getStreamsTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getStreams"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getStreams"));
     }
 
     @Test
     public void getSensorByIdTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getSensorById"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getSensorById"));
     }
 
     @Test
     public void getSensorsTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getSensors"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getSensors"));
     }
 
     @Test
     public void getTemperatureSensorsTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","smartConnect","getTemperatureSensors"), graphql, context);
+        
+        executeQuery(Paths.get("queries","smartConnect","getTemperatureSensors"));
     }
 
     @Test
     public void getIndoorTemperatureSensorsTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","smartConnect","getIndoorTemperatureSensors"), graphql, context);
+        
+        executeQuery(Paths.get("queries","smartConnect","getIndoorTemperatureSensors"));
     }
 
 
     @Test
     public void getSystemsTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getSystems"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getSystems"));
     }
 
     @Test
     public void getPlatformByIdTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getSystems"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getSystems"));
     }
 
     @Test
     public void getPlatformsTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getPlatforms"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getPlatforms"));
     }
 
 
 
     @Test
     public void getObservablePropertyByIdTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getObservablePropertyById"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getObservablePropertyById"));
     }
 
 
     @Test
     public void getObservablePropertiesTest() throws Exception {
-        TestUtils.executeQuery(Paths.get("queries","core","getObservableProperties"), graphql, context);
+        
+        executeQuery(Paths.get("queries","core","getObservableProperties"));
     }
 
 }
