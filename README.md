@@ -16,9 +16,10 @@
 * [Observable Properties](http://search-enabler-production.35.241.228.250.nip.io/?query=%7B%0A%20%20observableProperties%7B%0A%20%20%20%20id%2C%0A%20%20%20%20label%2C%0A%20%20%20%20isObservedBy%20%7B%0A%20%20%20%20%20%20%20%20id%2C%0A%20%20%20%20%20%20%20%20label%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D)
 
 # Inheritance support
-* Alternative types declared via `altType` in [resource directive](src/resources/schemas/iotcrawler.graphqls#L8) (see [Example](src/resources/schemas/iotcrawler.graphqls#L72)). 
+* ParentTypes types declared via `subClassOf` in [resource directive](src/resources/schemas/iotcrawler.graphqls#L8) (see [Example](src/resources/schemas/iotcrawler.graphqls#L72)). 
 * Inheritance resolution happens only in Search Enabler. 
-* In NGSI-LD all inheriting entities should still have types from the [IoTCrawler model](https://gitlab.iotcrawler.net/core/iotcrawler_core/-/wikis/IoTCrawler-Conceptual-model) to be visible to all IoTCrawler components! 
+* In NGSI-LD all inheriting entities should still have types from the [IoTCrawler model](https://gitlab.iotcrawler.net/core/iotcrawler_core/-/wikis/IoTCrawler-Conceptual-model) to be visible to all IoTCrawler components!
+ 
 
 # Queries (with inheritance)
 * [SSN Systems](http://search-enabler-production.35.241.228.250.nip.io/?query=%7B%0A%20%20%20systems%0A%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20id%2C%0A%20%20%20%20%20%20%20%20%20%20%20type%0A%20%20%20%20%20%20%20%20%20%20%20isHostedBy%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20id%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20type%0A%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%7D%0A%7D). Include all types belonging to SSN:System [Schema](src/resources/schemas/iotcrawler.graphqls)
