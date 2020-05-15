@@ -46,7 +46,7 @@ public class IoTCrawlerWiring{
             try {
                 List<String> files2 = IOUtils.readLines(this.getClass().getClassLoader().getResourceAsStream(folderName), Charsets.UTF_8);
                 for(String file: files2)
-                    if(!files.contains(file))
+                    if(!files.contains(folderName+file))
                         files.add(folderName+file);
             }
             catch (Exception e){
