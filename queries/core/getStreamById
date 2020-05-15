@@ -1,10 +1,6 @@
 {
-  stream(id: "urn:ngsi-ld:Stream_Zipato_Bulb_2_ColorTemperature") {
+  stream(id: "urn:ngsi-ld:Stream_AEON_Labs_ZW100_MultiSensor_6_MotionAlarm") {
     id,
-    observes{
-        id,
-        label
-    },
     generatedBy {
         id,
         label,

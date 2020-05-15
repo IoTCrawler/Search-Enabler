@@ -23,6 +23,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 import com.agtinternational.iotcrawler.core.Utils;
 import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
+import com.agtinternational.iotcrawler.core.models.*;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
@@ -59,6 +60,7 @@ public class AutomatedTests {
 	GraphQLProvider graphQLProvider;
 	GraphQL graphql;
 	Context context;
+	List<EntityLD> entities = new ArrayList<>();
 
 	@Before
 	public void init() throws Exception {
@@ -71,6 +73,7 @@ public class AutomatedTests {
 		graphql = graphQLProvider.graphQL();
 
 		context = graphQLProvider.getContext();
+		//entities = readEntitiesFileFiles();
 
 	}
 
@@ -106,66 +109,29 @@ public class AutomatedTests {
     @Test
     @Ignore
     public void registerEntities() throws Exception {
-        LOGGER.info("registerEntities()");
-
+		LOGGER.info("registerEntities()");
+		entities = generateEntities();
 
         NgsiLDClient ngsiLDClient = new NgsiLDClient(System.getenv(NGSILD_BROKER_URL));
 		IoTCrawlerRESTClient ioTCrawlerRESTClient = new IoTCrawlerRESTClient(System.getenv(NGSILD_BROKER_URL));
-
-        List<Path> filesToRead= new ArrayList<>();
-        File folder = new File("samples");
-        if(folder.exists()) {
-            try {
-                Files.list(folder.toPath()).forEach(file->{
-                    filesToRead.add(file);
-                });
-            } catch (IOException e) {
-                LOGGER.error("Failed to list directory {}", folder.getAbsolutePath());
-                e.printStackTrace();
-            }
-        }
-
-        int exceptions=0;
-        for(Path path : filesToRead)
-        {
-            byte[] modelJson = Files.readAllBytes(path);
-            EntityLD entityLD = EntityLD.fromJsonString(new String(modelJson));
-
-//			Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
-//			if(cutURIs) {
-//				 entityLD = RDFModel.fromEntity(entityLD).toEntityLD(cutURIs);
-//			}else
-//				entityLD.setContext(null);
-			try {
-				ngsiLDClient.deleteEntitySync(entityLD.getId());
-			}
-			catch (Exception e){
-				LOGGER.error(e.getLocalizedMessage());
-			}
+		List<Exception> exceptions = new ArrayList<>();
+		int counter=0;
+		for(EntityLD entityLD: entities){
 			try {
 				boolean result = ngsiLDClient.addEntitySync(entityLD);
+				String abc = "123";
+			} catch (Exception e) {
+				exceptions.add(e);
+				e.printStackTrace();
 			}
-			catch (Exception e){
-				throw e;
-			}
-
-        }
-//        catch (Exception e){
-//			LOGGER.error("Problem with {}: {}", path, e.getLocalizedMessage());
-//			exceptions++;
-//		}
-		Assert.isTrue(exceptions==0);
+			counter++;
+		}
+		Assert.isTrue(exceptions.size()==0);
         LOGGER.info("Entities were registered");
     }
 
-	@Test
-	@Ignore
-	public void deleteEntities() throws Exception {
-		LOGGER.info("deleteEntities()");
-
-
-		NgsiLDClient ngsiLDClient = new NgsiLDClient(System.getenv(NGSILD_BROKER_URL));
-		IoTCrawlerRESTClient ioTCrawlerRESTClient = new IoTCrawlerRESTClient(System.getenv(NGSILD_BROKER_URL));
+	List<EntityLD> readEntitiesFromFiles() throws Exception {
+		LOGGER.info("read Entities from files");
 
 		List<Path> filesToRead= new ArrayList<>();
 		File folder = new File("samples");
@@ -181,16 +147,104 @@ public class AutomatedTests {
 		}
 
 		int exceptions=0;
-		for(Path path : filesToRead)
-		{
+		List<EntityLD> entities = new ArrayList<>();
+		for(Path path : filesToRead) {
 			byte[] modelJson = Files.readAllBytes(path);
 			EntityLD entityLD = EntityLD.fromJsonString(new String(modelJson));
+			entities.add(entityLD);
+		}
+		return entities;
+	}
 
+	List<EntityLD> generateEntities(){
+		boolean cutURIs = true;
+		Map <String, String[]> sensorsAndProperties = new HashMap<>();
+		sensorsAndProperties.put("AEON Labs ZW100 MultiSensor 6", new String[]{ "BatteryLevel", "Brightness", "MotionAlarm", "MotionAlarmCancelationDelay", "RelativeHumidity", "TamperAlarm", "Temperature", "UV" });
+		sensorsAndProperties.put("FIBARO System FGWPE/F Wall Plug Gen5", new String[]{"AccumulatedEnergyUse","CurrentEnergyUse"});
+		sensorsAndProperties.put("FIBARO Wall plug living room", new String[]{"AccumulatedEnergyUse","CurrentEnergyUse"});
+
+		Map<String, ObservableProperty> observableProperties = new HashMap<>();
+		List<EntityLD> entities = new ArrayList<>();
+
+		Platform platform = new Platform("urn:ngsi-ld:Platform_homee_00055110D732", "Platform homee_00055110D732");
+		for(String deviceName: sensorsAndProperties.keySet()) {
+			for (String propertyName : sensorsAndProperties.get(deviceName)) {
+				String propertyId = "urn:ngsi-ld:" + propertyName.replace(" ", "_").replace("/","-");
+
+				if(!observableProperties.containsKey(propertyId)){
+					observableProperties.put(propertyId, new ObservableProperty(propertyId, propertyName));
+				}
+
+				ObservableProperty observableProperty = observableProperties.get(propertyId);
+
+				String sensorName = deviceName+" "+propertyName;
+				String sensorAndPropertyForId = sensorName.replace(" ", "_").replace("/","-");
+				Sensor sensor = new Sensor("urn:ngsi-ld:Sensor_" +sensorAndPropertyForId, sensorName);
+
+				IoTStream ioTStream = new IoTStream("urn:ngsi-ld:Stream_" +sensorAndPropertyForId);
+				//StreamObservation streamObservation = new StreamObservation("");
+
+				ioTStream.generatedBy(sensor);
+
+				sensor.observes(observableProperty);
+				observableProperty.isObservedBy(sensor);
+				platform.hosts(sensor);
+				sensor.isHostedBy(platform);
+
+				try {
+					entities.add(ioTStream.toEntityLD(cutURIs));
+					entities.add(sensor.toEntityLD(cutURIs));
+				}
+				catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+		}
+
+		try {
+			entities.add(platform.toEntityLD(cutURIs));
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+		observableProperties.values().forEach(observableProperty->{
+			try {
+				entities.add(observableProperty.toEntityLD(cutURIs));
+			}
+			catch (Exception e){
+				e.printStackTrace();
+			}
+		});
+
+		for(EntityLD entityLD: entities){
+			try {
+				Files.write(Paths.get("samples", Utils.getFragment(entityLD.getId().replace(":","-") + ".json")), Utils.prettyPrint(entityLD.toJsonObject()).getBytes());
+			}
+			catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+
+		return entities;
+	}
+
+	@Test
+	@Ignore
+	public void deleteEntities() throws Exception {
+		LOGGER.info("deleteEntities()");
+		entities = generateEntities();
+
+		NgsiLDClient ngsiLDClient = new NgsiLDClient(System.getenv(NGSILD_BROKER_URL));
+		IoTCrawlerRESTClient ioTCrawlerRESTClient = new IoTCrawlerRESTClient(System.getenv(NGSILD_BROKER_URL));
+
+		int exceptions=0;
+		for(EntityLD entityLD : entities)
+		{
 			try {
 				ngsiLDClient.deleteEntitySync(entityLD.getId());
 			}
 			catch (Exception e){
-
+				LOGGER.error("Failed to delete entitiy {} from json: {}", entityLD.getId(), e.getLocalizedMessage());
 			}
 
 		}
@@ -403,6 +457,33 @@ public class AutomatedTests {
 		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
 	}
 
+	@Test
+	public void getIndoorTemperatureSensorsTest() throws Exception {
+		String query = getQuery("queries/getIndoorTemperatureSensors");
+
+		Map<String, Object> variables = new HashMap<>();
+		//variables.put("id", "http://purl.org/iot/ontology/iot-stream#Stream_FIBARO%2520Wall%2520plug%2520living%2520room_CurrentEnergyUse");
+
+		ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+				.query(query)
+				.variables(variables)
+				.operationName(null)
+				.context(context)
+				.build();
+
+		LOGGER.info("Executing query");
+		ExecutionResult executionResult = graphql.execute(executionInput);
+		Map data = executionResult.getData();
+		Object results = ((Map)data).values().iterator().next();
+		Assert.notNull(results);
+
+//		for(Object result: (List)results)
+//			Assert.notNull(result);
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.putAll(data);
+		LOGGER.info(Utils.prettyPrint(jsonObject.toString()));
+	}
 
 	@Test
 	@Ignore
