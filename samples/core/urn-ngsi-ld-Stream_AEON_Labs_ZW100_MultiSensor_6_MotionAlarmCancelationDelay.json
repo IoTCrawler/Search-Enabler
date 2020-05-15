@@ -1,0 +1,13 @@
+{
+  "id": "urn:ngsi-ld:Stream_AEON_Labs_ZW100_MultiSensor_6_MotionAlarmCancelationDelay",
+  "type": "iot-stream:IotStream",
+  "iot-stream:generatedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_MotionAlarmCancelationDelay"
+  },
+  "@context": {
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  }
+}

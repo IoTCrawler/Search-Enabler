@@ -1,0 +1,17 @@
+{
+  "id": "urn:ngsi-ld:MotionAlarm",
+  "type": "sosa:ObservableProperty",
+  "rdfs:label": {
+    "type": "Property",
+    "value": "MotionAlarm"
+  },
+  "sosa:isObservedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_MotionAlarm"
+  },
+  "@context": {
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  }
+}

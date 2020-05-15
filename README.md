@@ -4,8 +4,8 @@
 
 * Deployed online: http://search-enabler-production.35.241.228.250.nip.io    
 * Queries the broker: http://155.54.95.248:9090/ngsi-ld/v1
-* [Schema](https://gitlab.iotcrawler.net/search-enabler/search-enabler/blob/master/src/resources/iotcrawler.graphqls)
-* [Sample Entities](https://gitlab.iotcrawler.net/search-enabler/search-enabler/tree/master/samples)
+* [Schemas](src/resources/schemas)
+* [Sample Entities](samples)
 
 
 # Queries

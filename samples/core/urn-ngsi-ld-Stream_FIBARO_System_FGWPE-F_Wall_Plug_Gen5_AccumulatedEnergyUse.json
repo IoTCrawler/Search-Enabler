@@ -1,0 +1,13 @@
+{
+  "id": "urn:ngsi-ld:Stream_FIBARO_System_FGWPE-F_Wall_Plug_Gen5_AccumulatedEnergyUse",
+  "type": "iot-stream:IotStream",
+  "iot-stream:generatedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_FIBARO_System_FGWPE-F_Wall_Plug_Gen5_AccumulatedEnergyUse"
+  },
+  "@context": {
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  }
+}

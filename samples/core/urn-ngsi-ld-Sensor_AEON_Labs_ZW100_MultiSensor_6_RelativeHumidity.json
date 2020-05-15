@@ -1,0 +1,21 @@
+{
+  "id": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_RelativeHumidity",
+  "type": "sosa:Sensor",
+  "sosa:isHostedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Platform_homee_00055110D732"
+  },
+  "rdfs:label": {
+    "type": "Property",
+    "value": "AEON Labs ZW100 MultiSensor 6 RelativeHumidity"
+  },
+  "sosa:observes": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:RelativeHumidity"
+  },
+  "@context": {
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  }
+}

@@ -190,7 +190,7 @@ public class ManualTests {
 
         for(EntityLD entityLD: entities){
             try {
-                Files.write(Paths.get("samples", com.agtinternational.iotcrawler.core.Utils.getFragment(entityLD.getId().replace(":","-") + ".json")), Utils.prettyPrint(entityLD.toJsonObject()).getBytes());
+                Files.write(Paths.get("samples", "core", com.agtinternational.iotcrawler.core.Utils.getFragment(entityLD.getId().replace(":","-") + ".json")), Utils.prettyPrint(entityLD.toJsonObject()).getBytes());
             }
             catch (Exception e){
                 e.printStackTrace();

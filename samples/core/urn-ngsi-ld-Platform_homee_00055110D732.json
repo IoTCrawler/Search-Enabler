@@ -1,0 +1,73 @@
+{
+  "id": "urn:ngsi-ld:Platform_homee_00055110D732",
+  "type": "sosa:Platform",
+  "rdfs:label": {
+    "type": "Property",
+    "value": "Platform homee_00055110D732"
+  },
+  "sosa:hosts#1": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_TamperAlarm"
+  },
+  "sosa:hosts#2": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_FIBARO_Wall_plug_living_room_AccumulatedEnergyUse"
+  },
+  "sosa:hosts#3": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_Brightness"
+  },
+  "sosa:hosts#4": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_BatteryLevel"
+  },
+  "sosa:hosts#5": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_MotionAlarm"
+  },
+  "sosa:hosts#6": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_FIBARO_System_FGWPE-F_Wall_Plug_Gen5_AccumulatedEnergyUse"
+  },
+  "sosa:hosts#7": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_FIBARO_System_FGWPE-F_Wall_Plug_Gen5_CurrentEnergyUse"
+  },
+  "sosa:hosts#8": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_UV"
+  },
+  "sosa:hosts#9": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_MotionAlarmCancelationDelay"
+  },
+  "sosa:hosts#10": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_FIBARO_Wall_plug_living_room_CurrentEnergyUse"
+  },
+  "sosa:hosts#11": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_RelativeHumidity"
+  },
+  "sosa:hosts#12": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_AEON_Labs_ZW100_MultiSensor_6_Temperature"
+  },
+  "@context": {
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "sosa:hosts#1": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#2": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#3": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#4": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#5": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#6": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#7": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#8": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#9": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#10": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#11": "http://dummyurl/sosa:hosts",
+    "sosa:hosts#12": "http://dummyurl/sosa:hosts"
+  }
+}

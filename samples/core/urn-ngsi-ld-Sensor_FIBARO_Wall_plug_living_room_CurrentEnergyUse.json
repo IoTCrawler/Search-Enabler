@@ -1,0 +1,21 @@
+{
+  "id": "urn:ngsi-ld:Sensor_FIBARO_Wall_plug_living_room_CurrentEnergyUse",
+  "type": "sosa:Sensor",
+  "sosa:isHostedBy": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Platform_homee_00055110D732"
+  },
+  "rdfs:label": {
+    "type": "Property",
+    "value": "FIBARO Wall plug living room CurrentEnergyUse"
+  },
+  "sosa:observes": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:CurrentEnergyUse"
+  },
+  "@context": {
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "id": "urn:ngsi-ld:CurrentEnergyUse",
+  "type": "sosa:ObservableProperty",
+  "rdfs:label": {
+    "type": "Property",
+    "value": "CurrentEnergyUse"
+  },
+  "sosa:isObservedBy#1": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_FIBARO_System_FGWPE-F_Wall_Plug_Gen5_CurrentEnergyUse"
+  },
+  "sosa:isObservedBy#2": {
+    "type": "Relationship",
+    "object": "urn:ngsi-ld:Sensor_FIBARO_Wall_plug_living_room_CurrentEnergyUse"
+  },
+  "@context": {
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "iot-stream": "http://purl.org/iot/ontology/iot-stream#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "sosa:isObservedBy#1": "http://dummyurl/sosa:isObservedBy",
+    "sosa:isObservedBy#2": "http://dummyurl/sosa:isObservedBy"
+  }
+}
