@@ -137,9 +137,9 @@ public class GraphQLProvider {
             }
 
             LOGGER.debug("Merging schema {}",schemaName);
+            List<String> mergedNames = new ArrayList<>();
             schemaTypeRegistry.types().values().forEach(newEntry -> {
                 String name = newEntry.getName();
-                LOGGER.debug("Merging type {}",name);
                 try {
                     if(schemaTypeRegistry.getType(name).get() instanceof ObjectTypeDefinition && schemaName.equals("iotcrawler.graphqls"))
                         if(!coreTypes.contains(name))
@@ -156,29 +156,34 @@ public class GraphQLProvider {
 
                     } else
                         typeRegistry.add(newEntry);
+                    mergedNames.add(name);
                 } catch (Exception e) {
                     LOGGER.error("Failed to merge field {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
                 }
             });
-
+            LOGGER.debug("Merged types: {}",String.join(",", mergedNames));
+            mergedNames.clear();
 
             schemaTypeRegistry.getDirectiveDefinitions().values().forEach(newEntry -> {
                 try {
                     typeRegistry.add(newEntry);
+                    mergedNames.add(newEntry.getName());
                 } catch (Exception e) {
                     LOGGER.error("Failed to merge directive {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
                 }
             });
+            LOGGER.debug("Merged directives: {}",String.join(",", mergedNames));
+            mergedNames.clear();
 
-            Map<String, ScalarTypeDefinition> tempScalarTypes = new LinkedHashMap<>();
             schemaTypeRegistry.scalars().values().forEach(newEntry -> {
                 try {
                     typeRegistry.add(newEntry);
+                    mergedNames.add(newEntry.getName());
                 } catch (Exception e) {
                     LOGGER.error("Failed to merge scalar {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
                 }
             });
-
+            LOGGER.debug("Merged scalars: {}",String.join(",", mergedNames));
             //
 //            // merge type extensions since they can be redefined by design
             schemaTypeRegistry.objectTypeExtensions().forEach((key, value) -> {

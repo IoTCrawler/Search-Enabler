@@ -1,7 +1,8 @@
 {
-  sensor(id: "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2") {
+  sensor(id: "urn:ngsi-ld:IndoorTemperatureSensor_1") {
     id,
     label,
+    alternativeType,
     observes {
         id,
         label

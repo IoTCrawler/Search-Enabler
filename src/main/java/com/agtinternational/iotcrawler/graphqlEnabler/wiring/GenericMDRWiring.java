@@ -326,7 +326,7 @@ public class GenericMDRWiring implements Wiring {
 
 
     //public static DataFetcher genericDataFetcher(Class targetClass, boolean resolvingInput) {
-    public static DataFetcher genericDataFetcher(String concept, boolean resolvingInput) {
+    public static DataFetcher genericDataFetcher(String concept, boolean calledRecursively) {
 
         return environment -> {
 //            Boolean topLevelQuery = (resolvedConcepts.size()==0?true: false);
@@ -339,13 +339,16 @@ public class GenericMDRWiring implements Wiring {
                 LOGGER.error("Loader for " + concept + " not found");
                 return null;
             }
+            if(!calledRecursively)
+                loader.clearAll();
+
             String id = environment.getArgument("id");
             String URI = environment.getArgument("URI");
             Object source = environment.getSource();
 
 
             if(id!=null) {
-                if (resolvingInput){
+                if (calledRecursively){
                     List<Object> entities = getConceptsByIds(Arrays.asList(id), concept);
                     List<String> ids = new ArrayList<>();
                     entities.stream().forEach(entity0 -> {
@@ -524,7 +527,7 @@ public class GenericMDRWiring implements Wiring {
                 if(filter!=null)
                     filterMap.put("subClassOf",filter);
 
-                DataFetcher dataFetcher = genericDataFetcher(adjacentConcept,false);
+                DataFetcher dataFetcher = genericDataFetcher(adjacentConcept,true);
                 DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
                         environment.getSource(),
                         (Map) filterMap,
