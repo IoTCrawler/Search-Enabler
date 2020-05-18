@@ -22,11 +22,12 @@ package com.agtinternational.iotcrawler.graphqlEnabler.smartConnect;
 
 
 import com.agtinternational.iotcrawler.core.ontologies.IotStream;
+import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
 
 public class IndoorTemperatureSensor extends TemperatureSensor{
     public IndoorTemperatureSensor(String uri) {
         super(uri);
-        setProperty(IotStream.alternativeType, new ResourceImpl("http://Agt/IndoorTemperatureSensor"));
+        setProperty(NGSI_LD.alternativeType, new ResourceImpl("http://Agt/IndoorTemperatureSensor"));
     }
 }
