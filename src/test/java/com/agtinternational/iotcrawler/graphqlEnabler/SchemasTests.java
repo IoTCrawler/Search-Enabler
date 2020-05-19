@@ -231,7 +231,7 @@ public class SchemasTests {
 		}
 
 		Assert.isTrue(exceptions==0);
-		LOGGER.info("Entities were registered");
+		LOGGER.info("Entities were deleted");
 	}
 
 

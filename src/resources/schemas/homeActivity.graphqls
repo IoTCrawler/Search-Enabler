@@ -1,0 +1,77 @@
+schema {
+    query: Query
+}
+
+
+type Query {
+
+}
+
+
+type Object @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Object"){
+    isAttached: Sensor
+}
+
+type Book @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Book", subClassOf: ["Object"]){
+
+}
+
+type ElectricAppliance @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Electric_Appliance", subClassOf: ["Object"]){
+
+}
+
+type EntertainmentAppliance @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Entertainment", subClassOf: ["ElectricAppliance"]){
+
+}
+
+type TV @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#TV", subClassOf: ["EntertainmentAppliance"]){
+
+}
+
+type Computer @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Computer", subClassOf: ["EntertainmentAppliance"]){
+
+}
+
+
+
+type KitchenAppliance @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Kitchen_Appliance", subClassOf: ["ElectricAppliance"]){
+
+}
+
+type Kettle @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Kettle", subClassOf: ["KitchenAppliance"]){
+
+}
+
+type Oven @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Oven", subClassOf: ["KitchenAppliance"]){
+
+}
+
+
+type ObjectBasedActivity @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#ObjectBasedActivity"){
+    label: String!
+    hasUse: Object!  @attribute(uri : "http://sensormeasurement.appspot.com/ont/home/homeActivit#has_use")
+}
+
+type Working_on_computer @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Working_on_computer", subClassOf: ["ObjectBasedActivity"]){
+    hasUse: Computer!
+}
+
+type Reading_A_Book @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Reading_a_book", subClassOf: ["ObjectBasedActivity"]){
+    hasUse: Book!
+}
+
+type Watching_TV @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Watching_TV", subClassOf:["ObjectBasedActivity"]){
+    hasUse: TV!
+}
+
+
+
+input ActivityInput {
+    id: String
+    location: String
+}
+
+input ApplianceInput {
+    id: String
+    location: String
+}
