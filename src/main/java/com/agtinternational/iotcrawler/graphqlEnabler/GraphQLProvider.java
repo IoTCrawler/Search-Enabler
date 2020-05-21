@@ -43,9 +43,11 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentationOptions.newOptions;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
+import static io.leangen.graphql.util.Scalars.GraphQLDate;
 import static java.util.Arrays.asList;
 
 @Component
@@ -87,6 +89,9 @@ public class GraphQLProvider {
     public void init() throws Exception {
 
         typeRegistry = mergeSchemas(wiring.getSchemas());
+        if(typeRegistry.types().size()==0)
+            throw new Exception("Empty schema. No types have been merged");
+
         wiringBuilder = newTypeWiring("Query");
 
         buildHierarchyFromDirectives();
@@ -104,7 +109,12 @@ public class GraphQLProvider {
         context = new ContextProvider(dataLoaderRegistry).newContext();
 
         SchemaGenerator schemaGenerator = new SchemaGenerator();
+
         RuntimeWiring runtimeWiring = wiring.build();
+//        typeRegistry.scalarTypeExtensions().put("Date",
+//                ScalarTypeExtensionDefinition
+//                .newScalarTypeExtensionDefinition()
+//                        .name("Date").build());
         GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
 
 
@@ -322,13 +332,22 @@ public class GraphQLProvider {
     public void addParentClassProperties(String parentTypeName){
         if(!topDownInheritance.containsKey(parentTypeName))
             return;
-        for(String typeName: topDownInheritance.get(parentTypeName)){
-            ObjectTypeDefinition typeDefinition = (ObjectTypeDefinition)typeRegistry.getType(typeName).get();
+        for(String childTypeName: topDownInheritance.get(parentTypeName)){
+            ObjectTypeDefinition typeDefinition = (ObjectTypeDefinition)typeRegistry.getType(childTypeName).get();
             ObjectTypeDefinition parentTypeDefinition = (ObjectTypeDefinition) typeRegistry.getType(parentTypeName).get();
             //Filling subclass with parent type properties
+            List<FieldDefinition> childTypeDefinitions = typeDefinition.getFieldDefinitions();
+            List<String> childTypeDefinitionNames = childTypeDefinitions.stream().map(type->type.getName()).collect(Collectors.toList());
+            if(childTypeDefinitions.size()>0){
+                String abc = "123";
+            }
             if (parentTypeDefinition != null)
-                typeDefinition.getFieldDefinitions().addAll(parentTypeDefinition.getFieldDefinitions());
-            addParentClassProperties(typeName);
+                parentTypeDefinition.getFieldDefinitions().forEach(typeDef->{
+                    if(!childTypeDefinitionNames.contains(typeDef.getName()))
+                        childTypeDefinitions.add(typeDef);
+                });
+
+            addParentClassProperties(childTypeName);
         }
     }
 

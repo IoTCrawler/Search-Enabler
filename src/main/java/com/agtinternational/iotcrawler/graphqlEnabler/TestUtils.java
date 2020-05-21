@@ -24,20 +24,20 @@ import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import net.minidev.json.JSONObject;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,65 +49,66 @@ import java.util.Map;
 import static com.agtinternational.iotcrawler.fiware.clients.Constants.NGSILD_BROKER_URL;
 
 
-public class SchemasTests {
-	protected static Logger LOGGER = LoggerFactory.getLogger(SchemasTests.class);
+public class TestUtils {
+	protected static Logger LOGGER = LoggerFactory.getLogger(TestUtils.class);
 
 	protected GraphQLProvider graphQLProvider;
 	protected GraphQL graphql;
 	protected Context context;
 	protected List<EntityLD> entities = new ArrayList<>();
 
-	@Before
-	public void init() throws Exception {
-		EnvVariablesSetter.init();
-
-		graphQLProvider = new GraphQLProvider(new IoTCrawlerWiring.Builder().build());
-		graphQLProvider.init();
-		graphql = graphQLProvider.graphQL();
-
-		context = graphQLProvider.getContext();
-
-	}
-
 	protected void initGraphQL() throws Exception {
 		initGraphQL(null);
 	}
 
-	protected void initGraphQL(Path path0) throws Exception {
+	protected void initGraphQL(List<String> pathsToRead) throws Exception {
+		LOGGER.info("Initing graphql staff");
+
+		LOGGER.info("Reading schema files");
 		Map<String, String> schemas = new HashMap<>();
-		List<Path> files = new ArrayList<>();
-		files.add(Paths.get("schemas","iotcrawler.graphqls"));
 
-		if(path0!=null) {
-			if (Files.isDirectory(path0))
-				Files.list(path0).forEach(path -> {
-					files.add(path);
-				});
-			else
-				files.add(path0);
-		}
+		List<String> filePathsToRead = new ArrayList<>();
+		filePathsToRead.add(Paths.get("schemas","iotcrawler.graphqls").toString());
 
-		for(Path path: files) {
+		if(pathsToRead!=null)
+			filePathsToRead.addAll(pathsToRead);
+
+//		{
+//			if (Files.isDirectory(path0))
+//				Files.list(path0).forEach(path -> {
+//					filePathsToRead.add(path.toString());
+//				});
+//			else
+//				filePathsToRead.add(path0.toString());
+//		}
+
+		for(String pathStr: filePathsToRead) {
+			Path path = Paths.get(pathStr);
 			String schemaString = null;
 			try {
-				schemaString = new String(Files.readAllBytes(path));
+				URL url = Resources.getResource(pathStr);
+				//schemaString = new String(Files.readAllBytes(path));
+				schemaString = new String(Resources.toByteArray(url));
+				schemas.put(path.getFileName().toString(), schemaString);
 			} catch (IOException e) {
-				LOGGER.error("Failed to read {}", path);
+				LOGGER.error("Failed to read {}: {}", path, e.getLocalizedMessage());
 			}
-			schemas.put(path.getFileName().toString(), schemaString);
+
 		}
 
 
+		LOGGER.info("Initing generic MDR wiring");
 		GenericMDRWiring wiring = new GenericMDRWiring();
 		wiring.setSchemaString(schemas);
 
-		LOGGER.info("Initing graphql provider");
-
+		LOGGER.info("Initing GraphQL provider");
 		graphQLProvider = new GraphQLProvider(wiring);
 		graphQLProvider.init();
 		graphql = graphQLProvider.graphQL();
 
 		context = graphQLProvider.getContext();
+
+		LOGGER.info("GraphQL was initialized");
 	}
 
 	public static String readQuery(Path resourcePath) throws IOException {
@@ -115,10 +116,10 @@ public class SchemasTests {
 		return ret;
 	}
 
-	protected List<EntityLD> readEntitiesFromFiles(){
+	protected List<EntityLD> readEntitiesFromFiles(File folder){
 		List<EntityLD> ret = new ArrayList<>();
 		List<Path> filesToRead= new ArrayList<>();
-		File folder = new File("samples");
+
 		if(folder.exists()) {
 			try {
 				Files.list(folder.toPath()).forEach(file->{
@@ -150,7 +151,9 @@ public class SchemasTests {
 		return ret;
 	}
 
-	public void executeQuery(Path filePath) throws IOException {
+	public void executeQuery(Path filePath) throws Exception {
+		if(graphql==null)
+			initGraphQL();
 		LOGGER.info("Executing {}", filePath);
 		String query = readQuery(filePath);
 		Map<String, Object> variables = new HashMap<>();
@@ -180,8 +183,7 @@ public class SchemasTests {
 		LOGGER.info(com.agtinternational.iotcrawler.core.Utils.prettyPrint(jsonObject.toString()));
 	}
 
-    @Test
-    @Ignore
+
 	public void registerEntities() throws Exception {
 		LOGGER.info("registerEntities()");
 
@@ -210,8 +212,7 @@ public class SchemasTests {
 		LOGGER.info("Entities were registered");
 	}
 
-	@Test
-	@Ignore
+
 	public void deleteEntities() throws Exception {
 		LOGGER.info("deleteEntities()");
 

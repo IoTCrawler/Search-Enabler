@@ -1,4 +1,5 @@
 scalar Object
+#scalar Date
 
 schema {
     query: Query
@@ -99,6 +100,15 @@ type ObservableProperty @resource(class : "http://www.w3.org/ns/sosa/ObservableP
 
 type StreamObservation @resource(class : "http://purl.org/iot/ontology/iot-stream#StreamObservation"){
     id: String!
+    type: String!
     madeBySensor: Sensor    @attribute(uri : "http://www.w3.org/ns/sosa/madeBySensor")
     belongsTo: IoTStream    @attribute(uri : "http://purl.org/iot/ontology/iot-stream#belongsTo")
 }
+
+#type Event @resource(class : "http://purl.org/iot/ontology/iot-stream#Event"){
+#    id: String!
+#    type: String!
+#    label: String!   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
+#    windowStart: Date  @attribute(uri : "http://purl.org/iot/ontology/iot-stream#windowStart")
+#    windowEnd: Date    @attribute(uri : "http://purl.org/iot/ontology/iot-stream#windowEnd")
+#}

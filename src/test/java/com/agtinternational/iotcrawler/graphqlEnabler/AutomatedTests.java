@@ -21,39 +21,26 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
-import com.agtinternational.iotcrawler.core.Utils;
-import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
-import com.agtinternational.iotcrawler.core.models.*;
-import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
-import graphql.ExecutionInput;
-import graphql.ExecutionResult;
 import graphql.GraphQL;
-import net.minidev.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
-import static com.agtinternational.iotcrawler.fiware.clients.Constants.NGSILD_BROKER_URL;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
 @RunWith(Parameterized.class)
-public class AutomatedTests extends SchemasTests{
+public class AutomatedTests extends TestUtils {
 	protected static Logger LOGGER = LoggerFactory.getLogger(AutomatedTests.class);
 	private Path queryFilePath;
 
@@ -78,6 +65,11 @@ public class AutomatedTests extends SchemasTests{
 
 	public AutomatedTests(Path queryFilePath){
 		this.queryFilePath = queryFilePath;
+	}
+
+	@Before
+	public void init(){
+		EnvVariablesSetter.init();
 	}
 
 	@Test

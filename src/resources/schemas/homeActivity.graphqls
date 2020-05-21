@@ -4,56 +4,23 @@ schema {
 
 
 type Query {
-
+    activities(offset: Int = 0, limit: Int = 0): [Functional_Activity]
 }
 
 
-type Object @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Object"){
-    isAttached: Sensor
+type Functional_Activity @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Functional_Activity"){
+    id: String!
+    type: String!
+    label: String            @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
+    alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
 }
 
-type Book @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Book", subClassOf: ["Object"]){
-
-}
-
-type ElectricAppliance @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Electric_Appliance", subClassOf: ["Object"]){
-
-}
-
-type EntertainmentAppliance @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Entertainment", subClassOf: ["ElectricAppliance"]){
-
-}
-
-type TV @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#TV", subClassOf: ["EntertainmentAppliance"]){
-
-}
-
-type Computer @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Computer", subClassOf: ["EntertainmentAppliance"]){
-
-}
-
-
-
-type KitchenAppliance @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Kitchen_Appliance", subClassOf: ["ElectricAppliance"]){
-
-}
-
-type Kettle @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Kettle", subClassOf: ["KitchenAppliance"]){
-
-}
-
-type Oven @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Oven", subClassOf: ["KitchenAppliance"]){
-
-}
-
-
-type ObjectBasedActivity @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#ObjectBasedActivity"){
-    label: String!
+type ObjectBasedActivity @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Object_based_Actvity", subClassOf: ["Functional_Activity"]){
     hasUse: Object!  @attribute(uri : "http://sensormeasurement.appspot.com/ont/home/homeActivit#has_use")
 }
 
 type Working_on_computer @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Working_on_computer", subClassOf: ["ObjectBasedActivity"]){
-    hasUse: Computer!
+    #hasUse: Computer!
 }
 
 type Reading_A_Book @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Reading_a_book", subClassOf: ["ObjectBasedActivity"]){
@@ -61,8 +28,20 @@ type Reading_A_Book @resource(class : "http://sensormeasurement.appspot.com/ont/
 }
 
 type Watching_TV @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Watching_TV", subClassOf:["ObjectBasedActivity"]){
-    hasUse: TV!
+    #hasUse: TV!
 }
+
+type Object @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Object"){
+    id: String!
+    type: String!
+    isAttached: Sensor
+    location: String
+}
+
+type Book @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Book", subClassOf: ["Object"]){
+    id: String
+}
+
 
 
 

@@ -1,4 +1,4 @@
-package com.agtinternational.iotcrawler.graphqlEnabler.smartHome;
+package com.agtinternational.iotcrawler.graphqlEnabler.homeActivity.activity;
 
 /*-
  * #%L
@@ -20,18 +20,18 @@ package com.agtinternational.iotcrawler.graphqlEnabler.smartHome;
  * #L%
  */
 
-import com.agtinternational.iotcrawler.core.models.Sensor;
+import com.agtinternational.iotcrawler.core.models.RDFModel;
 import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
+import com.agtinternational.iotcrawler.graphqlEnabler.homeActivity.HomeActivity;
 import org.apache.jena.rdf.model.impl.ResourceImpl;
 
-public class SmartPlug extends Sensor {
+public class FunctionalActivity extends RDFModel {
+    public FunctionalActivity(String uri, String typeUri) {
+        super(uri, HomeActivity.NS+"Functional_Activity");
+        namespaces.put(HomeActivity.Prefix, HomeActivity.NS);
 
-    public SmartPlug(String uri) {
-        super(uri);
-        namespaces.put("agt", "http://Agt/");
-        //namespaces.put("search-enabler", "http://search-enabler.iotcrawler/");
-
-        setProperty(NGSI_LD.alternativeType, new ResourceImpl("http://Agt/TemperatureSensor"));
+        setProperty(NGSI_LD.alternativeType, new ResourceImpl(typeUri));
 
     }
+
 }

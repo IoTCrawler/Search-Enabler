@@ -1,0 +1,9 @@
+{
+   activities
+   {
+           id,
+           type,
+           alternativeType,
+
+  }
+}

@@ -25,6 +25,7 @@ import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.core.interfaces.IoTCrawlerClient;
 import com.agtinternational.iotcrawler.core.models.*;
 import com.agtinternational.iotcrawler.core.ontologies.IotStream;
+import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.*;
 
@@ -183,7 +184,7 @@ public class GenericMDRWiring implements Wiring {
             String parentTypeName = environment.getArgument("subClassOf");
             try {
                 String parentTypeURI = findURI(parentTypeName);
-                query.put(IotStream.alternativeType, "\"" + parentTypeURI + "\"");
+                query.put(NGSI_LD.alternativeType, "\"" + parentTypeURI + "\"");
             } catch (Exception e) {
                 LOGGER.warn("Failed to find URI for {}", parentTypeName);
             }
@@ -370,7 +371,7 @@ public class GenericMDRWiring implements Wiring {
             Map<String,Object> query = new HashMap<>();
 
             int offset = 0;
-            int limit = 0;
+            int limit = 500;
 
             Map<String, Object> argumentsToResolve = environment.getArguments();
             if(argumentsToResolve.containsKey("offset")){
@@ -402,10 +403,9 @@ public class GenericMDRWiring implements Wiring {
                 LOGGER.error("Failed to find URI for {}: {}", concept, e.getLocalizedMessage());
             }
 
-            List entities = new ArrayList();
-            if(coreTypes.contains(concept))
-                entities = new ArrayList(serveQuery(typeURI, query, offset, limit));
-            else {
+            List entities = new ArrayList(serveQuery(typeURI, query, offset, limit));
+            if(!coreTypes.contains(concept)) //if additional resolution might be required
+            {
                 List<String> childTypes = getTopdownTypesAsList(concept);
                 List<String> forBottomUpResolution = new ArrayList<>();
                 forBottomUpResolution.add(concept);
