@@ -105,7 +105,7 @@
       <groupId>com.agtinternational.iotcrawler</groupId>
       <artifactId>smartHomeApp</artifactId>
       <version>1.0-SNAPSHOT</version>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
