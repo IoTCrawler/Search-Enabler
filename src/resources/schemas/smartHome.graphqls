@@ -2,43 +2,43 @@ schema {
     query: Query
 }
 
-directive @resource(class : String!, subClassOf : String) on OBJECT
-directive @attribute(uri : String!) on FIELD_DEFINITION
-
 type Query {
-    household(id: String): Household
-    households(activity: ActivityInput, activeAppliance: ApplianceInput): [Household]
-    activity(id: String): [Activity]
-    activities(homeId: String, location: String): [Activity]
-    activeAppliances(homeId: String, location: String): [Appliance]
+        householdStateStreams(id: String, observes: HouseholdInput): [HouseholdStateStream]
+        householdStateObservations(id: String, belongsTo: HouseholdStateStreamInput, activity: ActivityInput ): [HouseholdStateObservation]
+
+        #activity(id: String): [Activity]
+        #activities(homeId: String, location: String): [Activity]
+        #activeAppliances(homeId: String, location: String): [Appliance]
 }
 
 type Household @resource(class : "http://agtinternational/smartHomeApp#Household"){
-     id: String
-     activeAppliances: Appliance @attribute(uri : "http://agtinternational/smartHomeApp#activeAppliances")
-     activities: [Activity]  @attribute(uri : "http://agtinternational/smartHomeApp#activities")
+     id: String!
+     type: String!
+}
+
+type HouseholdStateStream @resource(class : "http://agtinternational/smartHomeApp#HouseholdStateStream", subClassOf: ["IoTStream"]){
+     id: String!
+     type: String!
+     observes: Household @attribute(uri : "http://purl.org/iot/ontology/iot-stream#observes")
+}
+
+type HouseholdStateObservation @resource(class : "http://agtinternational/smartHomeApp#HouseholdStateObservation", subClassOf: ["StreamObservation"]){
+     id: String!
+     type: String!
+     belongsTo: HouseholdStateStream   @attribute(uri : "http://purl.org/iot/ontology/iot-stream#belongsTo")
+     activities: [Functional_Activity] @attribute(uri : "http://agtinternational/smartHomeApp#activities")
 }
 
 
-type Appliance @resource(class : "http://agtinternational/smartHomeApp#Appliance"){
-     id: String
-     label: String! @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
-     locatedAt: String! @attribute(uri : "http://agtinternational/smartHomeApp#locatedAt")
-     currentConsumption: Int! @attribute(uri : "http://agtinternational/smartHomeApp#currentConsumption")
+input HouseholdInput {
+    id: String
 }
 
-type Activity @resource(class : "http://agtinternational/smartHomeApp#Activity"){
-      label: String @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
-      relatedTo: Appliance  @attribute(uri : "http://agtinternational/smartHomeApp#relatedTo")
+input HouseholdStateStreamInput @resource(subClassOf: ["HouseholdStateStream"]) {
+    id: String
 }
 
 
 input ActivityInput {
     id: String
-    location: String
-}
-
-input ApplianceInput {
-    id: String
-    location: String
 }

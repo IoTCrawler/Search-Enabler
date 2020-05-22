@@ -1,0 +1,22 @@
+{
+   householdStateObservations(belongsTo: {
+                                            id: "urn:household1:stateStream"
+                                         }){
+   #householdStateObservations{
+                  id,
+                  type,
+                  belongsTo{
+                      id,
+                      type,
+                      observes{
+                            id,
+                            type
+                      }
+                  },
+                  activities{
+                    id,
+                    type,
+                    label
+                  }
+              }
+}

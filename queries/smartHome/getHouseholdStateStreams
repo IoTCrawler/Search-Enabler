@@ -1,0 +1,10 @@
+{
+   householdStateStreams{
+                  id,
+                  type
+                  observes {
+                    id,
+                    type
+                  }
+              }
+}

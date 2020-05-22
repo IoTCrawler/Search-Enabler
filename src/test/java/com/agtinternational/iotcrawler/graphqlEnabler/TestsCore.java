@@ -1,4 +1,4 @@
-package com.agtinternational.iotcrawler.graphqlEnabler.core;
+package com.agtinternational.iotcrawler.graphqlEnabler;
 
 /*-
  * #%L

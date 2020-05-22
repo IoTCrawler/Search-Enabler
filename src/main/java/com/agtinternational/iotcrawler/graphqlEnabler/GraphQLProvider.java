@@ -21,7 +21,6 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
-import com.agtinternational.iotcrawler.core.ontologies.IotStream;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
 import graphql.GraphQL;
@@ -47,7 +46,6 @@ import java.util.stream.Collectors;
 
 import static graphql.execution.instrumentation.dataloader.DataLoaderDispatcherInstrumentationOptions.newOptions;
 import static graphql.schema.idl.TypeRuntimeWiring.newTypeWiring;
-import static io.leangen.graphql.util.Scalars.GraphQLDate;
 import static java.util.Arrays.asList;
 
 @Component
@@ -65,7 +63,7 @@ public class GraphQLProvider {
     Map<String, String> bindingRegistry = new LinkedHashMap<>();
     Map<String, List<String>> topDownInheritance = new LinkedHashMap<>();
     Map<String, List<String>> bottomUpHierarchy = new LinkedHashMap<>();
-    List<String> coreTypes = new ArrayList<>();
+    //List<String> coreTypes = new ArrayList<>();
     TypeRuntimeWiring.Builder wiringBuilder;
 
     //@Autowired
@@ -95,7 +93,7 @@ public class GraphQLProvider {
         wiringBuilder = newTypeWiring("Query");
 
         buildHierarchyFromDirectives();
-        fillingBindingRegistry();
+        fillBindingRegistry();
 
         RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring().type(wiringBuilder).scalar(ExtendedScalars.Object);
 
@@ -116,7 +114,6 @@ public class GraphQLProvider {
 //                .newScalarTypeExtensionDefinition()
 //                        .name("Date").build());
         GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeRegistry, runtimeWiring);
-
 
         DataLoaderDispatcherInstrumentation dlInstrumentation =
                 //new DataLoaderDispatcherInstrumentation(newOptions().includeStatistics(true));
@@ -151,9 +148,10 @@ public class GraphQLProvider {
             schemaTypeRegistry.types().values().forEach(newEntry -> {
                 String name = newEntry.getName();
                 try {
-                    if(schemaTypeRegistry.getType(name).get() instanceof ObjectTypeDefinition && schemaName.equals("iotcrawler.graphqls"))
-                        if(!coreTypes.contains(name))
-                            coreTypes.add(name);
+                    if(schemaTypeRegistry.getType(name).get() instanceof ObjectTypeDefinition && schemaName.equals("iotcrawler.graphqls")) {
+                        //if (!coreTypes.contains(name))
+                         //   coreTypes.add(name);
+                    }
                     //Merging types under Query type
                     if (typeRegistry.getType(name).isPresent()){
                         TypeDefinition alreadyPresetentTypeDefinition = typeRegistry.getType(name).get();
@@ -237,35 +235,44 @@ public class GraphQLProvider {
         return typeRegistry;
     }
 
+    private List<String> processTypeDirectives(String typeName, List<Directive> directives){
+        List<String> topLevelTypes = new ArrayList<>();
+        for (Directive directive : directives){
+            if (directive.getArgument("subClassOf") != null){
+                Value value = directive.getArgument("subClassOf").getValue();
+                List<String> parentTypeNames = Utils.extractValues(value);
+
+                for(String parentTypeName: parentTypeNames){
+                    List<String> childClasses = (topDownInheritance.containsKey(parentTypeName) ? topDownInheritance.get(parentTypeName) : new ArrayList<>());
+                    childClasses.add(typeName);
+                    topDownInheritance.put(parentTypeName, childClasses);
+
+                    List<String> parentClasses = (bottomUpHierarchy.containsKey(typeName) ? topDownInheritance.get(typeName) : new ArrayList<>());
+                    parentClasses.add(parentTypeName);
+                    bottomUpHierarchy.put(typeName, parentClasses);
+                }
+            }else topLevelTypes.add(typeName);
+        }
+        return topLevelTypes;
+    }
+
     private void buildHierarchyFromDirectives(){
         LOGGER.debug("Building hierarchy from directives");
         List<String> topLevelTypes = new ArrayList<>();
         for (TypeDefinition typeDefinition0 : typeRegistry.types().values()){
-            if (typeDefinition0 instanceof ObjectTypeDefinition) {
+            if (typeDefinition0 instanceof ObjectTypeDefinition){
 
                 ObjectTypeDefinition typeDefinition = ((ObjectTypeDefinition) typeDefinition0);
                 String typeName = typeDefinition.getName();
                 wiring.registerDataloaderConcept(typeName);
                 //dataLoaderRegistry.register(typeDefinition.getName(), new DataLoader(new GenericMDRWiring.GenericLoader(typeDefinition.getName())));
 
-
-                for (Directive directive : ((ObjectTypeDefinition) typeDefinition).getDirectives()) {
-
-                    if (directive.getArgument("subClassOf") != null){
-                        Value value = directive.getArgument("subClassOf").getValue();
-                        List<String> parentTypeNames = Utils.extractValues(value);
-
-                        for(String parentTypeName: parentTypeNames){
-                            List<String> childClasses = (topDownInheritance.containsKey(parentTypeName) ? topDownInheritance.get(parentTypeName) : new ArrayList<>());
-                            childClasses.add(typeName);
-                            topDownInheritance.put(parentTypeName, childClasses);
-
-                            List<String> parentClasses = (bottomUpHierarchy.containsKey(typeName) ? topDownInheritance.get(typeName) : new ArrayList<>());
-                            parentClasses.add(parentTypeName);
-                            bottomUpHierarchy.put(typeName, parentClasses);
-                        }
-                    }else topLevelTypes.add(typeName);
-                }
+                List<Directive> directives = ((ObjectTypeDefinition) typeDefinition).getDirectives();
+                List<String> appendToTopLevelTypes = processTypeDirectives(typeName, directives);
+                appendToTopLevelTypes.forEach(type->{
+                    if(!topLevelTypes.contains(type));
+                    topLevelTypes.add(type);
+                });
 
                 for (FieldDefinition fieldDefinition : ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions()) {
                     String name2 = fieldDefinition.getName();
@@ -289,6 +296,16 @@ public class GraphQLProvider {
 
                 }
 
+            }else if(typeDefinition0 instanceof InputObjectTypeDefinition){
+                InputObjectTypeDefinition inputObjectTypeDefinition = ((InputObjectTypeDefinition) typeDefinition0);
+                List<Directive> directives = inputObjectTypeDefinition.getDirectives();
+                List<String> appendToTopLevelTypes = processTypeDirectives(typeDefinition0.getName(), directives);
+                appendToTopLevelTypes.forEach(type->{
+                    if(!topLevelTypes.contains(type));
+                    topLevelTypes.add(type);
+                });
+
+
             }
 
         }
@@ -298,7 +315,70 @@ public class GraphQLProvider {
         String abc ="123";
     }
 
-    private void fillingBindingRegistry(){
+
+    public void addParentClassProperties(String parentTypeName){
+        if(!topDownInheritance.containsKey(parentTypeName))
+            return;
+        for(String childTypeName: topDownInheritance.get(parentTypeName)){
+            TypeDefinition typeDefinition = typeRegistry.getType(childTypeName).get();
+            TypeDefinition parentTypeDefinition = typeRegistry.getType(parentTypeName).get();
+            if(parentTypeDefinition==null)
+                continue;
+
+            List<FieldDefinition> parentTypeFieldDefinitions = new ArrayList<>();
+            if (parentTypeDefinition instanceof ObjectTypeDefinition)
+                parentTypeFieldDefinitions = ((ObjectTypeDefinition) parentTypeDefinition).getFieldDefinitions();
+            else
+                throw new NotImplementedException("");
+
+
+            if(typeDefinition instanceof ObjectTypeDefinition) {
+                List<FieldDefinition> childTypeDefinitions = ((ObjectTypeDefinition)typeDefinition).getFieldDefinitions();
+                List<String> childTypeDefinitionNames = childTypeDefinitions.stream().map(type -> type.getName()).collect(Collectors.toList());
+                parentTypeFieldDefinitions.forEach(typeDef -> {
+                    if (!childTypeDefinitionNames.contains(typeDef.getName()))
+                        childTypeDefinitions.add(typeDef);
+                });
+            }else if(typeDefinition instanceof InputObjectTypeDefinition){
+                List<InputValueDefinition> childTypeDefinitions = ((InputObjectTypeDefinition)typeDefinition).getInputValueDefinitions();
+                List<String> childTypeDefinitionNames = childTypeDefinitions.stream().map(type -> type.getName()).collect(Collectors.toList());
+                parentTypeFieldDefinitions.forEach(typeDef -> {
+                    if (!childTypeDefinitionNames.contains(typeDef.getName())){
+
+                        //Type type = new TypeName(typeDef.getName()+"Input");
+                        Type type = typeDef.getType();
+
+                        if(type instanceof NonNullType){
+                            type = ((NonNullType)type).getType();
+                         }else if(!(type instanceof TypeName))
+                            throw new NotImplementedException("");
+
+                        if(type instanceof TypeName) {
+                            String name = ((TypeName)(type)).getName();
+                            TypeDefinition existingType = typeRegistry.getType(name).get();
+                            if(existingType instanceof ObjectTypeDefinition) {
+                                TypeName typeName = new TypeName(name+"Input");
+                                InputValueDefinition inputValueDefinition = new InputValueDefinition(typeDef.getName(), typeName);
+                                childTypeDefinitions.add(inputValueDefinition);
+                            }
+
+                        }else
+                            throw new NotImplementedException("");
+
+                    }
+                        //childTypeDefinitions.add(typeDef);
+                });
+            }else
+                throw new NotImplementedException("");
+
+
+
+
+            addParentClassProperties(childTypeName);
+        }
+    }
+
+    private void fillBindingRegistry(){
         LOGGER.debug("Filling binding registry");
         List<String> topLevelTypes = new ArrayList<>();
         for (TypeDefinition typeDefinition0 : typeRegistry.types().values()){
@@ -329,27 +409,6 @@ public class GraphQLProvider {
     }
 
 
-    public void addParentClassProperties(String parentTypeName){
-        if(!topDownInheritance.containsKey(parentTypeName))
-            return;
-        for(String childTypeName: topDownInheritance.get(parentTypeName)){
-            ObjectTypeDefinition typeDefinition = (ObjectTypeDefinition)typeRegistry.getType(childTypeName).get();
-            ObjectTypeDefinition parentTypeDefinition = (ObjectTypeDefinition) typeRegistry.getType(parentTypeName).get();
-            //Filling subclass with parent type properties
-            List<FieldDefinition> childTypeDefinitions = typeDefinition.getFieldDefinitions();
-            List<String> childTypeDefinitionNames = childTypeDefinitions.stream().map(type->type.getName()).collect(Collectors.toList());
-            if(childTypeDefinitions.size()>0){
-                String abc = "123";
-            }
-            if (parentTypeDefinition != null)
-                parentTypeDefinition.getFieldDefinitions().forEach(typeDef->{
-                    if(!childTypeDefinitionNames.contains(typeDef.getName()))
-                        childTypeDefinitions.add(typeDef);
-                });
-
-            addParentClassProperties(childTypeName);
-        }
-    }
 
     public GraphQLSchema getGraphQLSchema() {
         return graphQLSchema;

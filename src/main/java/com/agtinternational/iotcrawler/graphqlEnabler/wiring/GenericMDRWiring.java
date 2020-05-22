@@ -63,7 +63,7 @@ public class GenericMDRWiring implements Wiring {
     private static Map<String, String> bindingRegistry = new HashMap<>();
     private static Map<String, List<String>> topDownInheritance = new HashMap<>();
     private static Map<String, List<String>> bottomUpHierarchy = new HashMap<>();
-    private static List<String> coreTypes = Arrays.asList(new String[]{ "IoTStream", "Sensor", "ObservableProperty" });
+    private static List<String> coreTypes = Arrays.asList(new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty", "StreamObservation" });
 
     public GenericMDRWiring(){
     }
@@ -178,7 +178,7 @@ public class GenericMDRWiring implements Wiring {
     }
 
 
-    private static Map resolveFilters(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve){
+    private static Map resolveFilters(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve) throws Exception {
 
         if(environment.getArgument("subClassOf")!=null) {
             String parentTypeName = environment.getArgument("subClassOf");
@@ -227,6 +227,8 @@ public class GenericMDRWiring implements Wiring {
                     String inputTypeName = graphQLInputType.getName().replace("Input","");
 
                     GraphQLType targetType = environment.getGraphQLSchema().getType(inputTypeName);
+                    if(targetType==null)
+                        throw new Exception("Type " + inputTypeName + " not found in schema");
 
                     if(targetType instanceof GraphQLObjectType) {
 
