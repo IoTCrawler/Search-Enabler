@@ -1,5 +1,10 @@
 # Search Enabler
 
+The GraphQL-based search enabler component is considered as a main search-component of
+IoTCrawler. It employs a query language (GraphQL) and a query processor,
+which works on top of NGSI-LD-compliant component (the ranking Component or MDR). The  component eliminates the lack of expressivity and functional capabilities which prevent NGSI-LD from being the main search interface the large-scale IoT metadata deployments gathered in the IoTCrawler platform. The search enablerb fills the gap between low-level sensors and high-level domain semantics about sensors data and deals with the context-dependent entities by maintaining the context in the IoTCrawler platform. 
+
+
 # Details
 
 * Deployed online: http://search-enabler-production.35.241.228.250.nip.io    
