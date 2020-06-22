@@ -33,6 +33,7 @@ which works on top of NGSI-LD-compliant component (the ranking Component or MDR)
 * 
 
 # Querying via REST API
+```
 curl -d '{
    streams(
             generatedBy: {  #sensor
@@ -59,4 +60,5 @@ curl -d '{
                   }
               }
 }' -H "Content-Type: application/json" -X POST http://search-enabler-production.35.241.228.250.nip.io/graphql
+```
  
