@@ -44,4 +44,4 @@ curl -d '{"query": "{\n   #streams\n   streams(\n            generatedBy: {\n   
 * [Sensors](http://155.54.95.248:9090/ngsi-ld/v1/entities?type=http://www.w3.org/ns/sosa/Sensor)
 * [Observable Properties](http://155.54.95.248:9090/ngsi-ld/v1/entities?type=http://www.w3.org/ns/sosa/ObservableProperty)
 * [Platforms](http://155.54.95.248:9090/ngsi-ld/v1/entities?type=http://www.w3.org/ns/sosa/Platform)
-* [StreamObservation](http://155.54.95.248:9090/ngsi-ld/v1/entities?type=http%3A%2F%2Fpurl.org%2Fiot%2Fontology%2Fiot-stream%23StreamObservation)
+* [Stream Observations](http://155.54.95.248:9090/ngsi-ld/v1/entities?type=http%3A%2F%2Fpurl.org%2Fiot%2Fontology%2Fiot-stream%23StreamObservation)
