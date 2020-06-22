@@ -34,31 +34,6 @@ which works on top of NGSI-LD-compliant component (the ranking Component or MDR)
 
 # Querying via REST API
 ```
-curl -d '{
-   streams(
-            generatedBy: {  #sensor
-                       observes: { #observableProperty
-                            label: "Temperature"
-                       #     label: "Energy"
-                       }
-               }
-               )
-               {
-                  id,        #stream
-                  generatedBy {  #sensor
-                      id,
-                  #    label,
-                       isHostedBy{   #platform
-                                      id,
-                  #                    label,
-                                      #location
-                                    },
-                      observes{   #observableProperty
-                      #    id,
-                          label
-                      }
-                  }
-              }
-}' -H "Content-Type: application/json" -X POST http://search-enabler-production.35.241.228.250.nip.io/graphql
+curl -d '{"query": "{\n   #streams\n   streams(\n            generatedBy: {\n                       #id: \"urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2\"\n                       #isHostedBy: {\n                            #id: \"urn:ngsi-ld:Platform_homee_00055110D732\"\n                       #     label: \"homee_00055110D732\"\n                       #}\n                       observes: {\n                            label: \"Temperature\"\n                       #     label: \"Energy\"\n                       }\n               }\n               )\n               {\n                  id,\n                  generatedBy {\n                      id,\n                  #    label,\n                       isHostedBy{\n                                      id,\n                  #                    label,\n                                      #location\n                                    },\n                      observes{\n                      #    id,\n                          label\n                      }\n                  }\n              }\n}"}' -H "Content-Type: application/json" -X POST http://search-enabler-production.35.241.228.250.nip.io/graphql
 ```
  
