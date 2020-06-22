@@ -8,7 +8,7 @@ which works on top of NGSI-LD-compliant component (the ranking Component or MDR)
 # Details
 
 * Deployed online: http://search-enabler-production.35.241.228.250.nip.io    
-* Queries the broker: http://155.54.95.248:9090/ngsi-ld/v1
+* Works on top of the broker: http://155.54.95.248:9090/ngsi-ld/v1
 * [Schemas](src/resources/schemas)
 * [Sample Entities](samples)
 
@@ -33,8 +33,8 @@ which works on top of NGSI-LD-compliant component (the ranking Component or MDR)
 * 
 
 # Querying via REST API
+* POST request to http://{enalber-url}/graphql
 * Query should be placed (might be copypasted from GUI) into the body under the "query" key:
 ```
 curl -d '{"query": "{\n   #streams\n   streams(\n            generatedBy: {\n                       #id: \"urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2\"\n                       #isHostedBy: {\n                            #id: \"urn:ngsi-ld:Platform_homee_00055110D732\"\n                       #     label: \"homee_00055110D732\"\n                       #}\n                       observes: {\n                            label: \"Temperature\"\n                       #     label: \"Energy\"\n                       }\n               }\n               )\n               {\n                  id,\n                  generatedBy {\n                      id,\n                  #    label,\n                       isHostedBy{\n                                      id,\n                  #                    label,\n                                      #location\n                                    },\n                      observes{\n                      #    id,\n                          label\n                      }\n                  }\n              }\n}"}' -H "Content-Type: application/json" -X POST http://search-enabler-production.35.241.228.250.nip.io/graphql
 ```
- 
