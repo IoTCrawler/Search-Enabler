@@ -32,7 +32,7 @@ which works on top of NGSI-LD-compliant component (the ranking Component or MDR)
 * [IndoorTemperature sensors](http://search-enabler-production.35.241.228.250.nip.io/?query=%7B%0A%20%20%20indoorTemperatureSensors%0A%20%20%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20id%2C%0A%20%20%20%20%20%20%20%20%20%20%20type%2C%0A%20%20%20%20%20%20%20%20%20%20%20alternativeType%2C%0A%20%20%20%20%20%20%20%20%20%20%20label%2C%0A%20%20%20%20%20%20%20%20%20%20%20observes%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20id%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20label%0A%20%20%20%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20isHostedBy%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20id%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20label%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20hosts%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20id%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20label%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%0A%20%20%7D%0A%7D). Include all entities type=Sosa:Sensor and alternativeType=IndoorTemperatureSensor. [Schema](src/resources/schemas/smartConnect.graphqls)
 * 
 
-# Querying via REST API
+# Querying enabler via REST API
 * POST request to http://{enalber-url}/graphql
 * Query should be placed (might be copypasted from GUI) into the body under the "query" key:
 ```
