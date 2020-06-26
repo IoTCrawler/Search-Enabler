@@ -101,12 +101,12 @@
 <!--      <version>1.9.0</version>-->
 <!--    </dependency>-->
 
-    <dependency>
-      <groupId>com.agtinternational.iotcrawler</groupId>
-      <artifactId>smartHomeApp</artifactId>
-      <version>1.0-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>com.agtinternational.iotcrawler</groupId>-->
+<!--      <artifactId>smartHomeApp</artifactId>-->
+<!--      <version>1.0-SNAPSHOT</version>-->
+<!--      <scope>provided</scope>-->
+<!--    </dependency>-->
 
     <dependency>
       <groupId>org.neo4j</groupId>
@@ -156,18 +156,18 @@
       <version>4.0.0</version>
     </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>org.springframework</groupId>-->
-<!--      <artifactId>spring-core</artifactId>-->
-<!--&lt;!&ndash;      <version>4.2.0.RELEASE</version>&ndash;&gt;-->
-<!--&lt;!&ndash;      <version>5.2.1.RELEASE</version>&ndash;&gt;-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+<!--      <version>4.2.0.RELEASE</version>-->
+<!--      <version>5.2.1.RELEASE</version>-->
+    </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>org.springframework</groupId>-->
-<!--      <artifactId>spring-web</artifactId>-->
-<!--&lt;!&ndash;      <version>5.2.1.RELEASE</version>&ndash;&gt;-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+<!--      <version>5.2.1.RELEASE</version>-->
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
