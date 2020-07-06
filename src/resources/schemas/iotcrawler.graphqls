@@ -19,7 +19,7 @@ type Query {
     sensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
     systems(isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
     platforms(hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
-    observableProperties(query: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
+    observableProperties(label: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
 
 
 }

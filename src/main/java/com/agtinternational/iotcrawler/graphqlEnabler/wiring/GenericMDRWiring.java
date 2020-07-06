@@ -294,13 +294,13 @@ public class GenericMDRWiring implements Wiring {
                             Object entities = future.get();
                             if (entities instanceof Iterable) {
 
-                                if (!((Iterable) entities).iterator().hasNext())
-                                    return null;
+//                                if (!((Iterable) entities).iterator().hasNext())
+//                                    return null;
 
                                 Object entityIds = ((ArrayList) entities).stream().map(entity -> ((EntityLD) entity).getId()).collect(Collectors.toList());
                                 int size = ((List) entityIds).size();
-                                if (size == 0)
-                                    return null;
+                                //if (size == 0)
+//                                    return null;
 
                                 LOGGER.debug("{} fetcher executed. {} entities returned", targetType.getName(), size);
                                 query.put(propertyURI, entityIds);
@@ -312,13 +312,12 @@ public class GenericMDRWiring implements Wiring {
                         } catch (Exception e) {
                             LOGGER.error("Failed to resolve madeBySensor filter");
                             e.printStackTrace();
-                            return null;
+                            //return null;
                         }
                     }else if(targetType instanceof GraphQLScalarType){
                         query.put(propertyURI, (argValue instanceof String? "\""+argValue.toString()+"\"": argValue));
                     }else
                         throw new NotImplementedException();
-
                 }
 
 
