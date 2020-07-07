@@ -4,10 +4,11 @@ metadata:
   name: search-enabler-ingress
 spec:
   rules:
-    - host: {{ .Values.gitlab.env }}.35.241.228.250.nip.io
+    - host: {{ .Values.gitlab.env }}.iotcrawler.eu
       http:
         paths:
           - path: "/"
             backend:
               serviceName: "search-enabler"
               servicePort: 8080
+    #- host: {{ .Values.gitlab.env }}.35.241.228.250.nip.io
