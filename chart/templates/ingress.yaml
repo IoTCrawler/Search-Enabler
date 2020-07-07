@@ -8,7 +8,7 @@ metadata:
 spec:
   tls:
   - hosts:
-    {{ if eq .Values.gitlab.env "production" }}
+    {{ if eq .Values.gitlab.env "search-enabler-production" }}
     - search-enabler.iotcrawler.eu
     {{ else }}
     - staging.search-enabler.iotcrawler.eu
