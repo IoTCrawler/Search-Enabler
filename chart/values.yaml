@@ -17,3 +17,5 @@ image:
 application:
   track: latest
   tier: web
+gitlab:
+  env:
