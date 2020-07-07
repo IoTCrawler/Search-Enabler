@@ -4,7 +4,19 @@ metadata:
   name: search-enabler-ingress
 spec:
   rules:
-    - host: {{ .Values.gitlab.env }}.iotcrawler.eu
+    - hosts:
+        {{ if eq .Values.gitlab.env "staging" }}
+        - staging.search-enabler.iotcrawler.eu
+        {{ else }}
+        - search-enabler.iotcrawler.eu
+        {{ end }}
+        secretName: search-{{ .Values.gitlab.env }}-tls
+      rules:
+      {{ if eq .Values.gitlab.env "staging" }}
+      - host: staging.search-enabler.iotcrawler.eu
+        {{ else }}
+      - host: search-enabler.iotcrawler.eu
+      {{ end }}
       http:
         paths:
           - path: "/"
