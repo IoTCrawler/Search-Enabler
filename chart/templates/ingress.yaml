@@ -3,16 +3,24 @@ kind: Ingress
 metadata:
   name: search-enabler-ingress
 spec:
-  rules:
+  tls:
+  - hosts:
     {{ if eq .Values.gitlab.env "staging" }}
-    - host: staging.search-enabler.iotcrawler.eu
-      {{ else }}
-    - host: search-enabler.iotcrawler.eu
+    - staging.search-enabler.iotcrawler.eu
+    {{ else }}
+    - search-enabler.iotcrawler.eu
     {{ end }}
-      http:
-        paths:
-          - path: "/"
-            backend:
-              serviceName: "search-enabler"
-              servicePort: 8080
+    secretName: seach-enabler-{{ .Values.gitlab.env }}-tls
+  rules:
+  {{ if eq .Values.gitlab.env "staging" }}
+  - host: staging.search-enabler.iotcrawler.eu
+  {{ else }}
+  - host: search-enabler.iotcrawler.eu
+  {{ end }}
+    http:
+      paths:
+      - path: "/"
+        backend:
+          serviceName: "search-enabler"
+          servicePort: 8080
     #- host: {{ .Values.gitlab.env }}.35.241.228.250.nip.io
