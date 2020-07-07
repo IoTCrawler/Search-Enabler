@@ -5,17 +5,17 @@ metadata:
 spec:
   tls:
   - hosts:
-    {{ if eq .Values.gitlab.env "staging" }}
-    - staging.search-enabler.iotcrawler.eu
-    {{ else }}
+    {{ if eq .Values.gitlab.env "production" }}
     - search-enabler.iotcrawler.eu
+    {{ else }}
+    - staging.search-enabler.iotcrawler.eu
     {{ end }}
-    secretName: seach-enabler-{{ .Values.gitlab.env }}-tls
+    secretName: search-enabler-{{ .Values.gitlab.env }}-tls
   rules:
-  {{ if eq .Values.gitlab.env "staging" }}
-  - host: staging.search-enabler.iotcrawler.eu
-  {{ else }}
+  {{ if eq .Values.gitlab.env "production" }}
   - host: search-enabler.iotcrawler.eu
+  {{ else }}
+  - host: staging.search-enabler.iotcrawler.eu
   {{ end }}
     http:
       paths:
