@@ -218,4 +218,9 @@ public class TestsCore extends TestUtils {
         executeQuery(Paths.get("queries","core","getObservableProperties"));
     }
 
+    @Test
+    public void getStreamObservationsTest() throws Exception {
+
+        executeQuery(Paths.get("queries","core","getStreamObservations"));
+    }
 }

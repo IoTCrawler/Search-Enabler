@@ -1,12 +1,14 @@
 {
-   sensors
-   #sensors(
+   #sensors
+   sensors(
     #isHostedBy: {
     #               label: "AEON Labs ZW100 MultiSensor 6"
     #                label: "FIBARO System FGWPE/F Wall Plug Gen5"
     #           },
-    #observes: { label: "Temperature" }
-   #)
+    observes: {
+        label: "Temperature"
+       }
+   )
    {
            id,
            label,
@@ -14,13 +16,13 @@
                id,
                label
            },
-           isHostedBy{
-                       id,
-                       label,
-                       hosts{
-                                 id,
-                                 label
-                               }
-                     }
+           #isHostedBy{
+           #            id,
+           #            label,
+           #            hosts{
+           #                      id,
+           #                      label
+           #                    }
+           #          }
   }
 }

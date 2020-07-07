@@ -10,7 +10,7 @@
                        #}
                        observes: {
                        #     label: "Temperature"
-                            label: "Energy"
+                            label: "temperature"
                        }
                }
                )

@@ -388,7 +388,9 @@ public class GenericMDRWiring implements Wiring {
                 try {
                     query = resolveFilters(query, environment, argumentsToResolve);
                 } catch (Exception e) {
+                    LOGGER.error("Failed to resolve filters");
                     e.printStackTrace();
+                    return null;
                 }
 
             }
