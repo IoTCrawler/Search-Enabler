@@ -15,7 +15,7 @@ spec:
     {{ end }}
     secretName: search-enabler-{{ .Values.gitlab.env }}-tls22
   rules:
-  {{ if eq .Values.gitlab.env "production" }}
+  {{ if eq .Values.gitlab.env "search-enabler-production" }}
   - host: search-enabler.iotcrawler.eu
   {{ else }}
   - host: staging.search-enabler.iotcrawler.eu
