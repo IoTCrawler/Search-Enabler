@@ -67,21 +67,21 @@
       </exclusions>
     </dependency>
 
-    <dependency>
-      <groupId>com.agtinternational.iotcrawler</groupId>
-      <artifactId>fiware-clients</artifactId>
-      <version>${fiware.clients.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>eu.neclab.iotplatform</groupId>
-          <artifactId>ngsi.api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>com.agtinternational.iotcrawler</groupId>-->
+<!--      <artifactId>fiware-clients</artifactId>-->
+<!--      <version>${fiware.clients.version}</version>-->
+<!--      <exclusions>-->
+<!--        <exclusion>-->
+<!--          <groupId>org.springframework</groupId>-->
+<!--          <artifactId>*</artifactId>-->
+<!--        </exclusion>-->
+<!--        <exclusion>-->
+<!--          <groupId>eu.neclab.iotplatform</groupId>-->
+<!--          <artifactId>ngsi.api</artifactId>-->
+<!--        </exclusion>-->
+<!--      </exclusions>-->
+<!--    </dependency>-->
 
     <!--<dependency>-->
       <!--<groupId>com.agtinternational.iotcrawler</groupId>-->

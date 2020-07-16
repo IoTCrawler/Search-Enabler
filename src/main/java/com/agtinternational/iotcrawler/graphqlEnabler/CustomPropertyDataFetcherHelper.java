@@ -44,6 +44,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
+import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.schema.GraphQLTypeUtil.isNonNull;
 import static graphql.schema.GraphQLTypeUtil.unwrapOne;
@@ -112,11 +113,13 @@ public class CustomPropertyDataFetcherHelper {
                         //propertyNameURI = GenericMDRWiring.findURI(environment.getParentType().getName(), propertyName);
 
                         if (propertyNameURI != null) {
+                            if(System.getenv().containsKey(CUT_TYPE_URIS))
+                                propertyNameURI = Utils.cutURL(propertyNameURI, (Map)((EntityLD) object0).getContext());
                             Object attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
                             //processing only relations
 
-                            if (propertyNameURI.startsWith("http://") && attribute == null)
-                                attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
+//                            if (propertyNameURI.startsWith("http://") && attribute == null)
+//                                attribute = ((EntityLD) object0).getAttribute(propertyNameURI);
                             if (attribute == null)
                                 LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
                                 //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());

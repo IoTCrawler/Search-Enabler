@@ -1,5 +1,6 @@
 {
-  observableProperties(label: "temperature"){
+  #observableProperties(label: "temperature"){
+  observableProperties{
     id,
     label,
     isObservedBy {

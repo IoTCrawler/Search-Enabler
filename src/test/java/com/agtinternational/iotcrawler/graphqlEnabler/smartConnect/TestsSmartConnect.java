@@ -78,12 +78,14 @@ public class TestsSmartConnect extends TestUtils {
     }
 
     @Ignore
+    @Test
     public void registerEntities() throws Exception {
         initEntities();
         super.registerEntities();
     }
 
     @Ignore
+    @Test
     public void deleteEntities() throws Exception {
         initEntities();
         super.deleteEntities();
