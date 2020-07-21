@@ -2,17 +2,28 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: search-enabler-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
 spec:
-  rules:
-    {{ if eq .Values.gitlab.env "staging" }}
-    - host: staging.search-enabler.iotcrawler.eu
-      {{ else }}
-    - host: search-enabler.iotcrawler.eu
+  tls:
+  - hosts:
+    {{ if eq .Values.gitlab.env "search-enabler-production" }}
+    - search-enabler.iotcrawler.eu
+    {{ else }}
+    - staging.search-enabler.iotcrawler.eu
     {{ end }}
-      http:
-        paths:
-          - path: "/"
-            backend:
-              serviceName: "search-enabler"
-              servicePort: 8080
+    secretName: search-enabler-{{ .Values.gitlab.env }}-tls22
+  rules:
+  {{ if eq .Values.gitlab.env "search-enabler-production" }}
+  - host: search-enabler.iotcrawler.eu
+  {{ else }}
+  - host: staging.search-enabler.iotcrawler.eu
+  {{ end }}
+    http:
+      paths:
+      - path: "/"
+        backend:
+          serviceName: "search-enabler"
+          servicePort: 8080
     #- host: {{ .Values.gitlab.env }}.35.241.228.250.nip.io
