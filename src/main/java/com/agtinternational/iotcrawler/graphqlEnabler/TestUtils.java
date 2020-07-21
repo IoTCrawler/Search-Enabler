@@ -217,7 +217,8 @@ public class TestUtils {
 		LOGGER.info("deleteEntities()");
 
 		NgsiLDClient ngsiLDClient = new NgsiLDClient(System.getenv(NGSILD_BROKER_URL));
-		IoTCrawlerRESTClient ioTCrawlerRESTClient = new IoTCrawlerRESTClient(System.getenv(NGSILD_BROKER_URL));
+
+		//IoTCrawlerRESTClient ioTCrawlerRESTClient = new IoTCrawlerRESTClient(System.getenv(NGSILD_BROKER_URL), "http://localhost:8080");
 
 		int exceptions=0;
 		for(EntityLD entityLD : entities)
