@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 
 import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
+import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.GRAPHQL_ENDPOINT_URL;
 
 
 @Component
@@ -91,7 +92,10 @@ public class GenericMDRWiring implements Wiring {
     public static IoTCrawlerClient getIoTCrawlerClient(){
         Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
         if(iotCrawlerClient==null) {
-            iotCrawlerClient = new IoTCrawlerRESTClient(System.getenv(IOTCRAWLER_ORCHESTRATOR_URL), cutURIs);
+            String orchestratorUrl = System.getenv(IOTCRAWLER_ORCHESTRATOR_URL);
+            String graphQL = System.getenv(GRAPHQL_ENDPOINT_URL);
+
+            iotCrawlerClient = new IoTCrawlerRESTClient(System.getenv(IOTCRAWLER_ORCHESTRATOR_URL), System.getenv(GRAPHQL_ENDPOINT_URL) , cutURIs);
             //iotCrawlerClient = new OrchestratorRESTClient();
             try {
                 iotCrawlerClient.init();
@@ -134,7 +138,7 @@ public class GenericMDRWiring implements Wiring {
                         ret.addAll(res);
                     } catch (Exception e) {
                         LOGGER.error("Failed to get entities of type {}", typeURI);
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 }
             }

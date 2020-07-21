@@ -46,14 +46,14 @@ import java.util.Map;
 
 //@RestController
 @Controller
-public class GraphQLController {
+public class ApplicationController {
 
     private final GraphQL graphql;
     private final ObjectMapper objectMapper;
     private final ContextProvider contextProvider;
 
     @Autowired
-    public GraphQLController(GraphQL graphql, ObjectMapper objectMapper, ContextProvider contextProvider) {
+    public ApplicationController(GraphQL graphql, ObjectMapper objectMapper, ContextProvider contextProvider) {
         this.graphql = graphql;
         this.objectMapper = objectMapper;
         this.contextProvider = contextProvider;
