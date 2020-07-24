@@ -162,8 +162,8 @@ public class GenericMDRWiring implements Wiring {
         int count=0;
         for(String key : keys) {
             try {
-                List<EntityLD> entities = getIoTCrawlerClient().getEntityById(key);
-                enitities.addAll(entities);
+                EntityLD entity = getIoTCrawlerClient().getEntityById(key);
+                enitities.add(entity);
             } catch (Exception e) {
                 LOGGER.error("Failed to get entity {}", key, concept);
                 e.printStackTrace();
@@ -191,6 +191,7 @@ public class GenericMDRWiring implements Wiring {
                 query.put(NGSI_LD.alternativeType, "\"" + parentTypeURI + "\"");
             } catch (Exception e) {
                 LOGGER.warn("Failed to find URI for {}", parentTypeName);
+                return null;
             }
         }
         //for(String argName: arguments.keySet()) {
@@ -391,6 +392,8 @@ public class GenericMDRWiring implements Wiring {
             if(argumentsToResolve.size()>0){
                 try {
                     query = resolveFilters(query, environment, argumentsToResolve);
+                    if(query==null)
+                        return null;
                 } catch (Exception e) {
                     LOGGER.error("Failed to resolve filters");
                     e.printStackTrace();
