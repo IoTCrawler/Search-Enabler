@@ -8,6 +8,7 @@ schema {
 type Query {
     temperatureSensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [TemperatureSensor]
     indoorTemperatureSensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [IndoorTemperatureSensor]
+    electricityMeters(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [ElectricityMeter]
 }
 
 type TemperatureSensor @resource(class : "http://Agt/TemperatureSensor", subClassOf: ["Sensor"]){
@@ -16,4 +17,8 @@ type TemperatureSensor @resource(class : "http://Agt/TemperatureSensor", subClas
 
 type IndoorTemperatureSensor @resource(class : "http://Agt/IndoorTemperatureSensor", subClassOf: ["TemperatureSensor"]){
 
+}
+
+type ElectricityMeter @resource(class : "http://elite.polito.it/ontologies/dogont.owl#ElectricityMeter", subClassOf: ["Sensor"]){
+    locations: String  @attribute(uri : "http://www.agtinternational.com/ontologies/devices/locations")
 }

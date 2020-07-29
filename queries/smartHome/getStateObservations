@@ -1,0 +1,13 @@
+{
+  #householdStateObservations(belongsTo:{ id: "urn:ngsi-ld:Household1" }){
+  householdStateObservations{
+    id,
+    activities{
+                id,
+                location,
+                type,
+                label
+                }
+    }
+
+ }

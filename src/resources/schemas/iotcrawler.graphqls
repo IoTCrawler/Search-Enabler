@@ -14,6 +14,7 @@ input SystemInput {
      label: String
      location: String
      isHostedBy: PlatformInput
+     alternativeType: String
 }
 
 input IoTStreamInput{
@@ -21,6 +22,7 @@ input IoTStreamInput{
      label: String
      generatedBy: SensorInput
      observes: ObservablePropertyInput
+     alternativeType: String
  }
 
 input SensorInput{
@@ -29,6 +31,8 @@ input SensorInput{
      location: String
      isHostedBy: PlatformInput
      observes: ObservablePropertyInput
+     madeObservation: StreamObservationInput
+     alternativeType: String
  }
 
 input PlatformInput {
@@ -36,25 +40,31 @@ input PlatformInput {
     label: String
     hosts: SensorInput
     location: String
+    alternativeType: String
 }
 
 input ObservablePropertyInput {
     id: String
     label: String
     isObservedBy: SensorInput
+    alternativeType: String
 }
 
+input StreamObservationInput {
+    id: String
+    belongsTo: IoTStreamInput
+    madeBySensor: SensorInput
+    alternativeType: String
+}
+
+
 type Query {
-    stream(id: String): IoTStream
-    sensor(id: String): Sensor
-    platform(id: String): Platform
-    observableProperty(id: String): ObservableProperty
-    streams(label: String, generatedBy: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
-    sensors(label: String, isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
-    systems(label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
-    platforms(label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
-    observableProperties(label: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
-    streamObservations(madeBySensor: SensorInput, belongsTo: IoTStreamInput, offset: Int = 0, limit: Int = 0): [StreamObservation]
+    streams(id: String, label: String, generatedBy: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
+    sensors(id: String, label: String, madeObservation: StreamObservationInput, isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
+    systems(id: String, label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
+    platforms(id: String, label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
+    observableProperties(id: String, label: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
+    streamObservations(id: String, madeBySensor: SensorInput, belongsTo: IoTStreamInput, offset: Int = 0, limit: Int = 0): [StreamObservation]
 
 }
 

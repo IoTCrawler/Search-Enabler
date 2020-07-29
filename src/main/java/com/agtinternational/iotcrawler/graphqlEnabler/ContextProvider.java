@@ -20,6 +20,8 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * #L%
  */
 
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
+import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +38,10 @@ public class ContextProvider {
     }
 
     public Context newContext() {
-
+        for(String key: dataLoaderRegistry.getKeys()) {
+            DataLoader dataLoader = dataLoaderRegistry.getDataLoader(key);
+            dataLoader.clearAll();
+        }
         return new Context(dataLoaderRegistry);
     }
 

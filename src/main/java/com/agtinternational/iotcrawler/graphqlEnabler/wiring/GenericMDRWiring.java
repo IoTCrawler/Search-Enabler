@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -165,8 +166,12 @@ public class GenericMDRWiring implements Wiring {
                 EntityLD entity = getIoTCrawlerClient().getEntityById(key);
                 enitities.add(entity);
             } catch (Exception e) {
-                LOGGER.error("Failed to get entity {}", key, concept);
-                e.printStackTrace();
+                if(e.getCause() instanceof HttpClientErrorException.NotFound)
+                    LOGGER.debug("Entity {} not found", key);
+                else {
+                    LOGGER.error("Failed to get entity {}", key, concept);
+                    e.printStackTrace();
+                }
             }
             count++;
         }

@@ -1,41 +1,21 @@
-package com.agtinternational.iotcrawler.graphqlEnabler.smartConnect;
-
-/*-
- * #%L
- * search-enabler
- * %%
- * Copyright (C) 2019 - 2020 AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
+package com.agtinternational.iotcrawler.graphqlEnabler.smartHome;
 
 import com.agtinternational.iotcrawler.core.models.Platform;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
-
 import com.agtinternational.iotcrawler.graphqlEnabler.EnvVariablesSetter;
 import com.agtinternational.iotcrawler.graphqlEnabler.TestUtils;
+import com.agtinternational.iotcrawler.graphqlEnabler.smartConnect.IndoorTemperatureSensor;
+import com.agtinternational.iotcrawler.graphqlEnabler.smartConnect.TemperatureSensor;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TestsSmartConnect extends TestUtils {
+public class TestsSmartHome extends TestUtils {
 
     @Before
     public void init(){
@@ -46,7 +26,9 @@ public class TestsSmartConnect extends TestUtils {
     protected void initGraphQL() throws Exception {
 
         String[] paths = new String[]{
-                Paths.get("schemas","smartConnect.graphqls").toString(),
+                //Paths.get("schemas","smartConnect.graphqls").toString(),
+                Paths.get("schemas","homeActivity.graphqls").toString(),
+                Paths.get("schemas","smartHome.graphqls").toString()
         };
         initGraphQL(Arrays.asList(paths));
     }
@@ -96,14 +78,13 @@ public class TestsSmartConnect extends TestUtils {
     }
 
     @Test
-    public void getTemperatureSensors() throws Exception {
-        executeQuery(Paths.get("queries","smartConnect","getTemperatureSensors"));
+    public void getElectricityMeters() throws Exception {
+        executeQuery(Paths.get("queries","smartHome","getElectricityMeters"));
     }
 
     @Test
-    public void getElectricityMeters() throws Exception {
-        executeQuery(Paths.get("queries","smartConnect","getElectricityMeters"));
+    public void getHouseholdStateObservations() throws Exception {
+        executeQuery(Paths.get("queries","smartHome","getHouseholdStateObservations"));
     }
-
 
 }

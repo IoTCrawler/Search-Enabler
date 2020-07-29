@@ -4,7 +4,7 @@ schema {
 
 
 type Query {
-    activities(offset: Int = 0, limit: Int = 0): [Functional_Activity]
+    activities(offset: Int = 0, limit: Int = 0): [LocationBasedActivity]
 }
 
 
@@ -13,6 +13,10 @@ type Functional_Activity @resource(class : "http://sensormeasurement.appspot.com
     type: String!
     label: String            @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
+}
+
+type LocationBasedActivity @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Location_based_Actvity", subClassOf: ["Functional_Activity"]){
+    location: String!  @attribute(uri : "http://sensormeasurement.appspot.com/ont/home/homeActivity#has_location")
 }
 
 type ObjectBasedActivity @resource(class : "http://sensormeasurement.appspot.com/ont/home/homeActivity#Object_based_Actvity", subClassOf: ["Functional_Activity"]){

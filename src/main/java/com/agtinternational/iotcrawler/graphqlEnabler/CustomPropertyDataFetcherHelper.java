@@ -124,10 +124,12 @@ public class CustomPropertyDataFetcherHelper {
                                 LOGGER.warn("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
                                 //throw new Exception("Attribute " + propertyNameURI + " not found in " + ((EntityLD) object0).getId());
                             else {
+                                boolean convertedToList = false;
                                 if(!(attribute instanceof Iterable)) {
                                     List list = new ArrayList();
                                     list.add(attribute);
                                     attribute = list;
+                                    convertedToList = true;
                                 }
                                 Iterator iterator1 = ((Iterable)attribute).iterator();
                                 while(iterator1.hasNext()){
@@ -141,8 +143,12 @@ public class CustomPropertyDataFetcherHelper {
                                                 referenceIDs.addAll((List) value);
                                             else
                                                 referenceIDs.add(value);
-                                        }else
-                                            return value;
+                                        }else {
+                                            if(convertedToList)
+                                                return value;
+                                            return attribute; //return the whole array instead of one value
+                                        }
+
 
                                     } else
                                         throw new NotImplementedException(attribute.getClass().getCanonicalName() + " as attribute type");
@@ -185,8 +191,9 @@ public class CustomPropertyDataFetcherHelper {
                     if (loader == null)
                         throw new Exception("No data loader for " + propertyType);
                     CompletableFuture future;
-                    //if (wrappedType instanceof GraphQLList)
-                    if(referenceIDs.size()>1)
+
+                    if (fieldType instanceof GraphQLList)
+                    //if(referenceIDs.size()>1)
                         future = loader.loadMany(referenceIDs);
                     else
                         future = loader.load(referenceIDs.get(0));

@@ -26,7 +26,7 @@ type HouseholdStateObservation @resource(class : "http://agtinternational/smartH
      id: String!
      type: String!
      belongsTo: HouseholdStateStream   @attribute(uri : "http://purl.org/iot/ontology/iot-stream#belongsTo")
-     activities: [Functional_Activity] @attribute(uri : "http://agtinternational/smartHomeApp#activities")
+     activities: [LocationBasedActivity] @attribute(uri : "http://agtinternational/smartHomeApp#activities")
 }
 
 
