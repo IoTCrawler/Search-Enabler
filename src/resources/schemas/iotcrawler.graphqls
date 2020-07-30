@@ -55,20 +55,19 @@ input StreamObservationInput {
     belongsTo: IoTStreamInput
     madeBySensor: SensorInput
     alternativeType: String
+    hasSimpleResult: String
 }
 
 
 type Query {
-    streams(id: String, label: String, generatedBy: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
-    sensors(id: String, label: String, madeObservation: StreamObservationInput, isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
-    systems(id: String, label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
-    platforms(id: String, label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
-    observableProperties(id: String, label: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
-    streamObservations(id: String, madeBySensor: SensorInput, belongsTo: IoTStreamInput, offset: Int = 0, limit: Int = 0): [StreamObservation]
+    streams(id: String, alternativeType: String, label: String, generatedBy: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
+    sensors(id: String, alternativeType: String, label: String, madeObservation: StreamObservationInput, isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
+    systems(id: String, alternativeType: String, label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
+    platforms(id: String,  alternativeType: String, label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
+    observableProperties(id: String,  alternativeType: String, label: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
+    streamObservations(id: String,  alternativeType: String, madeBySensor: SensorInput, belongsTo: IoTStreamInput, offset: Int = 0, limit: Int = 0): [StreamObservation]
 
 }
-
-
 
 
 type IoTStream @resource(class : "http://purl.org/iot/ontology/iot-stream#IotStream"){
@@ -84,13 +83,14 @@ type System @resource(class : "http://www.w3.org/ns/ssn/System"){
     type: String!
     label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
     isHostedBy: Platform    @attribute(uri : "http://www.w3.org/ns/sosa/isHostedBy")
-    location: String
+
 }
 
 type Sensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", subClassOf: ["System"]){
     madeObservation: StreamObservation  @attribute(uri : "http://www.w3.org/ns/sosa/madeObservation")
     observes: ObservableProperty    @attribute(uri : "http://www.w3.org/ns/sosa/observes")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
+    location: String   @attribute(uri : "http://www.agtinternational.com/ontologies/devices/locations")
 }
 
 type Actuator @resource(class : "http://www.w3.org/ns/sosa/Actuator", subClassOf: ["System"]){
