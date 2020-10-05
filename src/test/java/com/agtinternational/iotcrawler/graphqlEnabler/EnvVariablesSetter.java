@@ -34,10 +34,10 @@ public class EnvVariablesSetter {
 
         //environmentVariables.set(CUT_TYPE_URIS, "true");
         //String brokerURL = "http://155.54.95.248:9090/ngsi-ld/";
-        //String brokerURL = "http://155.54.95.171:9090/ngsi-ld/";
-//        String brokerURL = "http://10.67.1.107:9090/ngsi-ld/";
+        String brokerURL = "http://155.54.95.171:9090/ngsi-ld/";
+        //String brokerURL = "http://10.67.1.107:9090/ngsi-ld/";
         //String brokerURL = "http://localhost:3001/ngsi-ld/";
-        String brokerURL = "http://i5-nuc:9090/ngsi-ld/";
+        //String brokerURL = "http://i5-nuc:9090/ngsi-ld/";
         //String brokerURL = "http://192.168.178.26:9090/ngsi-ld/";
 
         if(!System.getenv().containsKey(NGSILD_BROKER_URL))

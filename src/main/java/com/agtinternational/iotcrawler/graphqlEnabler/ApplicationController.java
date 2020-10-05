@@ -128,8 +128,10 @@ public class ApplicationController {
                 .operationName(operationName)
                 .context(context)
                 .build();
-
+        long started = System.currentTimeMillis();
         ExecutionResult executionResult = graphql.execute(executionInput);
+        double took = (System.currentTimeMillis()-started)/1000.0;
+        System.out.println("Execution took "+took);
         handleNormalResponse(httpServletResponse, executionResult);
     }
 

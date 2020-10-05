@@ -194,7 +194,7 @@ public class TestsCore extends TestUtils {
     @Test
     public void getPlatformByIdTest() throws Exception {
         
-        executeQuery(Paths.get("queries","core","getSystems"));
+        executeQuery(Paths.get("queries","core","getPlatformById"));
     }
 
     @Test

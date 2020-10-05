@@ -120,8 +120,8 @@ public class GenericMDRWiring implements Wiring {
                 List res = getIoTCrawlerClient().getEntities(typeURI, null, null, offset, limit);
                 return res;
             } catch (Exception e) {
-                LOGGER.error("Failed to get entities of type {}", typeURI);
-                e.printStackTrace();
+                LOGGER.error("Failed to get entities of type {}: {}", typeURI, e.getLocalizedMessage());
+                //e.printStackTrace();
                 return null;
             }
         else
@@ -169,8 +169,8 @@ public class GenericMDRWiring implements Wiring {
                 if(e.getCause() instanceof HttpClientErrorException.NotFound)
                     LOGGER.debug("Entity {} not found", key);
                 else {
-                    LOGGER.error("Failed to get entity {}", key, concept);
-                    e.printStackTrace();
+                    LOGGER.error("Failed to get entity {} of type {}: {}", key, concept, e.getLocalizedMessage());
+                    //e.printStackTrace();
                 }
             }
             count++;
@@ -372,7 +372,8 @@ public class GenericMDRWiring implements Wiring {
                     });
                     //return loader.loadMany(ids);
                 }
-                return loader.load(id);
+                return loader.loadMany(Arrays.asList(new String[]{ id }));
+                //return loader.load(id);
             }
 //            if(URI!=null){
 //                //Filtering query shoud
@@ -418,7 +419,12 @@ public class GenericMDRWiring implements Wiring {
                 LOGGER.error("Failed to find URI for {}: {}", concept, e.getLocalizedMessage());
             }
 
-            List entities = new ArrayList(serveQuery(typeURI, query, offset, limit));
+            List entities = new ArrayList();
+            try {
+                entities = new ArrayList(serveQuery(typeURI, query, offset, limit));
+            }catch (Exception e) {
+                //LOGGER.error("Failed to get entities for query {}: {}", query, e.getLocalizedMessage());
+            }
             if(!coreTypes.contains(concept)) //if additional resolution might be required
             {
                 List<String> childTypes = getTopdownTypesAsList(concept);

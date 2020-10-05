@@ -23,6 +23,11 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.boot.SpringApplication;
+
+import java.util.Collections;
+
+import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
 
 public class HttpApplicationTest {
 
@@ -34,7 +39,12 @@ public class HttpApplicationTest {
 
     public static void main(String[] args) throws Exception {
         EnvVariablesSetter.init();
-        HttpApplication.main(new String[]{});
+        if (!System.getenv().containsKey(IOTCRAWLER_ORCHESTRATOR_URL))
+            throw new Exception("IOTCRAWLER_ORCHESTRATOR_URL not specified");
+
+        SpringApplication app = new SpringApplication(HttpApplication.class);
+        app.setDefaultProperties(Collections.singletonMap("server.port", "8081"));
+        app.run(args);
     }
 
 }

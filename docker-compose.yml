@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   search-enabler:
-    image: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:289037f63d6800660d39fb8c5fe7624fadcfd583
+    image: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:03a3d193863e6209df7a592a2ffecf631d86ec20
     environment:
       - IOTCRAWLER_ORCHESTRATOR_URL=http://155.54.95.248:9090/ngsi-ld/
     ports:
