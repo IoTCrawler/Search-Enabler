@@ -1,0 +1,8 @@
+{
+  streams(limit:500) {
+    id
+    generatedBy{
+      id
+    }
+  }
+}

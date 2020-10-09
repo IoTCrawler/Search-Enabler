@@ -44,8 +44,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
@@ -61,6 +60,7 @@ public class GenericMDRWiring implements Wiring {
     static IoTCrawlerClient iotCrawlerClient;
     private Map<String, String> schemas;
     private RuntimeWiring.Builder runtimeWiringBuilder;
+    private static ExecutorService executorService;
 
     private static Map<String, String> bindingRegistry = new HashMap<>();
     private static Map<String, List<String>> topDownInheritance = new HashMap<>();
@@ -68,6 +68,7 @@ public class GenericMDRWiring implements Wiring {
     private static List<String> coreTypes = Arrays.asList(new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty", "StreamObservation" });
 
     public GenericMDRWiring(){
+         executorService = Executors.newFixedThreadPool(128);
     }
 
 //    public void setCoreTypes(List<String> coreTypes) {
@@ -161,19 +162,36 @@ public class GenericMDRWiring implements Wiring {
             return enitities;
         }
         int count=0;
+
+        List<Callable<Object>> tasks = new ArrayList();
         for(String key : keys) {
-            try {
-                EntityLD entity = getIoTCrawlerClient().getEntityById(key);
-                enitities.add(entity);
-            } catch (Exception e) {
-                if(e.getCause() instanceof HttpClientErrorException.NotFound)
-                    LOGGER.debug("Entity {} not found", key);
-                else {
-                    LOGGER.error("Failed to get entity {} of type {}: {}", key, concept, e.getLocalizedMessage());
-                    //e.printStackTrace();
-                }
-            }
+            tasks.add(new Callable<Object>(){
+
+                          @Override
+                          public Object call() throws Exception {
+                              try {
+                                  EntityLD entity = getIoTCrawlerClient().getEntityById(key);
+                                  enitities.add(entity);
+                              } catch (Exception e) {
+                                  if(e.getCause() instanceof HttpClientErrorException.NotFound)
+                                      LOGGER.debug("Entity {} not found", key);
+                                  else {
+                                      LOGGER.error("Failed to get entity {} of type {}: {}", key, concept, e.getLocalizedMessage());
+                                      //e.printStackTrace();
+                                  }
+                              }
+                              return null;
+                          }
+                      }
+            );
             count++;
+        }
+        try {
+            executorService.invokeAll(tasks);
+        }
+        catch (Exception e){
+            LOGGER.error("Failed execute tasks via executor service", e.getLocalizedMessage());
+            e.printStackTrace();
         }
 
         if(keys.size()!=enitities.size()) {

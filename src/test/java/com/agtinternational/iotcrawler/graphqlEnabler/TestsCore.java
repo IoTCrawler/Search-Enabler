@@ -59,9 +59,11 @@ public class TestsCore extends TestUtils {
     protected List<EntityLD> createEntities(){
         boolean cutURIs = true;
         Map<String, String[]> sensorsAndProperties = new HashMap<>();
-        sensorsAndProperties.put("AEON Labs ZW100 MultiSensor 6", new String[]{ "BatteryLevel", "Brightness", "MotionAlarm", "MotionAlarmCancelationDelay", "RelativeHumidity", "TamperAlarm", "Temperature", "UV" });
-        sensorsAndProperties.put("FIBARO System FGWPE/F Wall Plug Gen5", new String[]{"AccumulatedEnergyUse","CurrentEnergyUse"});
-        sensorsAndProperties.put("FIBARO Wall plug living room", new String[]{"AccumulatedEnergyUse","CurrentEnergyUse"});
+        for(int i=1; i<50; i++) {
+            sensorsAndProperties.put("AEON Labs ZW100 MultiSensor 6 ("+i+")", new String[]{"BatteryLevel", "Brightness", "MotionAlarm", "MotionAlarmCancelationDelay", "RelativeHumidity", "TamperAlarm", "Temperature", "UV"});
+            sensorsAndProperties.put("FIBARO System FGWPE/F Wall Plug Gen5 ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
+            sensorsAndProperties.put("FIBARO Wall plug living room ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
+        }
 
         Map<String, ObservableProperty> observableProperties = new HashMap<>();
         List<EntityLD> entities = new ArrayList<>();

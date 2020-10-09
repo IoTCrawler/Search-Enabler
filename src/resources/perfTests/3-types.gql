@@ -1,0 +1,11 @@
+{
+  streams (limit:100){
+    id
+    generatedBy{
+      id
+      isHostedBy{
+        id
+      }
+    }
+  }
+}

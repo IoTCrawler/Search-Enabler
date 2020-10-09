@@ -200,6 +200,7 @@ public class TestUtils {
 				boolean result = ngsiLDClient.addEntitySync(entityLD);
 			}
 			catch (Exception e){
+				//if(e.getCause() instanceof )
 				exceptions.add(new Exception("Problem with "+entityLD.getId()+": "+ e.getLocalizedMessage()));
 			}
 
