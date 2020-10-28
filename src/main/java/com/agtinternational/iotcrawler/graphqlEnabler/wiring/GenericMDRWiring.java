@@ -173,9 +173,9 @@ public class GenericMDRWiring implements Wiring {
         return ret;
     }
 
-    private static List<Object> getConceptsByIds(List<String> keys, String concept){
+    private static List<Object> getConceptsByIds(List<String> ids, String concept){
         List enitities = new ArrayList();
-        String typeURI=null;
+        String typeURI = null;
         try {
             typeURI = findURI(concept);
         }
@@ -184,23 +184,24 @@ public class GenericMDRWiring implements Wiring {
             return enitities;
         }
         int count=0;
+        final String typeURIfinal = typeURI;
 
         List<Callable<Object>> tasks = new ArrayList();
-        for(String key : keys) {
+        for(String id : ids) {
             tasks.add(new Callable<Object>(){
-
                           @Override
-                          public Object call() throws Exception {
+                          public Object call(){
                               try {
-                                  EntityLD entity = getIoTCrawlerClient().getEntityById(key);
+                                  EntityLD entity = getIoTCrawlerClient().getEntityById(id);
                                   enitities.add(entity);
                               } catch (Exception e) {
                                   if(e.getCause() instanceof HttpClientErrorException.NotFound)
-                                      LOGGER.debug("Entity {} not found", key);
+                                      LOGGER.debug("Entity {} not found", id);
                                   else {
-                                      LOGGER.error("Failed to get entity {} of type {}: {}", key, concept, e.getLocalizedMessage());
+                                      LOGGER.error("Failed to get entity {} of type {}: {}", id, concept, e.getLocalizedMessage());
                                       //e.printStackTrace();
                                   }
+                                  enitities.add(new EntityLD(id, typeURIfinal));
                               }
                               return null;
                           }
@@ -220,8 +221,8 @@ public class GenericMDRWiring implements Wiring {
         System.out.println("Plus "+(System.currentTimeMillis() - started) +" - "+ tasks.size()+" queries of get entity By ID("+concept+")");
         totalQueriesPerformed+=tasks.size();
 
-        if(keys.size()!=enitities.size()) {
-            int delta = keys.size() - enitities.size();
+        if(ids.size()!=enitities.size()) {
+            int delta = ids.size() - enitities.size();
             for (int i = 0; i < delta; i++) {
                 enitities.add(null);   //filling missing results
                 LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
