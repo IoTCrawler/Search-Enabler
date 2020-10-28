@@ -25,6 +25,7 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import static com.agtinternational.iotcrawler.core.Constants.*;
 import static com.agtinternational.iotcrawler.fiware.clients.Constants.NGSILD_BROKER_URL;
+import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.TRACK_EXECUTION_TIMES;
 
 public class EnvVariablesSetter {
 
@@ -35,7 +36,8 @@ public class EnvVariablesSetter {
         //environmentVariables.set(CUT_TYPE_URIS, "true");
         //String brokerURL = "http://155.54.95.248:9090/ngsi-ld/";
         //String brokerURL = "http://155.54.95.171:9090/ngsi-ld/";
-        String brokerURL = "http://10.67.1.107:9090/ngsi-ld/";
+        //String brokerURL = "http://10.67.1.107:9090/ngsi-ld/";
+        String brokerURL = "http://192.168.0.125:9090/ngsi-ld/";
         //String brokerURL = "http://localhost:3001/ngsi-ld/";
         //String brokerURL = "http://192.168.0.125:9090/ngsi-ld/";
         //String brokerURL = "http://192.168.178.26:9090/ngsi-ld/";
@@ -45,6 +47,9 @@ public class EnvVariablesSetter {
 
         if(!System.getenv().containsKey(IOTCRAWLER_ORCHESTRATOR_URL))
             environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL,brokerURL);
+
+        environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL,brokerURL);
+        environmentVariables.set(TRACK_EXECUTION_TIMES,"true");
 
     }
 }

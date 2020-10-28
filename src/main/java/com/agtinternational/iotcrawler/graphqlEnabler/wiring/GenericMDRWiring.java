@@ -58,6 +58,8 @@ public class GenericMDRWiring implements Wiring {
     static Logger LOGGER = LoggerFactory.getLogger(GenericMDRWiring.class);
     public static final DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
     static IoTCrawlerClient iotCrawlerClient;
+    static long totalQueryExectionTime = 0;
+    static long totalQueriesPerformed = 0;
     private Map<String, String> schemas;
     private RuntimeWiring.Builder runtimeWiringBuilder;
     private static ExecutorService executorService;
@@ -68,7 +70,7 @@ public class GenericMDRWiring implements Wiring {
     private static List<String> coreTypes = Arrays.asList(new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty", "StreamObservation" });
 
     public GenericMDRWiring(){
-         executorService = Executors.newFixedThreadPool(128);
+         executorService = Executors.newFixedThreadPool(64);
     }
 
 //    public void setCoreTypes(List<String> coreTypes) {
@@ -113,12 +115,32 @@ public class GenericMDRWiring implements Wiring {
         return dataLoaderRegistry;
     }
 
+    public static double getTotalQueryExectionTime() {
+        return totalQueryExectionTime;
+    }
+
+    public static void resetTotalQueryExectionTime() {
+        totalQueryExectionTime=0;
+    }
+
+    public static long getTotalQueriesPerformed() {
+        return totalQueriesPerformed;
+    }
+
+    public static void resetTotalQueriesPerformed() {
+        totalQueriesPerformed=0;
+    }
+
     private static List<Object> serveQuery(String typeURI, Map<String, Object> query, int offset, int limit){
         List ret = new ArrayList();
 
         if (query == null || query.size() == 0)
             try {
+                long started = System.currentTimeMillis();
                 List res = getIoTCrawlerClient().getEntities(typeURI, null, null, offset, limit);
+                totalQueryExectionTime += (System.currentTimeMillis() - started);
+                System.out.println("Plus "+(System.currentTimeMillis() - started) +" Type "+typeURI);
+                totalQueriesPerformed++;
                 return res;
             } catch (Exception e) {
                 LOGGER.error("Failed to get entities of type {}: {}", typeURI, e.getLocalizedMessage());
@@ -186,6 +208,7 @@ public class GenericMDRWiring implements Wiring {
             );
             count++;
         }
+        long started = System.currentTimeMillis();
         try {
             executorService.invokeAll(tasks);
         }
@@ -193,6 +216,9 @@ public class GenericMDRWiring implements Wiring {
             LOGGER.error("Failed execute tasks via executor service", e.getLocalizedMessage());
             e.printStackTrace();
         }
+        totalQueryExectionTime += (System.currentTimeMillis() - started);
+        System.out.println("Plus "+(System.currentTimeMillis() - started) +" - "+ tasks.size()+" queries of get entity By ID("+concept+")");
+        totalQueriesPerformed+=tasks.size();
 
         if(keys.size()!=enitities.size()) {
             int delta = keys.size() - enitities.size();
@@ -615,7 +641,7 @@ public class GenericMDRWiring implements Wiring {
         } else if(object instanceof Sensor) {
             ret = (GraphQLObjectType) environment.getSchema().getType("Sensor");
         }else
-            throw new NotImplementedException();
+            throw new NotImplementedException(object.getClass().getCanonicalName()+" not implemented");
         return ret;
     };
 

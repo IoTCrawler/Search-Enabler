@@ -25,4 +25,5 @@ import com.agtinternational.iotcrawler.core.ontologies.IotStream;
 public class Constants {
     //public static final String ALT_TYPE =  "http://search-enabler.iotcrawler/altType";
     public static String GRAPHQL_ENDPOINT_URL = "GRAPHQL_ENDPOINT_URL";
+    public static String TRACK_EXECUTION_TIMES = "TRACK_EXECUTION_TIMES";
 }

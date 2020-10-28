@@ -38,6 +38,8 @@ public class ContextProvider {
     }
 
     public Context newContext() {
+        GenericMDRWiring.resetTotalQueryExectionTime();
+        GenericMDRWiring.resetTotalQueriesPerformed();
         for(String key: dataLoaderRegistry.getKeys()) {
             DataLoader dataLoader = dataLoaderRegistry.getDataLoader(key);
             dataLoader.clearAll();

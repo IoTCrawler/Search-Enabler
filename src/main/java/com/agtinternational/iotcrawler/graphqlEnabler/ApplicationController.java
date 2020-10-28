@@ -21,12 +21,14 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import org.apache.jena.base.Sys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 //import org.springframework.web.bind.annotation.CrossOrigin;
@@ -41,8 +43,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.TRACK_EXECUTION_TIMES;
 
 //@RestController
 @Controller
@@ -120,6 +127,7 @@ public class ApplicationController {
         //  - have access to the same session and user information you would in your
         //  - HTTP endpoint handlers.
         //
+        long started = System.currentTimeMillis();
         Context context = contextProvider.newContext();
 
         ExecutionInput executionInput = ExecutionInput.newExecutionInput()
@@ -128,10 +136,21 @@ public class ApplicationController {
                 .operationName(operationName)
                 .context(context)
                 .build();
-        long started = System.currentTimeMillis();
+
         ExecutionResult executionResult = graphql.execute(executionInput);
         double took = (System.currentTimeMillis()-started)/1000.0;
-        System.out.println("Execution took "+took);
+
+        System.out.println("Total resolution time: "+took);
+        System.out.println("Total execution time of "+GenericMDRWiring.getTotalQueriesPerformed()+" queries: "+GenericMDRWiring.getTotalQueryExectionTime()/1000.0);
+
+        if(System.getenv().containsKey(TRACK_EXECUTION_TIMES)) {
+            String content = GenericMDRWiring.getTotalQueriesPerformed() + ";" + GenericMDRWiring.getTotalQueryExectionTime() / 1000.0 + ";" + took+"\n";
+            if(!Paths.get("times.csv").toFile().exists())
+                Files.write(Paths.get("times.csv"), content.getBytes(), StandardOpenOption.CREATE_NEW);
+            else
+                Files.write(Paths.get("times.csv"), content.getBytes(), StandardOpenOption.APPEND);
+        }
+
         handleNormalResponse(httpServletResponse, executionResult);
     }
 
