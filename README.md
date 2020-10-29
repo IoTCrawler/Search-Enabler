@@ -7,7 +7,8 @@ which works on top of NGSI-LD-compliant component (the ranking Component or MDR)
 
 # Details
 
-* Deployed online: http://search-enabler-production.35.241.228.250.nip.io    
+* Deployed online: https://search-enabler.iotcrawler.eu/
+* Staging https://staging.search-enabler.iotcrawler.eu/
 * Works on top of the broker: http://155.54.95.248:9090/ngsi-ld/v1
 * [Schemas](src/resources/schemas)
 * [Sample Entities](samples)
