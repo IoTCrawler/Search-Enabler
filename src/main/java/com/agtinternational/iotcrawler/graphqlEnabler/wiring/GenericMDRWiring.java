@@ -174,26 +174,28 @@ public class GenericMDRWiring implements Wiring {
     }
 
     private static List<Object> getConceptsByIds(List<String> ids, String concept){
-        List enitities = new ArrayList();
+        List ret = new ArrayList();
+
         String typeURI = null;
         try {
             typeURI = findURI(concept);
         }
         catch (Exception e){
             LOGGER.error("Failed to find URI for {}: {}", concept, e.getLocalizedMessage());
-            return enitities;
+            return ret;
         }
         int count=0;
         final String typeURIfinal = typeURI;
 
         List<Callable<Object>> tasks = new ArrayList();
+        Map<String, EntityLD> enitities = new HashMap<>();
         for(String id : ids) {
             tasks.add(new Callable<Object>(){
                           @Override
                           public Object call(){
+                              EntityLD entity;
                               try {
-                                  EntityLD entity = getIoTCrawlerClient().getEntityById(id);
-                                  enitities.add(entity);
+                                  entity = getIoTCrawlerClient().getEntityById(id);
                               } catch (Exception e) {
                                   if(e.getCause() instanceof HttpClientErrorException.NotFound)
                                       LOGGER.debug("Entity {} not found", id);
@@ -201,8 +203,9 @@ public class GenericMDRWiring implements Wiring {
                                       LOGGER.error("Failed to get entity {} of type {}: {}", id, concept, e.getLocalizedMessage());
                                       //e.printStackTrace();
                                   }
-                                  enitities.add(new EntityLD(id, typeURIfinal));
+                                  entity = new EntityLD(id, typeURIfinal);
                               }
+                              enitities.put(id, entity);
                               return null;
                           }
                       }
@@ -212,6 +215,9 @@ public class GenericMDRWiring implements Wiring {
         long started = System.currentTimeMillis();
         try {
             executorService.invokeAll(tasks);
+            for(String id : ids) {
+                ret.add(enitities.get(id));
+            }
         }
         catch (Exception e){
             LOGGER.error("Failed execute tasks via executor service", e.getLocalizedMessage());
@@ -221,14 +227,14 @@ public class GenericMDRWiring implements Wiring {
         System.out.println("Plus "+(System.currentTimeMillis() - started) +" - "+ tasks.size()+" queries of get entity By ID("+concept+")");
         totalQueriesPerformed+=tasks.size();
 
-        if(ids.size()!=enitities.size()) {
-            int delta = ids.size() - enitities.size();
+        if(ids.size()!=ret.size()) {
+            int delta = ids.size() - ret.size();
             for (int i = 0; i < delta; i++) {
-                enitities.add(null);   //filling missing results
+                ret.add(null);   //filling missing results
                 LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
             }
         }
-        return enitities;
+        return ret;
     }
 
 
