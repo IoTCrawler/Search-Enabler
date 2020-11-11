@@ -190,12 +190,12 @@ public class TestUtils {
 		List<Exception> exceptions = new ArrayList<>();
 		NgsiLDClient ngsiLDClient = new NgsiLDClient(System.getenv(NGSILD_BROKER_URL));
 		for(EntityLD entityLD : entities){
-			try {
-				ngsiLDClient.deleteEntitySync(entityLD.getId());
-			}
-			catch (Exception e){
-				LOGGER.error(e.getLocalizedMessage());
-			}
+//			try {
+//				ngsiLDClient.deleteEntitySync(entityLD.getId());
+//			}
+//			catch (Exception e){
+//				LOGGER.error(e.getLocalizedMessage());
+//			}
 			try {
 				boolean result = ngsiLDClient.addEntitySync(entityLD);
 			}

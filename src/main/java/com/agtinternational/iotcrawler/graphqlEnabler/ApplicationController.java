@@ -142,6 +142,7 @@ public class ApplicationController {
 
         System.out.println("Total resolution time: "+took);
         System.out.println("Total execution time of "+GenericMDRWiring.getTotalQueriesPerformed()+" queries: "+GenericMDRWiring.getTotalQueryExectionTime()/1000.0);
+        System.out.println("Queries times "+ String.join("+", GenericMDRWiring.getTotalQueryExectionList()));
 
         if(System.getenv().containsKey(TRACK_EXECUTION_TIMES)) {
             String content = GenericMDRWiring.getTotalQueriesPerformed() + ";" + GenericMDRWiring.getTotalQueryExectionTime() / 1000.0 + ";" + took+"\n";

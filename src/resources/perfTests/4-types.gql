@@ -1,14 +1,15 @@
 {
-  streams(limit:100) {
+  streams(limit:500) {
     id
     generatedBy{
       id
-      isHostedBy{
-        id
-      }
       observes{
         id
       }
+      isHostedBy{
+        id
+      }
+
     }
   }
 }

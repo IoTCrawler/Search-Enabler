@@ -59,6 +59,7 @@ public class GenericMDRWiring implements Wiring {
     public static final DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
     static IoTCrawlerClient iotCrawlerClient;
     static long totalQueryExectionTime = 0;
+    static List<String> totalQueryExectionTimeList = new ArrayList<>();
     static long totalQueriesPerformed = 0;
     private Map<String, String> schemas;
     private RuntimeWiring.Builder runtimeWiringBuilder;
@@ -119,8 +120,13 @@ public class GenericMDRWiring implements Wiring {
         return totalQueryExectionTime;
     }
 
+    public static List<String> getTotalQueryExectionList() {
+        return totalQueryExectionTimeList;
+    }
+
     public static void resetTotalQueryExectionTime() {
         totalQueryExectionTime=0;
+        totalQueryExectionTimeList.clear();
     }
 
     public static long getTotalQueriesPerformed() {
@@ -138,7 +144,9 @@ public class GenericMDRWiring implements Wiring {
             try {
                 long started = System.currentTimeMillis();
                 List res = getIoTCrawlerClient().getEntities(typeURI, null, null, offset, limit);
-                totalQueryExectionTime += (System.currentTimeMillis() - started);
+                long took = (System.currentTimeMillis() - started);
+                totalQueryExectionTime += took;
+                totalQueryExectionTimeList.add(String.valueOf(took/1000.0));
                 System.out.println("Plus "+(System.currentTimeMillis() - started) +" Type "+typeURI);
                 totalQueriesPerformed++;
                 return res;
@@ -223,7 +231,9 @@ public class GenericMDRWiring implements Wiring {
             LOGGER.error("Failed execute tasks via executor service", e.getLocalizedMessage());
             e.printStackTrace();
         }
-        totalQueryExectionTime += (System.currentTimeMillis() - started);
+        long took = (System.currentTimeMillis() - started);
+        totalQueryExectionTime += took;
+        totalQueryExectionTimeList.add(String.valueOf(took/1000.0));
         System.out.println("Plus "+(System.currentTimeMillis() - started) +" - "+ tasks.size()+" queries of get entity By ID("+concept+")");
         totalQueriesPerformed+=tasks.size();
 

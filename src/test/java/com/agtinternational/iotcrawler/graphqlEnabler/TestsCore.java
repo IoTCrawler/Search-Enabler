@@ -58,57 +58,65 @@ public class TestsCore extends TestUtils {
 
     protected List<EntityLD> createEntities(){
         boolean cutURIs = true;
-        Map<String, String[]> sensorsAndProperties = new HashMap<>();
-        for(int i=1; i<50; i++) {
-            sensorsAndProperties.put("AEON Labs ZW100 MultiSensor 6 ("+i+")", new String[]{"BatteryLevel", "Brightness", "MotionAlarm", "MotionAlarmCancelationDelay", "RelativeHumidity", "TamperAlarm", "Temperature", "UV"});
-            sensorsAndProperties.put("FIBARO System FGWPE/F Wall Plug Gen5 ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
-            sensorsAndProperties.put("FIBARO Wall plug living room ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
-        }
+//        Map<String, String[]> sensorsAndProperties = new HashMap<>();
+//        for(int i=1; i<50; i++) {
+//            sensorsAndProperties.put("AEON Labs ZW100 MultiSensor 6 ("+i+")", new String[]{"BatteryLevel", "Brightness", "MotionAlarm", "MotionAlarmCancelationDelay", "RelativeHumidity", "TamperAlarm", "Temperature", "UV"});
+//            sensorsAndProperties.put("FIBARO System FGWPE/F Wall Plug Gen5 ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
+//            sensorsAndProperties.put("FIBARO Wall plug living room ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
+//        }
 
         Map<String, ObservableProperty> observableProperties = new HashMap<>();
         List<EntityLD> entities = new ArrayList<>();
 
-        Platform platform = new Platform("urn:ngsi-ld:Platform_homee_00055110D732", "Platform homee_00055110D732");
-        for(String deviceName: sensorsAndProperties.keySet()) {
-            for (String propertyName : sensorsAndProperties.get(deviceName)) {
-                String propertyId = "urn:ngsi-ld:" + propertyName.replace(" ", "_").replace("/","-");
+        //int i=0;
+        for(int i=0; i<50; i++) {
+            Platform platform = new Platform("urn:ngsi-ld:Platform_homee_00055110D7"+i, "Platform homee_00055110D7"+i);
 
-                if(!observableProperties.containsKey(propertyId)){
-                    observableProperties.put(propertyId, new ObservableProperty(propertyId, propertyName));
+            Map<String, String[]> sensorsAndProperties = new HashMap<>();
+            sensorsAndProperties.put("AEON Labs ZW100 MultiSensor 6 ("+i+")", new String[]{"BatteryLevel", "Brightness", "MotionAlarm", "MotionAlarmCancelationDelay", "RelativeHumidity", "TamperAlarm", "Temperature", "UV"});
+            sensorsAndProperties.put("FIBARO System FGWPE/F Wall Plug Gen5 ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
+            sensorsAndProperties.put("FIBARO Wall plug living room ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
+
+            for(String deviceName: sensorsAndProperties.keySet())
+                for (String propertyName : sensorsAndProperties.get(deviceName)) {
+                    String propertyId = "urn:ngsi-ld:" + propertyName.replace(" ", "_").replace("/","-");
+
+                    if(!observableProperties.containsKey(propertyId)){
+                        observableProperties.put(propertyId, new ObservableProperty(propertyId, propertyName));
+                    }
+
+                    ObservableProperty observableProperty = observableProperties.get(propertyId);
+
+                    String sensorName = deviceName+" "+propertyName;
+                    String sensorAndPropertyForId = sensorName.replace(" ", "_").replace("/","-");
+                    Sensor sensor = new Sensor("urn:ngsi-ld:Sensor_" +sensorAndPropertyForId, sensorName);
+
+                    IoTStream ioTStream = new IoTStream("urn:ngsi-ld:Stream_" +sensorAndPropertyForId);
+                    //StreamObservation streamObservation = new StreamObservation("");
+
+                    ioTStream.generatedBy(sensor);
+
+                    sensor.observes(observableProperty);
+                    observableProperty.isObservedBy(sensor);
+                    platform.hosts(sensor);
+                    sensor.isHostedBy(platform);
+
+                    try {
+                        entities.add(ioTStream.toEntityLD(cutURIs));
+                        entities.add(sensor.toEntityLD(cutURIs));
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
-
-                ObservableProperty observableProperty = observableProperties.get(propertyId);
-
-                String sensorName = deviceName+" "+propertyName;
-                String sensorAndPropertyForId = sensorName.replace(" ", "_").replace("/","-");
-                Sensor sensor = new Sensor("urn:ngsi-ld:Sensor_" +sensorAndPropertyForId, sensorName);
-
-                IoTStream ioTStream = new IoTStream("urn:ngsi-ld:Stream_" +sensorAndPropertyForId);
-                //StreamObservation streamObservation = new StreamObservation("");
-
-                ioTStream.generatedBy(sensor);
-
-                sensor.observes(observableProperty);
-                observableProperty.isObservedBy(sensor);
-                platform.hosts(sensor);
-                sensor.isHostedBy(platform);
-
                 try {
-                    entities.add(ioTStream.toEntityLD(cutURIs));
-                    entities.add(sensor.toEntityLD(cutURIs));
+                    entities.add(platform.toEntityLD(cutURIs));
                 }
                 catch (Exception e){
                     e.printStackTrace();
                 }
-            }
         }
 
-        try {
-            entities.add(platform.toEntityLD(cutURIs));
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
         observableProperties.values().forEach(observableProperty->{
             try {
                 entities.add(observableProperty.toEntityLD(cutURIs));

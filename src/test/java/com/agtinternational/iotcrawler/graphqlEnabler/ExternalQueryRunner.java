@@ -1,6 +1,7 @@
 package com.agtinternational.iotcrawler.graphqlEnabler;
 
 import com.agtinternational.iotcrawler.core.clients.GraphQLClient;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
 import com.google.common.io.Resources;
 
 import java.nio.charset.Charset;
@@ -39,6 +40,7 @@ public class ExternalQueryRunner {
         //System.out.println("Client resolution time: "+ total/amountOfAttempts);
         System.out.println("Server resolution time: "+totalExecutionTime/amountOfAttempts);
         System.out.println("Requests ("+requestsPerformed+") execution time: "+totalRequestsTime/amountOfAttempts);
+        //System.out.println("Queries times "+ String.join("+ ", GenericMDRWiring.getTotalQueryExectionList()));
 
 
 

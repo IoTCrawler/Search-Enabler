@@ -1,5 +1,5 @@
 {
-  streams(limit:500) {
+  streams(limit:200) {
     id
     generatedBy{
       id
