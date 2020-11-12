@@ -21,8 +21,9 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.IoTCrawlerWiring;
+import com.agtinternational.iotcrawler.graphqlEnabler.resolving.UniversalDataFetcher;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.MultipleSchemasWiring;
 import graphql.GraphQL;
 import graphql.execution.instrumentation.ChainedInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
@@ -56,7 +57,7 @@ public class GraphQLProvider {
 
     private GraphQLSchema graphQLSchema;
     private DataLoaderRegistry dataLoaderRegistry;
-    private GenericMDRWiring wiring;
+    private HierarchicalWiring wiring;
     private Context context;
 
     TypeDefinitionRegistry typeRegistry;
@@ -73,11 +74,11 @@ public class GraphQLProvider {
 
     @Autowired
     public GraphQLProvider(){ //used for http app
-        this(new IoTCrawlerWiring.Builder().build());
+        this(new MultipleSchemasWiring.Builder().build());
 
     }
 
-    public GraphQLProvider(GenericMDRWiring wiring){  //used for outside tests
+    public GraphQLProvider(HierarchicalWiring wiring){  //used for outside tests
         this.wiring = wiring;
         this.dataLoaderRegistry = new DataLoaderRegistry();
     }
@@ -291,7 +292,7 @@ public class GraphQLProvider {
                             fieldTypeName = ((TypeName) type).getName();
                         else
                             throw new NotImplementedException(type.getClass().getCanonicalName());
-                        wiringBuilder.dataFetcher(name2, GenericMDRWiring.genericDataFetcher(fieldTypeName, false));
+                        wiringBuilder.dataFetcher(name2, UniversalDataFetcher.get(fieldTypeName, false));
                     }
 
                 }

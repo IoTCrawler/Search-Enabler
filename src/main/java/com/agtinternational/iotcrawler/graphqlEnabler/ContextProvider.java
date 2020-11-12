@@ -20,7 +20,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * #L%
  */
 
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
+import com.agtinternational.iotcrawler.graphqlEnabler.resolving.QueryResolver;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +38,8 @@ public class ContextProvider {
     }
 
     public Context newContext() {
-        GenericMDRWiring.resetTotalQueryExectionTime();
-        GenericMDRWiring.resetTotalQueriesPerformed();
+        QueryResolver.resetTotalQueryExectionTime();
+        QueryResolver.resetTotalQueriesPerformed();
         for(String key: dataLoaderRegistry.getKeys()) {
             DataLoader dataLoader = dataLoaderRegistry.getDataLoader(key);
             dataLoader.clearAll();

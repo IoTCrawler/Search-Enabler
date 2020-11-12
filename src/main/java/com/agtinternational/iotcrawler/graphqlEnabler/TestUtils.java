@@ -20,17 +20,14 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  * #L%
  */
 
-import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
-import com.google.common.base.Charsets;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
 import com.google.common.io.Resources;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import net.minidev.json.JSONObject;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -98,7 +95,7 @@ public class TestUtils {
 
 
 		LOGGER.info("Initing generic MDR wiring");
-		GenericMDRWiring wiring = new GenericMDRWiring();
+		HierarchicalWiring wiring = new HierarchicalWiring();
 		wiring.setSchemaString(schemas);
 
 		LOGGER.info("Initing GraphQL provider");

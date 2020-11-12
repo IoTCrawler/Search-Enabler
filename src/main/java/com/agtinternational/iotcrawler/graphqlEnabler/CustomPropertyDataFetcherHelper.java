@@ -23,7 +23,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 import com.agtinternational.iotcrawler.core.Utils;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
 import com.orange.ngsi2.model.Attribute;
 import graphql.GraphQLException;
 import graphql.Internal;
@@ -107,7 +107,7 @@ public class CustomPropertyDataFetcherHelper {
 //                        } catch (NoSuchMethodException ignored) {
                         //String objectType = Utils.getFragment(((EntityLD) object0).getType());
                         String objectType = environment.getParentType().getName();
-                        String propertyNameURI = GenericMDRWiring.findURI(objectType, propertyName);
+                        String propertyNameURI = HierarchicalWiring.findURI(objectType, propertyName);
                         //if (propertyNameURI == null)
                         //Getting parent type Might be problematic!
                         //propertyNameURI = GenericMDRWiring.findURI(environment.getParentType().getName(), propertyName);
@@ -185,9 +185,9 @@ public class CustomPropertyDataFetcherHelper {
                 LOGGER.warn("Skipping wrappedType="+wrappedType.getClass().getName());
 
             if (propertyType != null){
-                String propertyTypeURI = GenericMDRWiring.findURI(propertyType);
+                String propertyTypeURI = HierarchicalWiring.findURI(propertyType);
                 if (propertyTypeURI != null) {
-                    DataLoader loader = GenericMDRWiring.dataLoaderRegistry.getDataLoader(propertyType);
+                    DataLoader loader = HierarchicalWiring.dataLoaderRegistry.getDataLoader(propertyType);
                     if (loader == null)
                         throw new Exception("No data loader for " + propertyType);
                     CompletableFuture future;

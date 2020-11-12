@@ -1,20 +1,22 @@
 {
-   #sensors
-   sensors(
+   sensors(isHostedBy: {
+                     id: "urn:ngsi-ld:Platform:30:AE:A4:6E:FC:D0"
+                   })
+   #sensors(
     #isHostedBy: {
     #               label: "AEON Labs ZW100 MultiSensor 6"
     #                label: "FIBARO System FGWPE/F Wall Plug Gen5"
     #           },
-    observes: {
-        label: "Temperature"
-       }
-   )
+    #observes: {
+    #    label: "Temperature"
+    #   }
+   #)
    {
            id,
-           label,
+           #label,
            observes {
                id,
-               label
+               #label
            },
            #isHostedBy{
            #            id,

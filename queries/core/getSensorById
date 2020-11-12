@@ -1,5 +1,5 @@
 {
-  sensor(id: "urn:ngsi-ld:IndoorTemperatureSensor_1") {
+  sensors(id: "urn:ngsi-ld:The_Things_Network_a81758fffe038898-2045__movementproperty_Sensor") {
     id,
     label,
     alternativeType,

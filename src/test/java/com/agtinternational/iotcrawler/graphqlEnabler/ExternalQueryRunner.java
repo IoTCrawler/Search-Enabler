@@ -1,7 +1,6 @@
 package com.agtinternational.iotcrawler.graphqlEnabler;
 
 import com.agtinternational.iotcrawler.core.clients.GraphQLClient;
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
 import com.google.common.io.Resources;
 
 import java.nio.charset.Charset;
