@@ -21,14 +21,12 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.GenericMDRWiring;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.agtinternational.iotcrawler.graphqlEnabler.resolving.QueryResolver;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
-import org.apache.jena.base.Sys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 //import org.springframework.web.bind.annotation.CrossOrigin;
@@ -37,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -141,11 +138,11 @@ public class ApplicationController {
         double took = (System.currentTimeMillis()-started)/1000.0;
 
         System.out.println("Total resolution time: "+took);
-        System.out.println("Total execution time of "+GenericMDRWiring.getTotalQueriesPerformed()+" queries: "+GenericMDRWiring.getTotalQueryExectionTime()/1000.0);
-        System.out.println("Queries times "+ String.join("+", GenericMDRWiring.getTotalQueryExectionList()));
+        System.out.println("Total execution time of "+ QueryResolver.getTotalQueriesPerformed()+" queries: "+ QueryResolver.getTotalQueryExectionTime()/1000.0);
+        System.out.println("Queries times "+ String.join("+", QueryResolver.getTotalQueryExectionList()));
 
         if(System.getenv().containsKey(TRACK_EXECUTION_TIMES)) {
-            String content = GenericMDRWiring.getTotalQueriesPerformed() + ";" + GenericMDRWiring.getTotalQueryExectionTime() / 1000.0 + ";" + took+"\n";
+            String content = QueryResolver.getTotalQueriesPerformed() + ";" + QueryResolver.getTotalQueryExectionTime() / 1000.0 + ";" + took+"\n";
             if(!Paths.get("times.csv").toFile().exists())
                 Files.write(Paths.get("times.csv"), content.getBytes(), StandardOpenOption.CREATE_NEW);
             else

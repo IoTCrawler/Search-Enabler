@@ -4,7 +4,7 @@
 
   <groupId>com.agtinternational.iotcrawler</groupId>
   <artifactId>search-enabler</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.1</version>
 
   <organization>
     <name>AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)</name>
@@ -20,11 +20,7 @@
 
   <properties>
 <!--    <iotcrawler.orchestrator.version>1.0.7</iotcrawler.orchestrator.version>-->
-    <iotcrawler.core.version>1.0.2</iotcrawler.core.version>
-    <fiware.models.version>1.0.1</fiware.models.version>
-    <fiware.clients.version>1.0.1</fiware.clients.version>
-    <ngsi.api.version>7.1-SNAPSHOT</ngsi.api.version>
-
+    <iotcrawler.core.version>1.0.3</iotcrawler.core.version>
 <!--    <git.branch></git.branch>-->
 <!--    <git.commit.id></git.commit.id>-->
 

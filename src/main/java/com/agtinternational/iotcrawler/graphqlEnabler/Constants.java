@@ -22,8 +22,12 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 import com.agtinternational.iotcrawler.core.ontologies.IotStream;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Constants {
     //public static final String ALT_TYPE =  "http://search-enabler.iotcrawler/altType";
     public static String GRAPHQL_ENDPOINT_URL = "GRAPHQL_ENDPOINT_URL";
     public static String TRACK_EXECUTION_TIMES = "TRACK_EXECUTION_TIMES";
+    public static String[] CORE_TYPES = new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty", "StreamObservation" };
 }

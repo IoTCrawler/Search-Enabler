@@ -22,10 +22,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 
 import com.agtinternational.iotcrawler.core.Utils;
-import com.agtinternational.iotcrawler.core.models.IoTStream;
-import com.agtinternational.iotcrawler.core.models.ObservableProperty;
-import com.agtinternational.iotcrawler.core.models.Platform;
-import com.agtinternational.iotcrawler.core.models.Sensor;
+import com.agtinternational.iotcrawler.core.models.*;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.AutomatedTests;
 import com.agtinternational.iotcrawler.graphqlEnabler.EnvVariablesSetter;
@@ -69,7 +66,7 @@ public class TestsCore extends TestUtils {
         List<EntityLD> entities = new ArrayList<>();
 
         //int i=0;
-        for(int i=0; i<50; i++) {
+        for(int i=0; i<1; i++) {
             Platform platform = new Platform("urn:ngsi-ld:Platform_homee_00055110D7"+i, "Platform homee_00055110D7"+i);
 
             Map<String, String[]> sensorsAndProperties = new HashMap<>();
@@ -95,15 +92,22 @@ public class TestsCore extends TestUtils {
                     //StreamObservation streamObservation = new StreamObservation("");
 
                     ioTStream.generatedBy(sensor);
-
                     sensor.observes(observableProperty);
                     observableProperty.isObservedBy(sensor);
                     platform.hosts(sensor);
                     sensor.isHostedBy(platform);
 
+                    StreamObservation streamObservation = new StreamObservation("urn:ngsi-ld:StreamObservation_" +sensorAndPropertyForId);
+                    streamObservation.madeBySensor(sensor);
+                    streamObservation.resultTime(System.currentTimeMillis());
+                    streamObservation.hasSimpleResult(Math.random()*10);
+                    streamObservation.belongsTo(ioTStream);
+                    sensor.madeObservation(streamObservation);
+
                     try {
                         entities.add(ioTStream.toEntityLD(cutURIs));
                         entities.add(sensor.toEntityLD(cutURIs));
+                        entities.add(streamObservation.toEntityLD(cutURIs));
                     }
                     catch (Exception e){
                         e.printStackTrace();
@@ -232,5 +236,11 @@ public class TestsCore extends TestUtils {
     public void getStreamObservationsTest() throws Exception {
 
         executeQuery(Paths.get("queries","core","getStreamObservations"));
+    }
+
+    @Test
+    public void getStreamObservationsWithFilterTest() throws Exception {
+
+        executeQuery(Paths.get("queries","core","getStreamObservationsWithFilter"));
     }
 }

@@ -55,7 +55,16 @@ input StreamObservationInput {
     belongsTo: IoTStreamInput
     madeBySensor: SensorInput
     alternativeType: String
-    hasSimpleResult: String
+    hasSimpleResult: SimpleResultFilter
+}
+
+input SimpleResultFilter {
+      eq: Int
+      neq: Int
+      gt: Int
+      gte: Int
+      lt: Int
+      lte: Int
 }
 
 
@@ -65,7 +74,7 @@ type Query {
     systems(id: String, alternativeType: String, label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
     platforms(id: String,  alternativeType: String, label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
     observableProperties(id: String,  alternativeType: String, label: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
-    streamObservations(id: String,  alternativeType: String, madeBySensor: SensorInput, belongsTo: IoTStreamInput, offset: Int = 0, limit: Int = 0): [StreamObservation]
+    streamObservations(id: String, hasSimpleResult: SimpleResultFilter, alternativeType: String, madeBySensor: SensorInput, belongsTo: IoTStreamInput, offset: Int = 0, limit: Int = 0): [StreamObservation]
 
 }
 

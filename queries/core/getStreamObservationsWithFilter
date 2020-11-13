@@ -1,0 +1,6 @@
+{
+  streamObservations(hasSimpleResult: { gt: 8 })
+  {
+    id
+  }
+}
