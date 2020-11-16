@@ -70,9 +70,9 @@ public class TestsCore extends TestUtils {
             Platform platform = new Platform("urn:ngsi-ld:Platform_homee_00055110D7"+i, "Platform homee_00055110D7"+i);
 
             Map<String, String[]> sensorsAndProperties = new HashMap<>();
-            sensorsAndProperties.put("AEON Labs ZW100 MultiSensor 6 ("+i+")", new String[]{"BatteryLevel", "Brightness", "MotionAlarm", "MotionAlarmCancelationDelay", "RelativeHumidity", "TamperAlarm", "Temperature", "UV"});
-            sensorsAndProperties.put("FIBARO System FGWPE/F Wall Plug Gen5 ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
-            sensorsAndProperties.put("FIBARO Wall plug living room ("+i+")", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
+            sensorsAndProperties.put("AEON Labs ZW100 MultiSensor 6 _"+i+"", new String[]{"BatteryLevel", "Brightness", "MotionAlarm", "MotionAlarmCancelationDelay", "RelativeHumidity", "TamperAlarm", "Temperature", "UV"});
+            sensorsAndProperties.put("FIBARO System FGWPE/F Wall Plug Gen5 "+i+"", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
+            sensorsAndProperties.put("FIBARO Wall plug living room "+i+"", new String[]{"AccumulatedEnergyUse", "CurrentEnergyUse"});
 
             for(String deviceName: sensorsAndProperties.keySet())
                 for (String propertyName : sensorsAndProperties.get(deviceName)) {
@@ -186,17 +186,8 @@ public class TestsCore extends TestUtils {
         executeQuery(Paths.get("queries","core","getSensors"));
     }
 
-    @Test
-    public void getTemperatureSensorsTest() throws Exception {
-        
-        executeQuery(Paths.get("queries","smartConnect","getTemperatureSensors"));
-    }
 
-    @Test
-    public void getIndoorTemperatureSensorsTest() throws Exception {
-        
-        executeQuery(Paths.get("queries","smartConnect","getIndoorTemperatureSensors"));
-    }
+
 
 
     @Test

@@ -55,11 +55,11 @@ public class QueryResolver {
     static List<String> totalQueryExectionTimeList = new ArrayList<>();
     static long totalQueriesPerformed = 0;
 
-    public QueryResolver(){
-        executorService = Executors.newFixedThreadPool(64);
-    }
+//    public QueryResolver(){
+//        executorService = Executors.newFixedThreadPool(64);
+//    }
 
-    private static ExecutorService executorService;
+    private static ExecutorService executorService = Executors.newFixedThreadPool(64);
 
     public static IoTCrawlerClient getIoTCrawlerClient(){
         Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
@@ -93,34 +93,85 @@ public class QueryResolver {
                 return res;
             } catch (Exception e) {
                 LOGGER.error("Failed to get entities of type {}: {}", typeURI, e.getLocalizedMessage());
-                //e.printStackTrace();
+                e.printStackTrace();
                 return null;
             }
-        else
-            for (String key : query.keySet()) {
+        else {
+            List<Callable<Object>> tasks = new ArrayList();
+            List<Map> uniqueQueries = new ArrayList<>();
+            List<String> keys = new ArrayList();
+            keys.addAll(query.keySet());
+            int i=0;
+            for (String key : keys){
+                i++;
                 Object value = query.get(key);
+
+
                 if (!(value instanceof Iterable))
                     value = Arrays.asList(new Object[]{value});
 
                 Iterator iterator = ((Iterable) value).iterator();
                 while (iterator.hasNext()) {
-                    Map query2 = new HashMap();
-                    query2.put(key, iterator.next());
-                    try {
-                        List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
-                        ret.addAll(res);
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to get entities of type {}", typeURI);
-                        //e.printStackTrace();
+                    Object iValue = iterator.next();
+                    List<String> subList = keys.subList(i, keys.size());
+                    if(subList.size()==0) {
+                        Map query2 = new HashMap();
+                        query2.put(key, iValue);
+                        uniqueQueries.add(query2);
                     }
+                    for (String key2 : subList){
+                        Object value2 = query.get(key2);
+                        if (!(value2 instanceof Iterable))
+                            value2 = Arrays.asList(new Object[]{value});
+                        Iterator iterator2 = ((Iterable) value2).iterator();
+                        while (iterator2.hasNext()) {
+                            Object iValue2 = iterator2.next();
+                            Map query2 = new HashMap();
+                            query2.put(key, iValue);
+                            query2.put(key2, iValue2);
+                            uniqueQueries.add(query2);
+                        }
+
+                    }
+
+                    for(Map query2 : uniqueQueries){
+                        tasks.add(new Callable<Object>(){
+                                      @Override
+                                      public Object call(){
+                                          try {
+                                              List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
+                                              ret.addAll(res);
+                                          } catch (Exception e) {
+                                              LOGGER.error("Failed to get entities of type {}: {}", typeURI, e.getLocalizedMessage());
+                                              //e.printStackTrace();
+                                          }
+                                          return null;
+                                      }
+                                  }
+                        );
+                    }
+
+//                    if(uniqueValues.contains(String.valueOf(iValue)))
+//                        continue;
+
+
                 }
             }
-
+            if(tasks.size()>0)
+                try {
+                    executorService.invokeAll(tasks);
+                    String test = "123";
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+        }
 
         //List augmented = augmentEntities(ret, concept);
         //return augmented;
         return ret;
     }
+
+
     public static List<Object> serveGetEntityByIdQuery(List<String> ids, String concept){
         List ret = new ArrayList();
 

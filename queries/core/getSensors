@@ -1,6 +1,6 @@
 {
    sensors(isHostedBy: {
-                     id: "urn:ngsi-ld:Platform:30:AE:A4:6E:FC:D0"
+                     id: "urn:ngsi-ld:Platform_homee_00055110D70"
                    })
    #sensors(
     #isHostedBy: {

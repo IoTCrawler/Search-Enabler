@@ -1,6 +1,12 @@
 {
-  streamObservations(hasSimpleResult: { gt: 8 })
-  {
+  streamObservations(hasSimpleResult: {gt: 5}){
     id
+    hasSimpleResult
+    madeBySensor{
+      isHostedBy
+      {
+        id
+      }
+    }
   }
 }

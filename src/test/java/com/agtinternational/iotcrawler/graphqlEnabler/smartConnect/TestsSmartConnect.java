@@ -101,6 +101,12 @@ public class TestsSmartConnect extends TestUtils {
     }
 
     @Test
+    public void getIndoorTemperatureSensorsTest() throws Exception {
+
+        executeQuery(Paths.get("queries","smartConnect","getIndoorTemperatureSensors"));
+    }
+
+    @Test
     public void getElectricityMeters() throws Exception {
         executeQuery(Paths.get("queries","smartConnect","getElectricityMeters"));
     }

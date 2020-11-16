@@ -1,5 +1,5 @@
 {
-  sensors(id: "urn:ngsi-ld:The_Things_Network_a81758fffe038898-2045__movementproperty_Sensor") {
+  sensors(id: "urn:ngsi-ld:Sensor_FIBARO_System_FGWPE-F_Wall_Plug_Gen5_0_CurrentEnergyUse") {
     id,
     label,
     alternativeType,
