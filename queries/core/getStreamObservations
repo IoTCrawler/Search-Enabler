@@ -1,0 +1,12 @@
+{
+  streamObservations(limit:5) {
+    id
+    hasSimpleResult
+    madeBySensor{
+      isHostedBy
+      {
+        id
+      }
+    }
+  }
+}

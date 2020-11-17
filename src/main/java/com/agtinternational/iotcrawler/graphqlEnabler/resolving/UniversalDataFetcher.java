@@ -43,7 +43,7 @@ public class UniversalDataFetcher {
     static Logger LOGGER = LoggerFactory.getLogger(UniversalDataFetcher.class);
     static List<String> coreTypes = Arrays.asList(CORE_TYPES);
 
-    public static DataFetcher get(String concept, boolean calledRecursively) {
+    public static DataFetcher get(String concept) {
 
         return environment -> {
 //            Boolean topLevelQuery = (resolvedConcepts.size()==0?true: false);
@@ -57,36 +57,8 @@ public class UniversalDataFetcher {
                 LOGGER.error("Loader for " + concept + " not found");
                 return null;
             }
-            if(!calledRecursively)
-                loader.clearAll();
-
-            String id = environment.getArgument("id");
-            String URI = environment.getArgument("URI");
-            Object source = environment.getSource();
-
-
-            if(id!=null) {
-                if (calledRecursively){
-                    List<Object> entities = QueryResolver.serveGetEntityByIdQuery(Arrays.asList(id), concept);
-                    List<String> ids = new ArrayList<>();
-                    entities.stream().forEach(entity0 -> {
-                        EntityLD entity = ((EntityLD) entity0);
-                        if(entity!=null) {
-                            loader.prime(entity.getId(), entity);
-                            ids.add(entity.getId());
-                        }
-                    });
-                    //return loader.loadMany(ids);
-                }
-                return loader.loadMany(Arrays.asList(new String[]{ id }));
-                //return loader.load(id);
-            }
-//            if(URI!=null){
-//                //Filtering query shoud
-//                return loader.load(URI);
-//            }
-
-            Map<String,Object> query = new HashMap<>();
+//            if(!calledRecursively)
+//                loader.clearAll();
 
             int offset = 0;
             int limit = 500;
@@ -101,17 +73,41 @@ public class UniversalDataFetcher {
                 argumentsToResolve.remove("limit");
             }
 
+            String id = null;
+            if(environment.getArgument("id")!=null){
+                id = environment.getArgument("id");
+                argumentsToResolve.remove("id");
+            }
+
+
+            if(id!=null){
+                //if (calledRecursively){
+                    List<Object> entities = QueryResolver.serveGetEntityByIdQuery(Arrays.asList(id), concept);
+                    List<String> ids = new ArrayList<>();
+                    entities.stream().forEach(entity0 -> {
+                        EntityLD entity = ((EntityLD) entity0);
+                        if(entity!=null) {
+                            loader.prime(entity.getId(), entity);
+                            ids.add(entity.getId());
+                        }
+                    });
+                    CompletableFuture future = loader.loadMany(ids);
+                     if(argumentsToResolve.size()==0)
+                        return future;
+                //}
+            }
+
+            Map<String,Object> query = new HashMap<>();
             if(argumentsToResolve.size()>0){
                 try {
-                    query = amendQueryByResolvingArgs(query, environment, argumentsToResolve);
+                    query = BottomUpStrategy.resolveQuery(environment, argumentsToResolve);
                     if(query==null)
                         return null;
                 } catch (Exception e) {
-                    LOGGER.error("Failed to resolve filters");
+                    LOGGER.error("Failed to resolve arguments bottom up: ", e.getLocalizedMessage());
                     e.printStackTrace();
                     return null;
                 }
-
             }
 
             //environment.getGraphQLSchema().getType(concept)
@@ -131,6 +127,7 @@ public class UniversalDataFetcher {
             }catch (Exception e) {
                 //LOGGER.error("Failed to get entities for query {}: {}", query, e.getLocalizedMessage());
             }
+
             if(!coreTypes.contains(concept)) //if additional resolution might be required
             {
                 List<String> childTypes = getTopdownTypesAsList(concept);
@@ -145,14 +142,15 @@ public class UniversalDataFetcher {
 
             }
 
+            final String finalId = id;
             List<String> ids = new ArrayList<>();
             entities.stream().forEach(entity0->{
                 EntityLD entity = ((EntityLD)entity0);
-                loader.prime(entity.getId(), entity);
-                ids.add(entity.getId());
+                if((finalId!=null && entity.getId().equals(finalId)) || finalId==null){
+                    loader.prime(entity.getId(), entity);
+                    ids.add(entity.getId());
+                }
             });
-
-
 
 //            if(topLevelQuery)
 //                resolvedConcepts.clear();
@@ -162,175 +160,7 @@ public class UniversalDataFetcher {
         };
     }
 
-    public static Map amendQueryByResolvingArgs(Map<String, Object> query, DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve) throws Exception {
-        LOGGER.debug("Amending query by resolving the filters "+argumentsToResolve.toString());
-        //setting alternative type as a condition
-        if(environment.getArgument("subClassOf")!=null) {
-            String parentTypeName = environment.getArgument("subClassOf");
-            try {
-                String parentTypeURI = HierarchicalWiring.findURI(parentTypeName);
-                query.put(NGSI_LD.alternativeType, "\"" + parentTypeURI + "\"");
-            } catch (Exception e) {
-                LOGGER.warn("Failed to find URI for {}", parentTypeName);
-                return null;
-            }
-        }
-        //for(String argName: arguments.keySet()) {
-        for(Field field: environment.getFields())
-            for(Argument argument: field.getArguments())
-                if(argumentsToResolve.containsKey(argument.getName())){
 
-                    String argName = argument.getName();
-
-                    Object argValue = argumentsToResolve.get(argName);
-                    GraphQLOutputType outputType = environment.getFieldType();
-                    //GraphQLType wrappedType = ((GraphQLModifiedType)outputType).getWrappedType();
-                    String wrappedTypeName = ((GraphQLModifiedType)outputType).getWrappedType().getName();
-
-                    String propertyURI = null;
-                    try {
-                        propertyURI = HierarchicalWiring.findURI(wrappedTypeName, argName);
-                    }
-                    catch (Exception e){
-                        //ignoring exception
-                    }
-//                if(wrappedType instanceof GraphQLObjectType)
-//                    propertyURI = ((GraphQLObjectType)wrappedType).getDescription();
-//                else throw new NotImplementedException(wrappedType.getClass().getCanonicalName()+" not implemented");
-
-                    if(propertyURI==null) {
-                        LOGGER.warn("URI not found for " + argName+". Excluding from resolution");
-                        continue;
-                    }
-
-                    GraphQLArgument graphQLArgument = environment.getFieldTypeInfo().getFieldDefinition().getArgument(argName);
-                    GraphQLType graphQLInputType = environment.getFieldTypeInfo().getFieldDefinition().getType();
-                    if(graphQLArgument!=null)//getting type from argument (if possible)
-                        graphQLInputType = graphQLArgument.getType();
-
-
-                    if(graphQLInputType instanceof GraphQLModifiedType)
-                        graphQLInputType = ((GraphQLModifiedType) graphQLInputType).getWrappedType();
-                    String inputTypeName = graphQLInputType.getName().replace("Input","");
-
-                    GraphQLType targetInputType = environment.getGraphQLSchema().getType(inputTypeName);
-                    if(targetInputType==null)
-                        throw new Exception("Type " + inputTypeName + " not found in schema");
-
-                    if(targetInputType instanceof GraphQLInputObjectType) { //handling input type filters
-                        List<Field> fields = new ArrayList<>();
-                        String propertyName = argument.getName();
-                        List<ObjectField> filtersToApply = ((ObjectValue) argument.getValue()).getObjectFields();
-                        //Field field1 = null;
-                        List<Pair> pairs = new ArrayList<>();
-                        for (ObjectField objectField : filtersToApply) {
-                            String sign = null;
-                            if(objectField.getName().equals("gt"))
-                                sign = ">";
-                            if(objectField.getName().equals("gte"))
-                                sign = ">=";
-                            if(objectField.getName().equals("lt"))
-                                sign = "<";
-                            if(objectField.getName().equals("lte"))
-                                sign = "=<";
-                            if(sign!=null)
-                                pairs.add(Pair.of(sign, ((IntValue)objectField.getValue()).getValue().intValue()));
-                        }
-
-                        LOGGER.debug("Applying {} filter with values {}", propertyName, fields.toArray());
-                        if(pairs.size()>0)
-                            query.put(propertyURI, pairs.get(0));
-
-                    }else if(targetInputType instanceof GraphQLObjectType) {
-
-                        List<Field> fields = new ArrayList<>();
-                        List<ObjectField> objectFields = ((ObjectValue) argument.getValue()).getObjectFields();
-                        Field field1 = null;
-                        for (ObjectField objectField : objectFields) {
-                            List<Argument> arguments1 = new ArrayList<>();
-                            arguments1.add(new Argument(objectField.getName(), objectField.getValue()));
-                            field1 = new Field(objectField.getName(), arguments1);
-                            fields.add(field1);
-                        }
-
-                        //treating id as scalar(not requesting the reference object)
-                        if(fields.size()==1 && fields.get(0).getName().equals("id")){
-                            Object value = (argValue instanceof Map? ((Map)argValue).get("id"): argValue);
-                            query.put(propertyURI, (value instanceof String? "\""+value.toString()+"\"": value));
-                            continue;
-                        }
-
-                        LOGGER.debug("Preparing {} fetcher to resolve {}", targetInputType.getName(), wrappedTypeName+"."+argName);
-
-                        GraphQLList graphQLType = new GraphQLList(targetInputType);
-                        GraphQLObjectType graphQLObjectType = (GraphQLObjectType) environment.getGraphQLSchema().getType(inputTypeName);
-                        GraphQLFieldDefinition fieldDefinition = graphQLObjectType.getFieldDefinition(field1.getName());
-
-                        DataFetcher dataFetcher = UniversalDataFetcher.get(targetInputType.getName(), true);
-
-                        ExecutionTypeInfo fieldTypeInfo = ExecutionTypeInfo.newTypeInfo()
-                                .field(field1)
-                                .fieldDefinition(fieldDefinition)
-                                .type(graphQLType)
-                                .build();
-
-                        DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
-                                environment.getSource(),
-                                (Map) argValue,
-                                environment.getContext(),
-                                environment.getRoot(),
-
-                                fieldDefinition,
-                                //environment.getFieldDefinition(),
-                                fields,
-                                //environment.getFields(),
-                                //environment.getFieldType(),
-                                graphQLType,
-
-                                environment.getParentType(),
-                                environment.getGraphQLSchema(),
-                                environment.getFragmentsByName(),
-                                environment.getExecutionId(),
-                                environment.getSelectionSet(),
-                                //environment.getFieldTypeInfo(),
-                                fieldTypeInfo,
-                                environment.getExecutionContext()
-                        );
-
-                        LOGGER.debug("Executing {} fetcher with args {}", targetInputType.getName(), argValue.toString());
-                        CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
-                        try {
-                            Object entities = future.get();
-                            if (entities instanceof Iterable) {
-
-//                                if (!((Iterable) entities).iterator().hasNext())
-//                                    return null;
-
-                                Object entityIds = ((ArrayList) entities).stream().map(entity -> ((EntityLD) entity).getId()).collect(Collectors.toList());
-                                int size = ((List) entityIds).size();
-                                //if (size == 0)
-//                                    return null;
-
-                                LOGGER.debug("{} fetcher executed. {} entities returned", targetInputType.getName(), size);
-                                query.put(propertyURI, entityIds);
-                            } else {
-                                LOGGER.debug("{} fetcher executed. One entity returned", targetInputType.getName());
-                                query.put(propertyURI, ((EntityLD) entities).getId());
-                            }
-                            //                                query.remove(key);
-                        } catch (Exception e) {
-                            LOGGER.error("Failed to resolve madeBySensor filter");
-                            e.printStackTrace();
-                            //return null;
-                        }
-                    }else if(targetInputType instanceof GraphQLScalarType){
-                        query.put(propertyURI, (argValue instanceof String? "\""+argValue.toString()+"\"": argValue));
-                    }else
-                        throw new NotImplementedException();
-                }
-
-        return query;
-    }
 
 
     static List<String> getTopdownTypesAsList(String concept){
@@ -425,7 +255,7 @@ public class UniversalDataFetcher {
                 if(filter!=null)
                     filterMap.put("subClassOf",filter);
 
-                DataFetcher dataFetcher = UniversalDataFetcher.get(adjacentConcept,true);
+                DataFetcher dataFetcher = UniversalDataFetcher.get(adjacentConcept);
                 DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
                         environment.getSource(),
                         (Map) filterMap,

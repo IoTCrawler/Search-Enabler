@@ -1,0 +1,14 @@
+{
+  platforms(id:"urn:ngsi-ld:The_Things_Network_a81758fffe038898-2045",
+    hosts: {madeObservation: {hasSimpleResult: {gt: 3540}}}){
+    id
+    hosts{
+          id
+          madeObservation{
+            id
+            hasSimpleResult
+          }
+
+        }
+  }
+}
