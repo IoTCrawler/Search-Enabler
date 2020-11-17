@@ -72,6 +72,7 @@ public class BottomUpStrategy {
 
                     // (!) Hardcoded stuff requiring Sensor & SensorInput types in schema
                     // Get target type out of input type (to resolve it with a separate fetcher)
+                    //ToDO: make this via search by input types of arguments or via declarations
                     String targetInputTypeName = graphQLInputType.getName().replace("Input","");
                     //String inputTypeName = graphQLInputType.getName();
 
@@ -134,6 +135,7 @@ public class BottomUpStrategy {
                         //GraphQLFieldDefinition fieldDefinitionForEnvironment = graphQLObjectType.getFieldDefinition(targetInputTypeName.toLowerCase()+"s");
 
                         //(!) Another hard code here: get argument definitions of a corresponding type (e.g. sensor): sensors(arg1, arg2,)
+                        //ToDO: make this via search by return types
                         String fieldDefinitionName = targetInputTypeName.substring(0,1).toLowerCase()+targetInputTypeName.substring(1)+"s";
                         if(targetInputTypeName.equals("IoTStream"))
                             fieldDefinitionName = "streams";

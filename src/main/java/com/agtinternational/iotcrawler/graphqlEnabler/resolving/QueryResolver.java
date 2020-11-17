@@ -64,8 +64,8 @@ public class QueryResolver {
     public static IoTCrawlerClient getIoTCrawlerClient(){
         Boolean cutURIs = (System.getenv().containsKey(CUT_TYPE_URIS)?Boolean.parseBoolean(System.getenv(CUT_TYPE_URIS)):false);
         if(iotCrawlerClient==null) {
-            String orchestratorUrl = System.getenv(IOTCRAWLER_ORCHESTRATOR_URL);
-            String graphQL = System.getenv(GRAPHQL_ENDPOINT_URL);
+            //String orchestratorUrl = System.getenv(IOTCRAWLER_ORCHESTRATOR_URL);
+            //String graphQL = System.getenv(GRAPHQL_ENDPOINT_URL);
 
             iotCrawlerClient = new IoTCrawlerRESTClient(System.getenv(IOTCRAWLER_ORCHESTRATOR_URL), System.getenv(GRAPHQL_ENDPOINT_URL) , cutURIs);
             //iotCrawlerClient = new OrchestratorRESTClient();
@@ -88,7 +88,7 @@ public class QueryResolver {
                 long took = (System.currentTimeMillis() - started);
                 totalQueryExectionTime += took;
                 totalQueryExectionTimeList.add(String.valueOf(took/1000.0));
-                System.out.println("Plus "+(System.currentTimeMillis() - started) +" Type "+typeURI);
+                LOGGER.debug("Plus "+(System.currentTimeMillis() - started) +"ms for querying Type "+typeURI);
                 totalQueriesPerformed++;
                 return res;
             } catch (Exception e) {
@@ -134,29 +134,28 @@ public class QueryResolver {
 
                     }
 
-                    for(Map query2 : uniqueQueries){
-                        tasks.add(new Callable<Object>(){
-                                      @Override
-                                      public Object call(){
-                                          try {
-                                              List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
-                                              ret.addAll(res);
-                                          } catch (Exception e) {
-                                              LOGGER.error("Failed to get entities of type {}: {}", typeURI, e.getLocalizedMessage());
-                                              //e.printStackTrace();
-                                          }
-                                          return null;
-                                      }
-                                  }
-                        );
-                    }
-
 //                    if(uniqueValues.contains(String.valueOf(iValue)))
 //                        continue;
-
-
                 }
             }
+
+            for(Map query2 : uniqueQueries){
+                tasks.add(new Callable<Object>(){
+                              @Override
+                              public Object call(){
+                                  try {
+                                      List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
+                                      ret.addAll(res);
+                                  } catch (Exception e) {
+                                      LOGGER.error("Failed to get entities of type {}: {}", typeURI, e.getLocalizedMessage());
+                                      //e.printStackTrace();
+                                  }
+                                  return null;
+                              }
+                          }
+                );
+            }
+
             if(tasks.size()>0)
                 try {
                     executorService.invokeAll(tasks);
@@ -225,7 +224,7 @@ public class QueryResolver {
         long took = (System.currentTimeMillis() - started);
         totalQueryExectionTime += took;
         totalQueryExectionTimeList.add(String.valueOf(took/1000.0));
-        System.out.println("Plus "+(System.currentTimeMillis() - started) +" - "+ tasks.size()+" queries of get entity By ID("+concept+")");
+        LOGGER.debug("Plus "+(System.currentTimeMillis() - started) +"ms for "+ tasks.size()+" queries of get entity By ID("+concept+")");
         totalQueriesPerformed+=tasks.size();
 
         if(ids.size()!=ret.size()) {

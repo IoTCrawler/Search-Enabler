@@ -208,7 +208,11 @@ public class TestsCore extends TestUtils {
         executeQuery(Paths.get("queries","core","getPlatforms"));
     }
 
+    @Test
+    public void getPlatformsByTwoFiltersTest() throws Exception {
 
+        executeQuery(Paths.get("queries","core","getPlatformsByTwoFilters"));
+    }
 
     @Test
     public void getObservablePropertyByIdTest() throws Exception {
@@ -233,5 +237,12 @@ public class TestsCore extends TestUtils {
     public void getStreamObservationsWithFilterTest() throws Exception {
 
         executeQuery(Paths.get("queries","core","getStreamObservationsWithFilter"));
+    }
+
+    @Test
+    @Ignore
+    public void getStreamObservationsWithTwoFiltersTest() throws Exception {
+
+        executeQuery(Paths.get("queries","core","getStreamObservationsWithTwoFilters"));
     }
 }
