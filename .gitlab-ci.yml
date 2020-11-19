@@ -25,7 +25,8 @@ variables:
 
   #HELM_HOST: localhost:44134
   #KUBE_NAMESPACE: orchestrator-local-production  #defined for a project in a gitblab
-
+  REVIEW_DISABLED: "true"
+  STAGING_ENABLED: "true"
   HELM_UPGRADE_EXTRA_ARGS: --force
 
 stages:
