@@ -31,6 +31,7 @@ import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.IOException;
@@ -169,11 +170,8 @@ public class TestUtils {
 		ExecutionResult executionResult = graphql.execute(executionInput);
 		Map data = executionResult.getData();
 		Assert.notNull(data);
-		Object results = ((Map)data).values().iterator().next();
-		Assert.notNull(results);
-
-//		for(Object result: (List)results)
-//			Assert.notNull(result);
+		List results = (List)((Map)data).values().iterator().next();
+		Assert.notEmpty(results);
 
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.putAll(data);
@@ -197,8 +195,8 @@ public class TestUtils {
 				boolean result = ngsiLDClient.addEntitySync(entityLD);
 			}
 			catch (Exception e){
-				//if(e.getCause() instanceof )
-				exceptions.add(new Exception("Problem with "+entityLD.getId()+": "+ e.getLocalizedMessage()));
+				if(!(e.getCause() instanceof HttpClientErrorException.Conflict))
+					exceptions.add(new Exception("Problem with "+entityLD.getId()+": "+ e.getLocalizedMessage()));
 			}
 
 		}

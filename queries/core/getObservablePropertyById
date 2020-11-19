@@ -1,5 +1,5 @@
 {
-  observableProperty(id: "urn:ngsi-ld:MotionAlarm"){
+  observableProperties(id: "urn:ngsi-ld:CurrentEnergyUse"){
   #observableProperties{
     id,
     label,

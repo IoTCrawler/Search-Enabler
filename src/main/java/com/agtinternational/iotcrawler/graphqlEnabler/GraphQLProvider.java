@@ -292,7 +292,7 @@ public class GraphQLProvider {
                             fieldTypeName = ((TypeName) type).getName();
                         else
                             throw new NotImplementedException(type.getClass().getCanonicalName());
-                        wiringBuilder.dataFetcher(name2, UniversalDataFetcher.get(fieldTypeName, false));
+                        wiringBuilder.dataFetcher(name2, UniversalDataFetcher.get(fieldTypeName));
                     }
 
                 }

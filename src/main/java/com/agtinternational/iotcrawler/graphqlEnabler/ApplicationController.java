@@ -22,11 +22,14 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 
 import com.agtinternational.iotcrawler.graphqlEnabler.resolving.QueryResolver;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.MultipleSchemasWiring;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 //import org.springframework.web.bind.annotation.CrossOrigin;
@@ -52,9 +55,11 @@ import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.TRACK_EXE
 @Controller
 public class ApplicationController {
 
+    static Logger LOGGER = LoggerFactory.getLogger(ApplicationController.class);
     private final GraphQL graphql;
     private final ObjectMapper objectMapper;
     private final ContextProvider contextProvider;
+
 
     @Autowired
     public ApplicationController(GraphQL graphql, ObjectMapper objectMapper, ContextProvider contextProvider) {
@@ -137,9 +142,9 @@ public class ApplicationController {
         ExecutionResult executionResult = graphql.execute(executionInput);
         double took = (System.currentTimeMillis()-started)/1000.0;
 
-        System.out.println("Total resolution time: "+took);
-        System.out.println("Total execution time of "+ QueryResolver.getTotalQueriesPerformed()+" queries: "+ QueryResolver.getTotalQueryExectionTime()/1000.0);
-        System.out.println("Queries times "+ String.join("+", QueryResolver.getTotalQueryExectionList()));
+        LOGGER.debug("Total resolution time: "+took);
+        LOGGER.debug("Total execution time of "+ QueryResolver.getTotalQueriesPerformed()+" queries: "+ QueryResolver.getTotalQueryExectionTime()/1000.0);
+        LOGGER.debug("Queries times "+ String.join("+", QueryResolver.getTotalQueryExectionList()));
 
         if(System.getenv().containsKey(TRACK_EXECUTION_TIMES)) {
             String content = QueryResolver.getTotalQueriesPerformed() + ";" + QueryResolver.getTotalQueryExectionTime() / 1000.0 + ";" + took+"\n";

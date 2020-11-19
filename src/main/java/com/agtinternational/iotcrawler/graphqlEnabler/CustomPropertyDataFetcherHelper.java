@@ -28,7 +28,8 @@ import com.orange.ngsi2.model.Attribute;
 import graphql.GraphQLException;
 import graphql.Internal;
 import graphql.schema.*;
-import org.apache.commons.lang.NotImplementedException;
+
+import org.apache.commons.lang3.NotImplementedException;
 import org.dataloader.DataLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,7 +160,7 @@ public class CustomPropertyDataFetcherHelper {
                             LOGGER.warn("No URI found for " + propertyName + " in " + ((EntityLD) object0).getId());
                         //}
                     } else
-                        throw new NotImplementedException();
+                        throw new NotImplementedException("");
             }
         }
 

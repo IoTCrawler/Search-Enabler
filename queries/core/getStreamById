@@ -1,5 +1,5 @@
 {
-  stream(id: "urn:ngsi-ld:Stream_AEON_Labs_ZW100_MultiSensor_6_MotionAlarm") {
+  streams(id: "urn:ngsi-ld:Stream_AEON_Labs_ZW100_MultiSensor_6_(2)_BatteryLevel") {
     id,
     generatedBy {
         id,

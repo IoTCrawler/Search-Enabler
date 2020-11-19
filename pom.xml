@@ -4,7 +4,7 @@
 
   <groupId>com.agtinternational.iotcrawler</groupId>
   <artifactId>search-enabler</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.4</version>
 
   <organization>
     <name>AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)</name>
@@ -20,7 +20,7 @@
 
   <properties>
 <!--    <iotcrawler.orchestrator.version>1.0.7</iotcrawler.orchestrator.version>-->
-    <iotcrawler.core.version>1.0.3</iotcrawler.core.version>
+    <iotcrawler.core.version>1.0.4</iotcrawler.core.version>
 <!--    <git.branch></git.branch>-->
 <!--    <git.commit.id></git.commit.id>-->
 
@@ -31,37 +31,35 @@
     <thymeleaf-version>3.0.11.RELEASE</thymeleaf-version>
   </properties>
 
-
-
   <dependencies>
 
       <dependency>
-      <groupId>com.agtinternational.iotcrawler</groupId>
-      <artifactId>core</artifactId>
-      <version>${iotcrawler.core.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>net.minidev</groupId>
-          <artifactId>asm</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.springframework</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ops4j.pax.logging</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>eu.neclab.iotplatform</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+          <groupId>com.agtinternational.iotcrawler</groupId>
+          <artifactId>core</artifactId>
+          <version>${iotcrawler.core.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>net.minidev</groupId>
+              <artifactId>asm</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.springframework</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.ops4j.pax.logging</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>eu.neclab.iotplatform</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+          </exclusions>
+      </dependency>
 
 <!--    <dependency>-->
 <!--      <groupId>com.agtinternational.iotcrawler</groupId>-->

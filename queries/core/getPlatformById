@@ -1,5 +1,5 @@
 {
-  platforms(id: "urn:ngsi-ld:Platform_homee_00055110D732") {
+  platforms(id: "urn:ngsi-ld:Platform_homee_00055110D70") {
     id,
     label,
     hosts {
