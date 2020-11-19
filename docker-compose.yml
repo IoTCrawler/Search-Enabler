@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   search-enabler:
-    image: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:03a3d193863e6209df7a592a2ffecf631d86ec20
+    image: gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master
     environment:
       - IOTCRAWLER_ORCHESTRATOR_URL=http://i5-nuc:9090/ngsi-ld/
     restart: always
