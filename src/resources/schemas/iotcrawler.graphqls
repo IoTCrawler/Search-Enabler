@@ -58,6 +58,15 @@ input StreamObservationInput {
     hasSimpleResult: SimpleResultFilter
 }
 
+input RankingInput {
+   completeness: Float
+   timeliness: Float
+   plausibility: Float
+   artificiality: Float
+   concordance: Float
+}
+
+
 input SimpleResultFilter {
       eq: Int
       neq: Int
@@ -69,7 +78,7 @@ input SimpleResultFilter {
 
 
 type Query {
-    streams(id: String, alternativeType: String, label: String, generatedBy: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
+    streams(id: String, alternativeType: String, ranking: RankingInput, label: String, generatedBy: SensorInput, offset: Int = 0, limit: Int = 0): [IoTStream]
     sensors(id: String, alternativeType: String, label: String, madeObservation: StreamObservationInput, isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
     systems(id: String, alternativeType: String, label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
     platforms(id: String,  alternativeType: String, label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]

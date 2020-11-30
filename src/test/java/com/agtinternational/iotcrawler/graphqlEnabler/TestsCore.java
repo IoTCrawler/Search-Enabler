@@ -170,8 +170,14 @@ public class TestsCore extends TestUtils {
 
     @Test
     public void getStreamsTest() throws Exception {
-        
+
         executeQuery(Paths.get("queries","core","getStreams"));
+    }
+
+    @Test
+    public void getStreamsWithRankingTest() throws Exception {
+
+        executeQuery(Paths.get("queries","core","getStreamsWithRanking"));
     }
 
     @Test

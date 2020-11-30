@@ -78,13 +78,13 @@ public class QueryResolver {
         return iotCrawlerClient;
     }
 
-    public static List<Object> serveGetEntitiesQuery(String typeURI, Map<String, Object> query, int offset, int limit){
+    public static List<Object> serveGetEntitiesQuery(String typeURI, Map<String, Object> query, Map<String, Number> ranking, int offset, int limit){
         List ret = new ArrayList();
 
         if (query == null || query.size() == 0)
             try {
                 long started = System.currentTimeMillis();
-                List res = getIoTCrawlerClient().getEntities(typeURI, null, null, offset, limit);
+                List res = getIoTCrawlerClient().getEntities(typeURI, null, ranking, offset, limit);
                 long took = (System.currentTimeMillis() - started);
                 totalQueryExectionTime += took;
                 totalQueryExectionTimeList.add(String.valueOf(took/1000.0));
@@ -144,7 +144,7 @@ public class QueryResolver {
                               @Override
                               public Object call(){
                                   try {
-                                      List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
+                                      List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, ranking, offset, limit);
                                       ret.addAll(res);
                                   } catch (Exception e) {
                                       LOGGER.error("Failed to get entities of type {}: {}", typeURI, e.getLocalizedMessage());
