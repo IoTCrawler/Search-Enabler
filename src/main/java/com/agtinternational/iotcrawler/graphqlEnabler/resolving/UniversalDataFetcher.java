@@ -100,7 +100,12 @@ public class UniversalDataFetcher {
 
             Map<String,Number> ranking = null;
             if(argumentsToResolve.containsKey("ranking")){
-                ranking = (Map<String,Number>) argumentsToResolve.get("ranking");
+                ranking = new HashMap<>();
+                Iterator<Map<String,Object>> iterator = ((Iterable<Map<String,Object>>)argumentsToResolve.get("ranking")).iterator();
+                while (iterator.hasNext()) {
+                    Map<String, Object> criteria = iterator.next();
+                    ranking.put(criteria.get("name").toString(), (Number)criteria.get("value"));
+                }
                 argumentsToResolve.remove("ranking");
             }
 
