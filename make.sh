@@ -2,11 +2,13 @@
 #__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 
+export VERSION="1.0.5"
+
 if [ "$1" = "prepare-core" ]; then
 	echo "Search-enabler: Preparing core"
 	rm -rf /tmp/orchestrator && git clone https://github.com/IoTCrawler/Orchestrator.git /tmp/orchestrator
 	sed -i 's/<phase>process-sources<\/phase>/<phase>none<\/phase>/' /tmp/orchestrator/IoTCrawler/pom.xml
-	export CURR=$(pwd) && cd /tmp/orchestrator && git checkout -b tags/v1.0.4 && sh make.sh install && cd ${CURR}
+	export CURR=$(pwd) && cd /tmp/orchestrator && git checkout -b ${VERSION} tags/${VERSION} && sh make.sh install && cd ${CURR}
 fi
 
 if [ "$1" = "install" ]; then
