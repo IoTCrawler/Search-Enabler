@@ -98,6 +98,11 @@ public class TestsSmartHome extends TestUtils {
     }
 
     @Test
+    public void getStreams() throws Exception {
+        executeQuery(Paths.get("queries","smartHome","getStreams"));
+    }
+
+    @Test
     public void getElectricityMeters() throws Exception {
         executeQuery(Paths.get("queries","smartHome","getElectricityMeters"));
     }
