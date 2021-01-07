@@ -1,6 +1,6 @@
 {
-  observableProperties(label: "CurrentEnergyUse"){
-  #observableProperties{
+  #observableProperties(label: "CurrentEnergyUse"){
+  observableProperties(limit:5){
     id,
     label,
     isObservedBy {

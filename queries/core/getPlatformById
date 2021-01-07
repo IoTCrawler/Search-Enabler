@@ -1,10 +1,14 @@
 {
-  platforms(id: "urn:ngsi-ld:Platform_homee_00055110D70") {
-    id,
-    label,
-    hosts {
-        id,
-        label
+  platforms(id: "urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5"){
+    id
+    hosts{
+        madeObservation{
+        id
+        type
+        hasSimpleResult
+        resultTime
+      }
     }
   }
+
 }

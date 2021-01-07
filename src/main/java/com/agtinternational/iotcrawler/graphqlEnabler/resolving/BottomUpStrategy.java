@@ -1,5 +1,25 @@
 package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
 
+/*-
+ * #%L
+ * search-enabler
+ * %%
+ * Copyright (C) 2019 - 2021 AGT International. Author Pavel Smirnov (psmirnov@agtinternational.com)
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
@@ -134,14 +154,19 @@ public class BottomUpStrategy {
                         //GraphQLObjectType graphQLObjectType = (GraphQLObjectType) environment.getGraphQLSchema().getType(targetInputTypeName.toLowerCase()+"s");
                         //GraphQLFieldDefinition fieldDefinitionForEnvironment = graphQLObjectType.getFieldDefinition(targetInputTypeName.toLowerCase()+"s");
 
-                        //(!) Another hard code here: get argument definitions of a corresponding type (e.g. sensor): sensors(arg1, arg2,)
-                        //ToDO: make this via search by return types
-                        String fieldDefinitionName = targetInputTypeName.substring(0,1).toLowerCase()+targetInputTypeName.substring(1)+"s";
-                        if(targetInputTypeName.equals("IoTStream"))
-                            fieldDefinitionName = "streams";
-                        GraphQLFieldDefinition fieldDefinitionForEnvironment = environment.getGraphQLSchema().getQueryType().getFieldDefinition(fieldDefinitionName);
-                        if(fieldDefinitionForEnvironment==null)
-                            throw new Exception("No field definition for "+fieldDefinitionName);
+
+//                        String fieldDefinitionName = targetInputTypeName.substring(0,1).toLowerCase()+targetInputTypeName.substring(1)+"s";
+//                        if(targetInputTypeName.equals("IoTStream"))
+//                            fieldDefinitionName = "streams";
+//
+//                        if(targetInputTypeName.equals("ObservableProperty"))
+//                            fieldDefinitionName = "observableProperties";
+                        List<GraphQLFieldDefinition> fieldDefinitionList = environment.getGraphQLSchema().getQueryType().getFieldDefinitions().stream().filter(def-> def.getType() instanceof GraphQLList && ((GraphQLList) def.getType()).getWrappedType().getName().equals(targetInputTypeName)).collect(Collectors.toList());
+                        if(fieldDefinitionList.isEmpty())
+                            throw new Exception("No field definition for "+targetInputTypeName);
+
+                        GraphQLFieldDefinition fieldDefinitionForEnvironment = environment.getGraphQLSchema().getQueryType().getFieldDefinition(fieldDefinitionList.get(0).getName());
+
                         String fetcherName = targetInputType.getName();
                         DataFetcher dataFetcher = UniversalDataFetcher.get(fetcherName);
 
