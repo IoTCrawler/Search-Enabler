@@ -2,27 +2,30 @@
 #__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
 
-export VERSION="1.0.5"
+export VERSION="1.0.8"
 
 if [ "$1" = "prepare-core" ]; then
 	echo "Search-enabler: Preparing core"
 	rm -rf /tmp/orchestrator && git clone https://github.com/IoTCrawler/Orchestrator.git /tmp/orchestrator
 	sed -i 's/<phase>process-sources<\/phase>/<phase>none<\/phase>/' /tmp/orchestrator/IoTCrawler/pom.xml
-	export CURR=$(pwd) && cd /tmp/orchestrator && git checkout -b ${VERSION} tags/${VERSION} && sh make.sh install && cd ${CURR}
+	export CURR=$(pwd)
+	cd /tmp/orchestrator && git checkout -b ${VERSION} tags/v${VERSION}
+	cd /tmp/orchestrator && sh make.sh install
+	cd ${CURR}
 fi
 
 if [ "$1" = "install" ]; then
 	echo "Search enabler: Checking core dependency"
-	(if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
-	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ]; then sh make.sh prepare-core; fi);
+	#(if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
+	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ] || [ -n "$REBUILD_ALL" ]; then sh make.sh prepare-core; fi);
 	echo "Search enabler: Cleaning and packaging"
 	mvn clean install -DskipTests=true
 fi
 
 if [ "$1" = "build-image" ]; then
    echo "Search enabler: Checking core dependency"
-   (if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
-   (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ] ; then sh make.sh prepare-core; fi);
+   #(if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
+   (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ] || [ -n "$REBUILD_ALL" ]; then sh make.sh prepare-core; fi);
 	 echo "Search enabler: Cleaning and packaging"
 	 mvn clean package -DskipTests=true jib:dockerBuild -U
 fi
