@@ -23,7 +23,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 import com.agtinternational.iotcrawler.fiware.clients.NgsiLDClient;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
-import com.google.common.io.Resources;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.MultipleSchemasWiring;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -35,10 +35,8 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,37 +61,7 @@ public class TestUtils {
 		LOGGER.info("Initing graphql staff");
 
 		LOGGER.info("Reading schema files");
-		Map<String, String> schemas = new HashMap<>();
-
-		List<String> filePathsToRead = new ArrayList<>();
-		filePathsToRead.add(Paths.get("schemas","iotcrawler.graphqls").toString());
-
-		if(pathsToRead!=null)
-			filePathsToRead.addAll(pathsToRead);
-
-//		{
-//			if (Files.isDirectory(path0))
-//				Files.list(path0).forEach(path -> {
-//					filePathsToRead.add(path.toString());
-//				});
-//			else
-//				filePathsToRead.add(path0.toString());
-//		}
-
-		for(String pathStr: filePathsToRead) {
-			Path path = Paths.get(pathStr);
-			String schemaString = null;
-			try {
-				URL url = Resources.getResource(pathStr);
-				//schemaString = new String(Files.readAllBytes(path));
-				schemaString = new String(Resources.toByteArray(url));
-				schemas.put(path.getFileName().toString(), schemaString);
-			} catch (IOException e) {
-				LOGGER.error("Failed to read {}: {}", path, e.getLocalizedMessage());
-			}
-
-		}
-
+		Map<String, String> schemas = MultipleSchemasWiring.readSchemasFromResources();
 
 		LOGGER.info("Initing generic MDR wiring");
 		HierarchicalWiring wiring = new HierarchicalWiring();

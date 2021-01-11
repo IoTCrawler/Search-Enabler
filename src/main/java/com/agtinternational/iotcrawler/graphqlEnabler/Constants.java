@@ -30,4 +30,7 @@ public class Constants {
     public static String GRAPHQL_ENDPOINT_URL = "GRAPHQL_ENDPOINT_URL";
     public static String TRACK_EXECUTION_TIMES = "TRACK_EXECUTION_TIMES";
     public static String[] CORE_TYPES = new String[]{ "IoTStream", "Sensor", "Platform", "ObservableProperty", "StreamObservation" };
+
+    public static String SCHEMAS_FOLDER_NAME = "schemas";
+
 }

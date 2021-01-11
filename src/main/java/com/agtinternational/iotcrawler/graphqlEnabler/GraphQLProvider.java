@@ -133,7 +133,7 @@ public class GraphQLProvider {
 
     private TypeDefinitionRegistry mergeSchemas(Map<String, String> schemas){
         LOGGER.debug("Merging schemas");
-        TypeDefinitionRegistry typeRegistry = new TypeDefinitionRegistry();
+        TypeDefinitionRegistry mergedTypeRegistry = new TypeDefinitionRegistry();
         for (String schemaName:schemas.keySet()) {
             String schemaStr = schemas.get(schemaName);
             TypeDefinitionRegistry schemaTypeRegistry;
@@ -154,17 +154,21 @@ public class GraphQLProvider {
                          //   coreTypes.add(name);
                     }
                     //Merging types under Query type
-                    if (typeRegistry.getType(name).isPresent()){
-                        TypeDefinition alreadyPresetentTypeDefinition = typeRegistry.getType(name).get();
+                    if (mergedTypeRegistry.getType(name).isPresent()){
+                        TypeDefinition alreadyPresetentTypeDefinition = mergedTypeRegistry.getType(name).get();
                         if (alreadyPresetentTypeDefinition instanceof ObjectTypeDefinition) {
                             List<FieldDefinition> mergedDefinitions = ((ObjectTypeDefinition) alreadyPresetentTypeDefinition).getFieldDefinitions();
                             mergedDefinitions.addAll(((ObjectTypeDefinition) newEntry).getFieldDefinitions());
-                            typeRegistry.add(alreadyPresetentTypeDefinition);
-                        } else
+                            mergedTypeRegistry.add(alreadyPresetentTypeDefinition);
+                        } else if (alreadyPresetentTypeDefinition instanceof InputObjectTypeDefinition) {
+                            List<InputValueDefinition> mergedDefinitions = ((InputObjectTypeDefinition) alreadyPresetentTypeDefinition).getInputValueDefinitions();
+                            //mergedDefinitions.addAll(((InputObjectTypeDefinition) newEntry).getInputValueDefinitions());
+                            //typeRegistry.add(alreadyPresetentTypeDefinition);
+                        }else
                             throw new NotImplementedException(alreadyPresetentTypeDefinition.getClass().getCanonicalName());
 
                     } else
-                        typeRegistry.add(newEntry);
+                        mergedTypeRegistry.add(newEntry);
                     mergedNames.add(name);
                 } catch (Exception e) {
                     LOGGER.error("Failed to merge field {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
@@ -175,7 +179,7 @@ public class GraphQLProvider {
 
             schemaTypeRegistry.getDirectiveDefinitions().values().forEach(newEntry -> {
                 try {
-                    typeRegistry.add(newEntry);
+                    mergedTypeRegistry.add(newEntry);
                     mergedNames.add(newEntry.getName());
                 } catch (Exception e) {
                     LOGGER.error("Failed to merge directive {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
@@ -186,7 +190,7 @@ public class GraphQLProvider {
 
             schemaTypeRegistry.scalars().values().forEach(newEntry -> {
                 try {
-                    typeRegistry.add(newEntry);
+                    mergedTypeRegistry.add(newEntry);
                     mergedNames.add(newEntry.getName());
                 } catch (Exception e) {
                     LOGGER.error("Failed to merge scalar {} into common schema: {}", newEntry.getName(), e.getLocalizedMessage());
@@ -233,7 +237,7 @@ public class GraphQLProvider {
             });
 
         }
-        return typeRegistry;
+        return mergedTypeRegistry;
     }
 
     private List<String> processTypeDirectives(String typeName, List<Directive> directives){
