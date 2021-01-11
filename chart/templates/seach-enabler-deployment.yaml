@@ -38,4 +38,5 @@ spec:
           - name: VERSION
             value: "{{ .Values.image.tag }}"
           - name: IOTCRAWLER_ORCHESTRATOR_URL
-            value: "http://155.54.95.248:9090/ngsi-ld/"
+            value: "http://scorpio.scorpiobroker-46-production:9090/ngsi-ld/"
+            #value: "http://155.54.95.248:9090/ngsi-ld/"
