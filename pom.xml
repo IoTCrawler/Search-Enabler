@@ -257,7 +257,7 @@
       </testResource>
     </testResources>
 
-    <finalName>${git.branch}:${git.commit.id}</finalName>
+    <finalName>${git.branch}:latest</finalName>
 
     <plugins>
       <plugin>
