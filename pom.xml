@@ -311,9 +311,9 @@
               <!--<password></password>-->
             </auth>
             <!-- optional: create a tag based on the git commit id (via the git-commit-id plugin): -->
-            <!--                        <tags>-->
-            <!--                            <tag>${git.commit.id}</tag>-->
-            <!--                        </tags>-->
+                                   <tags>-->
+                                        <tag>latest</tag>
+                                    </tags>
           </to>
           <!--                    <extraDirectories>-->
           <!--                        <paths>${agent-extraction-root}</paths>-->
