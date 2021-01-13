@@ -41,8 +41,8 @@ if [ "$1" = "push-image" ]; then
   fi
 
 # gitlab.iotcrawler.net:4567/orchestrator/orchestrator is already in variables (on in a gitlab)
-  echo "# docker tag ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG} ${CI_APPLICATION_REPOSITORY}:latest"
-  docker tag ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG} ${CI_APPLICATION_REPOSITORY}:latest
+  echo "# docker tag ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG} ${CI_APPLICATION_REPOSITORY}"
+  docker tag ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG} ${CI_APPLICATION_REPOSITORY}
  
   echo "# docker push ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG}"
   docker push ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG}
