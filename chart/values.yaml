@@ -9,7 +9,7 @@ deploymentApiVersion: apps/v1
 image:
   #url: "gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:91c69d0421c449e85504908700b0e6fa2e5c2a75"
   url: "gitlab.iotcrawler.net:4567/search-enabler/search-enabler/master:latest"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   secrets:
     - name: gitlab-registry
   #  - name: gitlab-registry-root-search-enabler
