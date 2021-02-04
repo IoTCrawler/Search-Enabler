@@ -1,19 +1,20 @@
 {
    #streams
-   streams(limit:1,offset:0,
-            generatedBy: {
+   streams(generatedBy: {observes: {alternativeType: "http://qudt.org/vocab/quantitykind/Temperature"}})
+   #streams(limit:1,offset:0,
+   #         generatedBy: {
                        #id: "urn:ngsi-ld:ColorDimmableLight_Zipato_Bulb_2"
                        #id: "urn:ngsi-ld:FibaroWallPlug_FIBARO_System_FGWPE-F_Wall_Plug_Gen5"
                        #isHostedBy: {
                             #id: "urn:ngsi-ld:Platform_homee_00055110D732"
                        #     label: "homee_00055110D732"
                        #}
-                       observes: {
+   #                    observes: {
                        #     label: "Temperature"
-                            label: "temperature"
-                       }
-               }
-               )
+   #                         label: "temperature"
+   #                    }
+   #            }
+   #            )
                {
                   id,
                   generatedBy {

@@ -106,7 +106,6 @@ public class QueryResolver {
                 i++;
                 Object value = query.get(key);
 
-
                 if (!(value instanceof Iterable))
                     value = Arrays.asList(new Object[]{value});
 
@@ -145,7 +144,12 @@ public class QueryResolver {
                               public Object call(){
                                   try {
                                       List<EntityLD> res = getIoTCrawlerClient().getEntities(typeURI, query2, null, offset, limit);
-                                      ret.addAll(res);
+                                      for(EntityLD entityLD: res)
+                                          if(!ret.contains(entityLD))
+                                            ret.add(entityLD);
+                                          else {
+                                              String test = "123";
+                                          }
                                   } catch (Exception e) {
                                       LOGGER.error("Failed to get entities of type {}: {}", typeURI, e.getLocalizedMessage());
                                       //e.printStackTrace();
