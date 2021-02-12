@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
-CORE_VERSION="1.0.4"
+CORE_VERSION="1.0.10"
 
 if [ "$1" = "prepare-core" ]; then
 	echo "Search-enabler: Preparing core"
