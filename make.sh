@@ -1,27 +1,31 @@
 #!/usr/bin/env bash
 #__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 #
-CORE_VERSION="1.0.10"
+
+export VERSION="1.0.8"
 
 if [ "$1" = "prepare-core" ]; then
 	echo "Search-enabler: Preparing core"
 	rm -rf /tmp/orchestrator && git clone https://github.com/IoTCrawler/Orchestrator.git /tmp/orchestrator
 	sed -i 's/<phase>process-sources<\/phase>/<phase>none<\/phase>/' /tmp/orchestrator/IoTCrawler/pom.xml
-	export CURR=$(pwd) && cd /tmp/orchestrator && git checkout -b ${CORE_VERSION} tags/${CORE_VERSION} && sh make.sh install && cd ${CURR}
+	export CURR=$(pwd)
+	cd /tmp/orchestrator && git checkout -b ${VERSION} tags/v${VERSION}
+	cd /tmp/orchestrator && sh make.sh install
+	cd ${CURR}
 fi
 
 if [ "$1" = "install" ]; then
 	echo "Search enabler: Checking core dependency"
-	(if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core/${CORE_VERSION}" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
-	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core/${CORE_VERSION} ]; then sh make.sh prepare-core; fi);
+	#(if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
+	(if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ] || [ -n "$REBUILD_ALL" ]; then sh make.sh prepare-core; fi);
 	echo "Search enabler: Cleaning and packaging"
 	mvn clean install -DskipTests=true
 fi
 
 if [ "$1" = "build-image" ]; then
    echo "Search enabler: Checking core dependency"
-   (if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core/${CORE_VERSION}" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
-   (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core/${CORE_VERSION} ] ; then sh make.sh prepare-core; fi);
+   #(if [ -n "$REBUILD_ALL" ]; then echo "rm -rf ~/.m2/repository/com/agtinternational/iotcrawler/core" && rm -rf ~/.m2/repository/com/agtinternational/iotcrawler; fi);
+   (if [ ! -d ~/.m2/repository/com/agtinternational/iotcrawler/core ] || [ -n "$REBUILD_ALL" ]; then sh make.sh prepare-core; fi);
 	 echo "Search enabler: Cleaning and packaging"
 	 mvn clean package -DskipTests=true jib:dockerBuild -U
 fi
@@ -37,11 +41,12 @@ if [ "$1" = "push-image" ]; then
   fi
 
 # gitlab.iotcrawler.net:4567/orchestrator/orchestrator is already in variables (on in a gitlab)
-  echo "# docker push ${CI_APPLICATION_REPOSITORY}"
-  docker push ${CI_APPLICATION_REPOSITORY}
-  echo "# docker tag ${CI_APPLICATION_REPOSITORY} ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG}"
-  docker tag ${CI_APPLICATION_REPOSITORY} ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG}
+  #echo "# docker tag ${CI_APPLICATION_REPOSITORY} ${CI_APPLICATION_REPOSITORY}:latest"
+  #docker tag ${CI_APPLICATION_REPOSITORY} "${CI_APPLICATION_REPOSITORY}:latest"
+ 
   echo "# docker push ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG}"
   docker push ${CI_APPLICATION_REPOSITORY}:${CI_APPLICATION_TAG}
-	#docker push "${CI_APPLICATION_REPOSITORY}:latest"
+	
+  #echo "# push ${CI_APPLICATION_REPOSITORY}:latest"
+  #docker push "${CI_APPLICATION_REPOSITORY}:latest"
 fi
