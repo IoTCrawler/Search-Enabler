@@ -1,0 +1,11 @@
+{
+   streams(ranking: [
+    { name: "completeness", value: 4.6 },
+    { name: "timeliness", value: 2.2 }
+    ]){
+    id
+    }
+}
+
+
+

@@ -97,6 +97,18 @@ public class UniversalDataFetcher {
                 //}
             }
 
+
+            Map<String,Number> ranking = null;
+            if(argumentsToResolve.containsKey("ranking")){
+                ranking = new HashMap<>();
+                Iterator<Map<String,Object>> iterator = ((Iterable<Map<String,Object>>)argumentsToResolve.get("ranking")).iterator();
+                while (iterator.hasNext()) {
+                    Map<String, Object> criteria = iterator.next();
+                    ranking.put(criteria.get("name").toString(), (Number)criteria.get("value"));
+                }
+                argumentsToResolve.remove("ranking");
+            }
+
             Map<String,Object> query = new HashMap<>();
             if(argumentsToResolve.size()>0){
                 try {
@@ -123,7 +135,7 @@ public class UniversalDataFetcher {
 
             List entities = new ArrayList();
             try {
-                entities = new ArrayList(QueryResolver.serveGetEntitiesQuery(typeURI, query, offset, limit));
+                entities = new ArrayList(QueryResolver.serveGetEntitiesQuery(typeURI, query, ranking, offset, limit));
             }catch (Exception e) {
                 //LOGGER.error("Failed to get entities for query {}: {}", query, e.getLocalizedMessage());
             }
