@@ -15,6 +15,7 @@ input SystemInput {
      location: String
      isHostedBy: PlatformInput
      alternativeType: String
+     ranking: [RankingCriteria]
 }
 
 input IoTStreamInput{
@@ -23,6 +24,7 @@ input IoTStreamInput{
      generatedBy: SensorInput
      observes: ObservablePropertyInput
      alternativeType: String
+     ranking: [RankingCriteria]
  }
 
 input SensorInput{
@@ -33,6 +35,7 @@ input SensorInput{
      observes: ObservablePropertyInput
      madeObservation: StreamObservationInput
      alternativeType: String
+     ranking: [RankingCriteria]
  }
 
 input PlatformInput {
@@ -41,6 +44,7 @@ input PlatformInput {
     hosts: SensorInput
     location: String
     alternativeType: String
+    ranking: [RankingCriteria]
 }
 
 input ObservablePropertyInput {
@@ -48,6 +52,7 @@ input ObservablePropertyInput {
     label: String
     isObservedBy: SensorInput
     alternativeType: String
+    ranking: [RankingCriteria]
 }
 
 input StreamObservationInput {
@@ -91,6 +96,7 @@ type IoTStream @resource(class : "http://purl.org/iot/ontology/iot-stream#IotStr
     generatedBy: Sensor @attribute(uri : "http://purl.org/iot/ontology/iot-stream#generatedBy")
     observes: ObservableProperty @attribute(uri : "http://purl.org/iot/ontology/iot-stream#observes")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
+    rankScore: Float  @attribute(uri : "http://iotcrawler.eu/rankScore")
 }
 
 type System @resource(class : "http://www.w3.org/ns/ssn/System"){
@@ -98,7 +104,7 @@ type System @resource(class : "http://www.w3.org/ns/ssn/System"){
     type: String!
     label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
     isHostedBy: Platform    @attribute(uri : "http://www.w3.org/ns/sosa/isHostedBy")
-
+    rankScore: Float  @attribute(uri : "http://iotcrawler.eu/rankScore")
 }
 
 type Sensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", subClassOf: ["System"]){
@@ -106,6 +112,7 @@ type Sensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", subClassOf: ["
     observes: ObservableProperty    @attribute(uri : "http://www.w3.org/ns/sosa/observes")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
     location: String   @attribute(uri : "http://www.agtinternational.com/ontologies/devices/locations")
+    rankScore: Float  @attribute(uri : "http://iotcrawler.eu/rankScore")
 }
 
 type Actuator @resource(class : "http://www.w3.org/ns/sosa/Actuator", subClassOf: ["System"]){
@@ -119,6 +126,7 @@ type Platform @resource(class : "http://www.w3.org/ns/sosa/Platform"){
     hosts: [Sensor] @attribute(uri : "http://www.w3.org/ns/sosa/hosts")
     location: String
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
+    rankScore: Float  @attribute(uri : "http://iotcrawler.eu/rankScore")
 }
 
 type ObservableProperty @resource(class : "http://www.w3.org/ns/sosa/ObservableProperty"){
@@ -127,6 +135,7 @@ type ObservableProperty @resource(class : "http://www.w3.org/ns/sosa/ObservableP
     label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
     isObservedBy: [Sensor]  @attribute(uri : "http://www.w3.org/ns/sosa/isObservedBy")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
+    rankScore: Float  @attribute(uri : "http://iotcrawler.eu/rankScore")
 }
 
 type StreamObservation @resource(class : "http://purl.org/iot/ontology/iot-stream#StreamObservation"){

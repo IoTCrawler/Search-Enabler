@@ -20,7 +20,7 @@
 
   <properties>
 <!--    <iotcrawler.orchestrator.version>1.0.7</iotcrawler.orchestrator.version>-->
-    <iotcrawler.core.version>1.0.4</iotcrawler.core.version>
+    <iotcrawler.core.version>1.0.5</iotcrawler.core.version>
 <!--    <git.branch></git.branch>-->
 <!--    <git.commit.id></git.commit.id>-->
 

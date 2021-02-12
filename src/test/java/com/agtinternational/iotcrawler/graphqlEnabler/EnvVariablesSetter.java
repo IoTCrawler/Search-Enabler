@@ -34,6 +34,7 @@ public class EnvVariablesSetter {
     public static void init(){
 
         //environmentVariables.set(CUT_TYPE_URIS, "true");
+        //String brokerURL = "http://ranking.iotcrawler.eu:9090/ngsi-ld/";
         String brokerURL = "http://155.54.95.248:9090/ngsi-ld/";
         //String brokerURL = "http://155.54.95.171:9090/ngsi-ld/";
         //String brokerURL = "http://10.67.1.107:9090/ngsi-ld/";
@@ -42,13 +43,15 @@ public class EnvVariablesSetter {
         //String brokerURL = "http://192.168.0.125:9090/ngsi-ld/";
         //String brokerURL = "http://192.168.178.26:9090/ngsi-ld/";
 
-        if(!System.getenv().containsKey(NGSILD_BROKER_URL))
-            environmentVariables.set(NGSILD_BROKER_URL, brokerURL);
+
+//        if(!System.getenv().containsKey(NGSILD_BROKER_URL))
+//            environmentVariables.set(NGSILD_BROKER_URL, brokerURL);
 
         if(!System.getenv().containsKey(IOTCRAWLER_ORCHESTRATOR_URL))
             environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL,brokerURL);
 
         environmentVariables.set(IOTCRAWLER_ORCHESTRATOR_URL,brokerURL);
+
         environmentVariables.set(TRACK_EXECUTION_TIMES,"true");
 
     }

@@ -1,10 +1,14 @@
 {
-  platforms(id: "urn:ngsi-ld:Platform_homee_00055110D70") {
-    id,
-    label,
-    hosts {
-        id,
-        label
+  platforms(id: "urn:ngsi-ld:The_Things_Network_a81758fffe03889a-2047"){
+    id
+    hosts{
+        madeObservation{
+        id
+        type
+        hasSimpleResult
+        resultTime
+      }
     }
   }
+
 }
