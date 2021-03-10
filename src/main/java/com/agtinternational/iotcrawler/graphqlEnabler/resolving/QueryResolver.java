@@ -199,6 +199,8 @@ public class QueryResolver {
                               EntityLD entity;
                               try {
                                   entity = getIoTCrawlerClient().getEntityById(id);
+                                  //entity = new EntityLD(id, typeURIfinal);
+                                  enitities.put(id, entity);
                               } catch (Exception e) {
                                   if(e.getCause() instanceof HttpClientErrorException.NotFound)
                                       LOGGER.debug("Entity {} not found", id);
@@ -206,9 +208,9 @@ public class QueryResolver {
                                       LOGGER.error("Failed to get entity {} of type {}: {}", id, concept, e.getLocalizedMessage());
                                       //e.printStackTrace();
                                   }
-                                  entity = new EntityLD(id, typeURIfinal);
+
                               }
-                              enitities.put(id, entity);
+
                               return null;
                           }
                       }
