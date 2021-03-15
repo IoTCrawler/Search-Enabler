@@ -36,9 +36,10 @@ public class EnvVariablesSetter {
         //environmentVariables.set(CUT_TYPE_URIS, "true");
         //String brokerURL = "http://155.54.95.248:9090/ngsi-ld/";
         //String brokerURL = "https://staging.urban-data-mission.mdr.iotcrawler.eu/ngsi-ld/";
-        String brokerURL = "https://mdr.iotcrawler.eu/ngsi-ld/";
+        //String brokerURL = "https://mdr.iotcrawler.eu/ngsi-ld/";
+        //String brokerURL = "https://ranking.iotcrawler.eu/ngsi-ld/";
+        String brokerURL = "https://staging.ranking.iotcrawler.eu/ngsi-ld/";
         //String brokerURL = "https://staging.indexing.iotcrawler.eu/ngsi-ld/";
-        //String brokerURL = "https://staging.ranking.iotcrawler.eu/ngsi-ld/";
         //String brokerURL = "http://155.54.95.171:9090/ngsi-ld/";
         //String brokerURL = "http://10.67.1.107:9090/ngsi-ld/";
         //String brokerURL = "http://192.168.0.125:9090/ngsi-ld/";

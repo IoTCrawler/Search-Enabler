@@ -99,37 +99,51 @@ public class QueryResolver {
         else {
             List<Callable<Object>> tasks = new ArrayList();
             List<Map> uniqueQueries = new ArrayList<>();
-            List<String> keys = new ArrayList();
-            keys.addAll(query.keySet());
+            List<String> criteriaNames = new ArrayList();
+            criteriaNames.addAll(query.keySet());
             int i=0;
-            for (String key : keys){
+            for (String primaryCriteriaName : criteriaNames){
                 i++;
-                Object value = query.get(key);
+                Object primaryCriteriaValues = query.get(primaryCriteriaName);
 
 
-                if (!(value instanceof Iterable))
-                    value = Arrays.asList(new Object[]{value});
+                if (!(primaryCriteriaValues instanceof Iterable))
+                    primaryCriteriaValues = Arrays.asList(new Object[]{primaryCriteriaValues});
 
-                Iterator iterator = ((Iterable) value).iterator();
-                while (iterator.hasNext()) {
-                    Object iValue = iterator.next();
-                    List<String> subList = keys.subList(i, keys.size());
-                    if(subList.size()==0) {
+                Iterator primaryCriteriaValuesIterator = ((Iterable) primaryCriteriaValues).iterator();
+                while (primaryCriteriaValuesIterator.hasNext()) {
+                    Object primaryCriteriaValue = primaryCriteriaValuesIterator.next();
+
+                    if(criteriaNames.size()==1) { //for a single criteria filter
                         Map query2 = new HashMap();
-                        query2.put(key, iValue);
+                        query2.put(primaryCriteriaName, primaryCriteriaValue);
                         uniqueQueries.add(query2);
+                        continue;
                     }
-                    for (String key2 : subList){
-                        Object value2 = query.get(key2);
-                        if (!(value2 instanceof Iterable))
-                            value2 = Arrays.asList(new Object[]{value});
-                        Iterator iterator2 = ((Iterable) value2).iterator();
-                        while (iterator2.hasNext()) {
-                            Object iValue2 = iterator2.next();
-                            Map query2 = new HashMap();
-                            query2.put(key, iValue);
-                            query2.put(key2, iValue2);
-                            uniqueQueries.add(query2);
+
+                    List<String> secondaryCriterias = criteriaNames.subList(i, criteriaNames.size());
+                    for (String secondaryCriteriaName : secondaryCriterias){
+                        Object iterableSecondaryCriteriaValue = query.get(secondaryCriteriaName);
+                        if (!(iterableSecondaryCriteriaValue instanceof Iterable))
+                            iterableSecondaryCriteriaValue = Arrays.asList(new Object[]{iterableSecondaryCriteriaValue});
+                        Iterator secondaryCriteriaValuesIterator = ((Iterable) iterableSecondaryCriteriaValue).iterator();
+                        while (secondaryCriteriaValuesIterator.hasNext()) {
+                            Object secondaryCriteriaValue = secondaryCriteriaValuesIterator.next();
+                            if(secondaryCriteriaValue instanceof Iterable){
+                                //restCriteriaValue = Arrays.asList(new Object[]{criteriaValues});
+                                Iterator iterator3 = ((Iterable) secondaryCriteriaValue).iterator();
+                                while(iterator3.hasNext()){
+                                    Map query2 = new HashMap();
+                                    query2.put(primaryCriteriaName, primaryCriteriaValue);
+                                    query2.put(secondaryCriteriaName, iterator3.next());
+                                    uniqueQueries.add(query2);
+                                }
+                            }else {
+                                Map query2 = new HashMap();
+                                query2.put(primaryCriteriaName, primaryCriteriaValue);
+                                query2.put(secondaryCriteriaName, secondaryCriteriaValue);
+                                uniqueQueries.add(query2);
+                            }
                         }
 
                     }

@@ -1,22 +1,9 @@
 {
-  streamObservations(
-  hasSimpleResult:{ gt: 3548 }
-  belongsTo: {
-      generatedBy:{
-        isHostedBy:{
-          id: "urn:ngsi-ld:The_Things_Network_a81758fffe038898-2045"
-        }
-      }
-    }){
+  streams(dataProvider: "OpenHAB", generatedBy: { id: "urn:ngsi-ld:Sensor_OpenHAB_zwave:device:c754a396:node2_zwave:device:c754a396:node2:sensor_power"}) {
     id
-    hasSimpleResult
-    belongsTo{
+    generatedBy {
       id
-      generatedBy{
-        isHostedBy{
-          id
-        }
-      }
     }
+    dataProvider
   }
 }
