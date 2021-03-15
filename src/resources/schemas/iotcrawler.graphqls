@@ -137,9 +137,10 @@ type StreamObservation @resource(class : "http://purl.org/iot/ontology/iot-strea
     madeBySensor: Sensor    @attribute(uri : "http://www.w3.org/ns/sosa/madeBySensor")
     belongsTo: IoTStream    @attribute(uri : "http://purl.org/iot/ontology/iot-stream#belongsTo")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
-    hasSimpleResult: Object  @attribute(uri : "http://www.w3.org/ns/sosa/hasSimpleResult")
+    hasSimpleResult: String  @attribute(uri : "http://www.w3.org/ns/sosa/hasSimpleResult")
     resultTime: String   @attribute(uri : "http://www.w3.org/ns/sosa/resultTime")
 }
+
 
 #type Event @resource(class : "http://purl.org/iot/ontology/iot-stream#Event"){
 #    id: String!
