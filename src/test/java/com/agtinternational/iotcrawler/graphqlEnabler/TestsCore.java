@@ -192,10 +192,6 @@ public class TestsCore extends TestUtils {
         executeQuery(Paths.get("queries","core","getSensors"));
     }
 
-
-
-
-
     @Test
     public void getSystemsTest() throws Exception {
         

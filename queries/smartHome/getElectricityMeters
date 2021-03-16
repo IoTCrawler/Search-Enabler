@@ -1,0 +1,8 @@
+{
+  smartPlugs(hosts: {id: "urn:ngsi-ld:Sensor_Homee_00055110D732_23_133"}) {
+    id
+    alternativeType
+    locations
+    observesEntity
+  }
+}

@@ -82,14 +82,22 @@ public class UniversalDataFetcher {
 
             if(id!=null){
                 //if (calledRecursively){
-                    List<Object> entities = QueryResolver.serveGetEntityByIdQuery(Arrays.asList(id), concept);
+                List<Object> entities = QueryResolver.serveGetEntityByIdQuery(Arrays.asList(id), concept);
+
+                String type = null;
+                try {
+                    type = HierarchicalWiring.findURI(concept);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to find URI for type {}", concept);
+                    e.printStackTrace();
+                }
+                final String finalId = id;
+                final String finalType = type;
+
                     List<String> ids = new ArrayList<>();
-                    entities.stream().forEach(entity0 -> {
-                        EntityLD entity = ((EntityLD) entity0);
-                        if(entity!=null) {
-                            loader.prime(entity.getId(), entity);
-                            ids.add(entity.getId());
-                        }
+                    entities.stream().forEach(entity0 -> { //this might be null if non-existing id requested
+                            loader.prime(finalId, entity0);
+                            ids.add(finalId);
                     });
                     CompletableFuture future = loader.loadMany(ids);
                      if(argumentsToResolve.size()==0)
@@ -148,7 +156,7 @@ public class UniversalDataFetcher {
                 forBottomUpResolution.addAll(childTypes);
                 Map<String, List<String>> typesWithFilters = resolveBottomUpType(forBottomUpResolution.toArray(new String[0]));
 
-                List<EntityLD> resolvedEntities = serveResolvedEntities(typesWithFilters, environment);
+                List<EntityLD> resolvedEntities = serveResolvedEntities(typesWithFilters, query, environment);
                 entities.addAll(resolvedEntities);
                 String abc = "123";
 
@@ -258,19 +266,21 @@ public class UniversalDataFetcher {
         map.put(key, list);
     }
 
-    static List<EntityLD> serveResolvedEntities(Map<String, List<String>> adjacentConcepts, DataFetchingEnvironment environment){
+    static List<EntityLD> serveResolvedEntities(Map<String, List<String>> adjacentConcepts, Map<String,Object> query, DataFetchingEnvironment environment){
         List<EntityLD> ret = new ArrayList<>();
 
         for(String adjacentConcept: adjacentConcepts.keySet()){
             for(String filter: adjacentConcepts.get(adjacentConcept)){
-                Map filterMap = new HashMap();
+                Map arguments = new HashMap();
+                arguments.putAll(query);
+
                 if(filter!=null)
-                    filterMap.put("subClassOf",filter);
+                    arguments.put("subClassOf",filter);
 
                 DataFetcher dataFetcher = UniversalDataFetcher.get(adjacentConcept);
                 DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
                         environment.getSource(),
-                        (Map) filterMap,
+                        (Map) arguments,
                         environment.getContext(),
                         environment.getRoot(),
 
@@ -292,7 +302,7 @@ public class UniversalDataFetcher {
                 );
                 CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
                 try {
-                    LOGGER.debug("Executing adjacent {} fetcher with args {}", adjacentConcept, filterMap.toString());
+                    LOGGER.debug("Executing adjacent {} fetcher with args {}", adjacentConcept, arguments.toString());
                     List<EntityLD> ret2 = (List<EntityLD>)future.get();
                     ret.addAll(ret2);
                 }

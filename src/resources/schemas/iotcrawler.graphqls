@@ -107,19 +107,21 @@ type Sensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", subClassOf: ["
     madeObservation: StreamObservation  @attribute(uri : "http://www.w3.org/ns/sosa/madeObservation")
     observes: ObservableProperty    @attribute(uri : "http://www.w3.org/ns/sosa/observes")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
+    name: String  @attribute(uri : "http://schema.org/name")
     location: String   @attribute(uri : "http://www.agtinternational.com/ontologies/devices/locations")
 }
 
 type Actuator @resource(class : "http://www.w3.org/ns/sosa/Actuator", subClassOf: ["System"]){
-
- }
+    id: String!
+}
 
 type Platform @resource(class : "http://www.w3.org/ns/sosa/Platform"){
     id: String!
     type: String!
     label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
     hosts: [Sensor] @attribute(uri : "http://www.w3.org/ns/sosa/hosts")
-    location: String
+    name: String  @attribute(uri : "http://schema.org/name")
+    location: String  @attribute(uri : "http://www.agtinternational.com/ontologies/devices/locations")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
 }
 

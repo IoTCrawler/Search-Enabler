@@ -8,7 +8,7 @@ schema {
 type Query {
     temperatureSensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [TemperatureSensor]
     indoorTemperatureSensors(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [IndoorTemperatureSensor]
-    electricityMeters(isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [ElectricityMeter]
+    smartPlugs(id: String, hosts: SensorInput, location: String, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [SmartPlug]
 }
 
 type TemperatureSensor @resource(class : "http://Agt/TemperatureSensor", subClassOf: ["Sensor"]){
@@ -19,6 +19,8 @@ type IndoorTemperatureSensor @resource(class : "http://Agt/IndoorTemperatureSens
 
 }
 
-type ElectricityMeter @resource(class : "http://elite.polito.it/ontologies/dogont.owl#ElectricityMeter", subClassOf: ["Sensor"]){
+type SmartPlug @resource(class : "http://www.agtinternational.com/ontologies/devices#SmartPlug", subClassOf: ["Platform"]){
     locations: String  @attribute(uri : "http://www.agtinternational.com/ontologies/devices/locations")
+    observesEntity: String  @attribute(uri : "http://www.agtinternational.com/ontologies/IoTDeviceModel#observesEntity")
+
 }

@@ -47,6 +47,9 @@ public class BottomUpStrategy {
             try {
                 String parentTypeURI = HierarchicalWiring.findURI(parentTypeName);
                 query.put(NGSI_LD.alternativeType, "\"" + parentTypeURI + "\"");
+                query.putAll(argumentsToResolve);
+                query.remove("subClassOf");
+                argumentsToResolve.clear();
             } catch (Exception e) {
                 LOGGER.warn("Failed to find URI for {}", parentTypeName);
                 return null;
@@ -58,8 +61,8 @@ public class BottomUpStrategy {
                 if(argumentsToResolve.containsKey(argument.getName())){
 
                     String argName = argument.getName();
-
                     Object argValue = argumentsToResolve.get(argName);
+
                     GraphQLOutputType outputType = environment.getFieldType();
                     //GraphQLType wrappedType = ((GraphQLModifiedType)outputType).getWrappedType();
                     String wrappedTypeName = ((GraphQLModifiedType)outputType).getWrappedType().getName();
@@ -127,6 +130,16 @@ public class BottomUpStrategy {
 
                     }else if(targetInputType instanceof GraphQLObjectType) {
 
+                        //treating id as scalar(not a relationship) and not requesting the reference object in case we have only id
+                        if(argValue instanceof Map
+                                && ((Map)argValue).size()==1
+                                && ((Map)argValue).containsKey("id")
+                        ){
+                            Object value = (argValue instanceof Map? ((Map)argValue).get("id"): argValue);
+                            query.put(propertyURI, (value instanceof String? "\""+value.toString()+"\"": value));
+                            continue;
+                        }
+
                         List<Field> fieldsForNewEnvironment = new ArrayList<>();
                         List<ObjectField> argumentValueObjectFields = ((ObjectValue) argument.getValue()).getObjectFields();
                         Field argumentValueObjectField = null;
@@ -140,12 +153,7 @@ public class BottomUpStrategy {
                         }
 
 
-                        //treating id as scalar and not requesting the reference object in case we have only id
-                        if(fieldsForNewEnvironment.size()==1 && fieldsForNewEnvironment.get(0).getName().equals("id")){
-                            Object value = (argValue instanceof Map? ((Map)argValue).get("id"): argValue);
-                            query.put(propertyURI, (value instanceof String? "\""+value.toString()+"\"": value));
-                            continue;
-                        }
+
 
                         LOGGER.debug("Preparing {} fetcher to resolve {}", targetInputType.getName(), wrappedTypeName+"."+argName);
 
@@ -208,7 +216,7 @@ public class BottomUpStrategy {
 //                                if (!((Iterable) entities).iterator().hasNext())
 //                                    return null;
 
-                                List<String> entityIds = (List)((ArrayList) entities).stream().map(entity -> ((EntityLD) entity).getId()).collect(Collectors.toList());
+                                List<String> entityIds = (List)((ArrayList) entities).stream().filter(entity -> entity!=null).map(entity -> ((EntityLD) entity).getId()).collect(Collectors.toList());
                                 int size = ((List) entityIds).size();
                                 //if (size == 0)
 //                                    return null;
