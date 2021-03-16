@@ -1,10 +1,1 @@
-{
-  streams(generatedBy: {observes: {id: "urn:ngsi-ld:EnergyAndWork"}}) {
-    id
-    generatedBy {
-      observes {
-        id
-      }
-    }
-  }
-}
+{ streams( dataProvider: "OpenHAB"){ id, generatedBy { id }, dataProvider }}
