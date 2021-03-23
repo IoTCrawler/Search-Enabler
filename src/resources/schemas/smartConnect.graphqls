@@ -20,7 +20,12 @@ type IndoorTemperatureSensor @resource(class : "http://Agt/IndoorTemperatureSens
 }
 
 type SmartPlug @resource(class : "http://www.agtinternational.com/ontologies/devices#SmartPlug", subClassOf: ["Platform"]){
-    locations: String  @attribute(uri : "http://www.agtinternational.com/ontologies/devices/locations")
+    location: String  @attribute(uri : "http://schema.org/location")
+    observesEntity: String  @attribute(uri : "http://www.agtinternational.com/ontologies/IoTDeviceModel#observesEntity")
+
+}
+
+type FibaroWallPlug @resource(class : "http://www.agtinternational.com/ontologies/devices#FibaroWallPlug", subClassOf: ["SmartPlug"]){
     observesEntity: String  @attribute(uri : "http://www.agtinternational.com/ontologies/IoTDeviceModel#observesEntity")
 
 }
