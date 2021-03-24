@@ -27,5 +27,8 @@ type SmartPlug @resource(class : "http://www.agtinternational.com/ontologies/dev
 
 type FibaroWallPlug @resource(class : "http://www.agtinternational.com/ontologies/devices#FibaroWallPlug", subClassOf: ["SmartPlug"]){
     observesEntity: String  @attribute(uri : "http://www.agtinternational.com/ontologies/IoTDeviceModel#observesEntity")
+}
 
+type FibaroWallPlug_FGWP102 @resource(class : "http://www.agtinternational.com/ontologies/devices#FibaroWallPlug_FGWP102", subClassOf: ["SmartPlug"]){
+    observesEntity: String  @attribute(uri : "http://www.agtinternational.com/ontologies/IoTDeviceModel#observesEntity")
 }
