@@ -23,6 +23,8 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
 
 import com.agtinternational.iotcrawler.core.Utils;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
+import com.agtinternational.iotcrawler.fiware.models.NGSILD.Property;
+import com.agtinternational.iotcrawler.fiware.models.NGSILD.Relationship;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
 import com.orange.ngsi2.model.Attribute;
 import graphql.GraphQLException;
@@ -60,6 +62,12 @@ public class CustomPropertyDataFetcherHelper {
     private static final ConcurrentMap<String, Field> FIELD_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentMap<String, String> NEGATIVE_CACHE = new ConcurrentHashMap<>();
 
+    private static String Const_HasValue = "https://uri.etsi.org/ngsi-ld/hasValue";
+    private static String Const_HasObject = "https://uri.etsi.org/ngsi-ld/hasObject";
+    private static String Const_Type = "@type";
+    private static String Const_Id = "@id";
+
+
     public static Object getPropertyValue(String propertyName, Object object, GraphQLType graphQLType) throws Exception {
         return getPropertyValue(propertyName, object, graphQLType, null);
     }
@@ -83,6 +91,35 @@ public class CustomPropertyDataFetcherHelper {
             return ret;
         } catch (NoSuchMethodException ignored) {
             String abc = "123";
+        }
+
+
+        if(ApplicationController.getExtendeDatafetcher()) {
+            // PS: Fallback try to get value from object attributes
+
+            EntityLD entity = (EntityLD) object;
+
+
+            Iterator it = (Iterator) entity.getAttributes().entrySet().iterator();
+            while (it.hasNext()) {
+
+                Map.Entry pair = (Map.Entry) it.next();
+                String aKey = pair.getKey().toString();
+                Property aProp = (pair.getValue() instanceof Property ? (Property) pair.getValue() : null);
+
+                // Only check properties
+                if (aKey.contains(propertyName) && aProp != null) {
+
+                    Map<String, Object> aPropAttributes = aProp.getAttributes();
+                    if (aPropAttributes.containsKey(Const_HasValue)) {
+                        // Property tempProp = (Property) aPropAttributes.get(Const_HasValue);
+                        Attribute tempAttr = (Attribute) aPropAttributes.get(Const_HasValue);
+                        if (tempAttr != null) // tempProp
+                            return tempAttr.getValue(); // tempProp
+                    }
+
+                }
+            }
         }
 
         Boolean changed = false;
@@ -139,15 +176,37 @@ public class CustomPropertyDataFetcherHelper {
                                         value = ((Attribute) attribute).getValue();
 //                            if(graphQLType instanceof GraphQLList && !(value instanceof List))
 //                                value = Arrays.asList(new Object[]{ value });
-                                        if (((Attribute) attribute).getType().get().equals("Relationship")) {
-                                            if (value instanceof List)
-                                                referenceIDs.addAll((List) value);
-                                            else
-                                                referenceIDs.add(value);
-                                        }else {
-                                            if(convertedToList)
-                                                return value;
-                                            return attribute; //return the whole array instead of one value
+                                        if(value!=null) {
+                                            if (((Attribute) attribute).getType().get().equals("Relationship")) {
+                                                if (value instanceof List)
+                                                    referenceIDs.addAll((List) value);
+                                                else
+                                                    referenceIDs.add(value);
+                                            } else {
+                                                if (convertedToList)
+                                                    return value;
+                                                return attribute; //return the whole array instead of one value
+                                            }
+                                        }
+                                        else {
+                                            if(ApplicationController.getExtendeDatafetcher()) {
+                                                // PS: Fallback, value is empty, check in attributes
+                                                Map<String, Object> attributesOfRel = ((Relationship) attribute).getAttributes();
+
+                                                if (attributesOfRel.containsKey(Const_Type)) {
+
+                                                    if (((String) attributesOfRel.get(Const_Type)).contains("Relationship")) {
+
+                                                        if (attributesOfRel.containsKey(Const_HasObject)) {
+                                                            Map<String, Object> attributesOfSubRel = ((Map<String, Object>) attributesOfRel.get(Const_HasObject));
+                                                            String refID = ((String) attributesOfSubRel.get(Const_Id));
+                                                            referenceIDs.add(refID);
+                                                        }
+                                                    }
+
+                                                }
+                                            }
+
                                         }
 
 

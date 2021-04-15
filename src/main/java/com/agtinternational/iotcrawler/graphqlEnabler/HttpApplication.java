@@ -21,13 +21,16 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
 
 @SpringBootApplication
 public class HttpApplication {
+
 
 	public static void main(String[] args) throws Exception {
 		if (!System.getenv().containsKey(IOTCRAWLER_ORCHESTRATOR_URL))

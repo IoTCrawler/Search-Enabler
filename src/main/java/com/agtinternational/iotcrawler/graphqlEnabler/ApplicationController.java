@@ -31,13 +31,13 @@ import graphql.GraphQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 //import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,10 +49,13 @@ import java.nio.file.StandardOpenOption;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.context.annotation.Configuration;
+
 import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.TRACK_EXECUTION_TIMES;
 
 //@RestController
 @Controller
+@EnableConfigurationProperties(GraphQLProperties.class)
 public class ApplicationController {
 
     static Logger LOGGER = LoggerFactory.getLogger(ApplicationController.class);
@@ -60,12 +63,22 @@ public class ApplicationController {
     private final ObjectMapper objectMapper;
     private final ContextProvider contextProvider;
 
+    //@Value("${iotcrawler.graphql.datafetcher.extended}")
+    static private boolean extendeDatafetcher;
+
+    @Autowired
+    GraphQLProperties messageProperties;
 
     @Autowired
     public ApplicationController(GraphQL graphql, ObjectMapper objectMapper, ContextProvider contextProvider) {
         this.graphql = graphql;
         this.objectMapper = objectMapper;
         this.contextProvider = contextProvider;
+
+    }
+
+    public static boolean getExtendeDatafetcher() {
+        return extendeDatafetcher;
     }
 
     @RequestMapping(value = "/version", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
@@ -132,12 +145,17 @@ public class ApplicationController {
         long started = System.currentTimeMillis();
         Context context = contextProvider.newContext();
 
+        // Should be pushed through interface
+        if(messageProperties!=null)
+            ApplicationController.extendeDatafetcher = messageProperties.isExtDataFetcher();
+
         ExecutionInput executionInput = ExecutionInput.newExecutionInput()
                 .query(query)
                 .variables(variables)
                 .operationName(operationName)
                 .context(context)
                 .build();
+
 
         ExecutionResult executionResult = graphql.execute(executionInput);
         double took = (System.currentTimeMillis()-started)/1000.0;
