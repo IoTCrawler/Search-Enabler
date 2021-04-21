@@ -20,22 +20,16 @@ package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
  * #L%
  */
 
-import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.Context;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
-import graphql.execution.ExecutionTypeInfo;
-import graphql.language.*;
 import graphql.schema.*;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.DataLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.CORE_TYPES;
 
@@ -73,16 +67,20 @@ public class UniversalDataFetcher {
                 argumentsToResolve.remove("limit");
             }
 
-            String id = null;
+            List<String> requestedIds = new ArrayList<>();
             if(environment.getArgument("id")!=null){
-                id = environment.getArgument("id");
+                Object id = environment.getArgument("id");
+                if(!(id instanceof Iterable))
+                    requestedIds = Arrays.asList(new String[]{ requestedIds.toString() });
+                else
+                    requestedIds = (List<String>)id;
                 argumentsToResolve.remove("id");
             }
 
 
-            if(id!=null){
+            if(!requestedIds.isEmpty()){
                 //if (calledRecursively){
-                List<Object> entities = QueryResolver.serveGetEntityByIdQuery(Arrays.asList(id), concept);
+                List<Object> entities = NGSILD_Client_Wrapper.serveGetEntityByIdQuery(requestedIds, concept);
 
                 String type = null;
                 try {
@@ -91,15 +89,20 @@ public class UniversalDataFetcher {
                     LOGGER.error("Failed to find URI for type {}", concept);
                     e.printStackTrace();
                 }
-                final String finalId = id;
-                final String finalType = type;
+//                final List<String> finalId = idsAsList;
+//                final String finalType = type;
 
-                    List<String> ids = new ArrayList<>();
-                    entities.stream().forEach(entity0 -> { //this might be null if non-existing id requested
-                            loader.prime(finalId, entity0);
-                            ids.add(finalId);
+                    requestedIds.forEach(id->{
+                        Optional<Object> firstElement = entities.stream().filter(e->e!=null && ((EntityLD)e).getId().equals(id)).findFirst();
+                        Object entityLD = (firstElement.isPresent()? firstElement.get(): null);
+                        loader.prime(id, entityLD);
                     });
-                    CompletableFuture future = loader.loadMany(ids);
+//                    entities.stream().filter(e->e instanceof EntityLD).forEach(entity0 -> { //this might be null if non-existing id requested
+//                        String id = ((EntityLD)entity0).getId();
+//                        loader.prime(id, ((EntityLD)entity0).getId());
+//                            ids.add(finalId);
+//                    });
+                    CompletableFuture future = loader.loadMany(requestedIds);
                      if(argumentsToResolve.size()==0)
                         return future;
                 //}
@@ -120,7 +123,7 @@ public class UniversalDataFetcher {
             Map<String,Object> query = new HashMap<>();
             if(argumentsToResolve.size()>0){
                 try {
-                    query = BottomUpStrategy.resolveQuery(environment, argumentsToResolve);
+                    query = BottomUpStrategy.resolveFilters(environment, argumentsToResolve);
                     if(query==null)
                         return null;
                 } catch (Exception e) {
@@ -143,7 +146,7 @@ public class UniversalDataFetcher {
 
             List entities = new ArrayList();
             try {
-                entities = new ArrayList(QueryResolver.serveGetEntitiesQuery(typeURI, query, ranking, offset, limit));
+                entities = new ArrayList(NGSILD_Client_Wrapper.serveGetEntitiesQuery(typeURI, query, ranking, offset, limit));
             }catch (Exception e) {
                 //LOGGER.error("Failed to get entities for query {}: {}", query, e.getLocalizedMessage());
             }
@@ -162,20 +165,21 @@ public class UniversalDataFetcher {
 
             }
 
-            final String finalId = id;
-            List<String> ids = new ArrayList<>();
+            final List<String> finalIds = requestedIds;
+            List<String> idsToReturn = new ArrayList<>();
             entities.stream().forEach(entity0->{
                 EntityLD entity = ((EntityLD)entity0);
-                if((finalId!=null && entity.getId().equals(finalId)) || finalId==null){
+
+                if((!finalIds.isEmpty() && finalIds.contains(entity.getId())) || finalIds.isEmpty()){
                     loader.prime(entity.getId(), entity);
-                    ids.add(entity.getId());
+                    idsToReturn.add(entity.getId());
                 }
             });
 
 //            if(topLevelQuery)
 //                resolvedConcepts.clear();
 
-            return loader.loadMany(ids);
+            return loader.loadMany(idsToReturn);
 
         };
     }

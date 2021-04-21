@@ -23,7 +23,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
 
 import com.agtinternational.iotcrawler.graphqlEnabler.*;
 
-import com.agtinternational.iotcrawler.graphqlEnabler.resolving.QueryResolver;
+import com.agtinternational.iotcrawler.graphqlEnabler.resolving.NGSILD_Client_Wrapper;
 import graphql.schema.idl.*;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
@@ -153,7 +153,7 @@ public class HierarchicalWiring implements Wiring {
         @Override
         public CompletionStage<List> load(List list) {
             return CompletableFuture.supplyAsync(() ->
-                    QueryResolver.serveGetEntityByIdQuery(list, concept));
+                    NGSILD_Client_Wrapper.serveGetEntityByIdQuery(list, concept));
         }
     }
 

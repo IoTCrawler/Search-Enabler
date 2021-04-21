@@ -1,0 +1,9 @@
+{
+  {
+    streams(id: ["urn:ngsi-ld:Stream_The_Things_Network_a81758fffe038894-2056_humidity_relativehumidity"]){
+      id
+    }
+  }
+
+
+}

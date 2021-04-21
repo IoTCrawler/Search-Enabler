@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 public class BottomUpStrategy {
     static Logger LOGGER = LoggerFactory.getLogger(BottomUpStrategy.class);
 
-    public static Map resolveQuery(DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve) throws Exception {
+    public static Map resolveFilters(DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve) throws Exception {
         Map<String, Object> query = new HashMap<>();
         LOGGER.debug("Amending query by resolving the filters "+argumentsToResolve.toString());
         //setting alternative type as a condition

@@ -18,9 +18,9 @@ input SystemInput {
 }
 
 input IoTStreamInput{
-     id: String
+     id: [String]
      label: String
-     generatedBy: SensorInput
+     generatedBy: [SensorInput]
      observes: ObservablePropertyInput
      alternativeType: String
  }
@@ -76,12 +76,12 @@ input SimpleResultFilter {
 
 
 type Query {
-    streams(id: String, alternativeType: String, ranking: [RankingCriteria], label: String, generatedBy: SensorInput, dataProvider: String, offset: Int = 0, limit: Int = 0): [IoTStream]
-    sensors(id: String, alternativeType: String, label: String, madeObservation: StreamObservationInput, isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
-    systems(id: String, alternativeType: String, label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
-    platforms(id: String,  alternativeType: String, label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
-    observableProperties(id: String,  alternativeType: String, label: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
-    streamObservations(id: String, hasSimpleResult: SimpleResultFilter, alternativeType: String, madeBySensor: SensorInput, belongsTo: IoTStreamInput, offset: Int = 0, limit: Int = 0): [StreamObservation]
+    streams(id: [String], filter: IoTStreamInput, alternativeType: String, ranking: [RankingCriteria], label: String, generatedBy: SensorInput, dataProvider: String, offset: Int = 0, limit: Int = 0): [IoTStream]
+    sensors(id: [String], alternativeType: String, label: String, madeObservation: StreamObservationInput, isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
+    systems(id: [String], alternativeType: String, label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
+    platforms(id: [String],  alternativeType: String, label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
+    observableProperties(id: [String],  alternativeType: String, label: String, offset: Int = 0, limit: Int = 0): [ObservableProperty]
+    streamObservations(id: [String], hasSimpleResult: SimpleResultFilter, alternativeType: String, madeBySensor: SensorInput, belongsTo: IoTStreamInput, offset: Int = 0, limit: Int = 0): [StreamObservation]
 
 }
 

@@ -22,34 +22,24 @@ package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
 
 import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.core.interfaces.IoTCrawlerClient;
-import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
-import graphql.execution.ExecutionTypeInfo;
-import graphql.language.Argument;
-import graphql.language.Field;
-import graphql.language.ObjectField;
-import graphql.language.ObjectValue;
-import graphql.schema.*;
-import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
 import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.GRAPHQL_ENDPOINT_URL;
 
-public class QueryResolver {
+public class NGSILD_Client_Wrapper {
 
-    static Logger LOGGER = LoggerFactory.getLogger(QueryResolver.class);
+    static Logger LOGGER = LoggerFactory.getLogger(NGSILD_Client_Wrapper.class);
     static IoTCrawlerClient iotCrawlerClient;
     static long totalQueryExectionTime = 0;
     static List<String> totalQueryExectionTimeList = new ArrayList<>();

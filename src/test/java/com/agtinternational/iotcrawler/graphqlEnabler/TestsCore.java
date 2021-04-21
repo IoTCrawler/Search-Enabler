@@ -168,6 +168,13 @@ public class TestsCore extends TestUtils {
         executeQuery(Paths.get("queries","core","getStreamById"));
     }
 
+//    @Test
+//    public void getStreamByFilterTest() throws Exception {
+//
+//        executeQuery(Paths.get("queries","core","getStreamByFilter"));
+//    }
+
+
     @Test
     public void getStreamsTest() throws Exception {
 
@@ -210,11 +217,7 @@ public class TestsCore extends TestUtils {
         executeQuery(Paths.get("queries","core","getPlatforms"));
     }
 
-    @Test
-    public void getPlatformsByTwoFiltersTest() throws Exception {
 
-        executeQuery(Paths.get("queries","core","getPlatformsByTwoFilters"));
-    }
 
     @Test
     public void getObservablePropertyByIdTest() throws Exception {

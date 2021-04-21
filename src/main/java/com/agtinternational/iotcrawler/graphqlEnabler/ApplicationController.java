@@ -21,8 +21,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
-import com.agtinternational.iotcrawler.graphqlEnabler.resolving.QueryResolver;
-import com.agtinternational.iotcrawler.graphqlEnabler.wiring.MultipleSchemasWiring;
+import com.agtinternational.iotcrawler.graphqlEnabler.resolving.NGSILD_Client_Wrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
@@ -143,11 +142,11 @@ public class ApplicationController {
         double took = (System.currentTimeMillis()-started)/1000.0;
 
         LOGGER.debug("Total resolution time: "+took);
-        LOGGER.debug("Total execution time of "+ QueryResolver.getTotalQueriesPerformed()+" queries: "+ QueryResolver.getTotalQueryExectionTime()/1000.0);
-        LOGGER.debug("Queries times "+ String.join("+", QueryResolver.getTotalQueryExectionList()));
+        LOGGER.debug("Total execution time of "+ NGSILD_Client_Wrapper.getTotalQueriesPerformed()+" queries: "+ NGSILD_Client_Wrapper.getTotalQueryExectionTime()/1000.0);
+        LOGGER.debug("Queries times "+ String.join("+", NGSILD_Client_Wrapper.getTotalQueryExectionList()));
 
         if(System.getenv().containsKey(TRACK_EXECUTION_TIMES)) {
-            String content = QueryResolver.getTotalQueriesPerformed() + ";" + QueryResolver.getTotalQueryExectionTime() / 1000.0 + ";" + took+"\n";
+            String content = NGSILD_Client_Wrapper.getTotalQueriesPerformed() + ";" + NGSILD_Client_Wrapper.getTotalQueryExectionTime() / 1000.0 + ";" + took+"\n";
             if(!Paths.get("times.csv").toFile().exists())
                 Files.write(Paths.get("times.csv"), content.getBytes(), StandardOpenOption.CREATE_NEW);
             else
