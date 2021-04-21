@@ -1,0 +1,96 @@
+
+schema {
+    query: Query
+
+}
+
+input eIoTStreamInput{
+    id: String
+    label: String
+    generatedBy: eSensorInput
+    observes: eObservablePropertyInput
+    max: String
+    min: String
+    mean: String
+    std: String
+}
+
+input eSensorInput{
+    id: String
+    label: String
+    location: String
+    isHostedBy: ePlatformInput
+    observes: ObservablePropertyInput
+    madeObservation: eStreamObservationInput
+}
+
+input ePlatformInput {
+    id: String
+    label: String
+    hosts: SensorInput
+    location: String
+    simulated: Boolean
+}
+
+input eObservablePropertyInput {
+    id: String
+    label: String
+    isObservedBy: eSensorInput
+}
+
+input eStreamObservationInput {
+    id: String
+    belongsTo: eIoTStreamInput
+    madeBySensor: eSensorInput
+    hasSimpleResult: String
+}
+
+input RankingCriteria {
+    name: String
+    value: Float
+}
+
+type Query {
+    eStreams(id: String, ranking: [RankingCriteria], label: String, generatedBy: SensorInput, max: String, min: String, mean: String, std: String, sax_24h_1h: String, paa_24h_1h: String, offset: Int = 0, limit: Int = 0): [EnergyStream]
+    ePlatforms(id: String, label: String, hosts: eSensorInput, location: String, category: String, deviceState: String, simulated: Boolean, offset: Int = 0, limit: Int = 0): [EnergyPlatform]
+    eSensors(id: String, label: String, madeObservation: eStreamObservationInput, isHostedBy: ePlatformInput, observes: eObservablePropertyInput, offset: Int = 0, limit: Int = 0): [EnergySensor]
+    eObservableProperties(id: String, label: String, offset: Int = 0, limit: Int = 0): [EnergyObservableProperty]
+    eStreamObservations(id: String,  madeBySensor: eSensorInput, belongsTo: eIoTStreamInput, offset: Int = 0, limit: Int = 0): [EnergyStreamObservation]
+}
+
+type EnergyStream @resource(class : "http://purl.org/iot/ontology/iot-stream#EnergyIotStream", subClassOf: ["IoTStream"]){
+    rankScore: String @attribute(uri : "http://iotcrawler.eu/rankScore")
+    max: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#stats-max")
+    min: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#stats-min")
+    mean: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#stats-mean")
+    std: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#stats-std")
+    sax_24h_1h: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#stats-sax_24h_1h")
+    paa_24h_1h: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#stats-paa_24h_1h")
+}
+
+
+type EnergySensor @resource(class : "http://www.w3.org/ns/sosa/EnergySensor", subClassOf: ["Sensor"]){
+    label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
+
+}
+
+
+type EnergyPlatform @resource(class : "http://www.w3.org/ns/sosa/EnergyPlatform", subClassOf: ["Platform"]){
+    hosts: [EnergySensor] @attribute(uri : "http://www.w3.org/ns/sosa/hosts")
+    category: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#category")
+    deviceState: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#deviceState")
+    ipAddress: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#ipAddress")
+    simulated: Boolean @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#simulated")
+    rankScore: String @attribute(uri : "http://iotcrawler.eu/rankScore")
+}
+
+
+type EnergyStreamObservation @resource(class : "http://purl.org/iot/ontology/iot-stream#StreamObservation", subClassOf: ["StreamObservation"]){
+    madeBySensor: EnergySensor    @attribute(uri : "http://www.w3.org/ns/sosa/madeBySensor")
+    belongsTo: EnergyStream    @attribute(uri : "http://purl.org/iot/ontology/iot-stream#belongsTo")
+    hasSimpleResult: String  @attribute(uri : "http://www.w3.org/ns/sosa/hasSimpleResult")
+}
+
+type EnergyObservableProperty @resource(class : "http://www.w3.org/ns/sosa/ObservableProperty", subClassOf: ["ObservableProperty"]){
+    isObservedBy: [EnergySensor]  @attribute(uri : "http://www.w3.org/ns/sosa/isObservedBy")
+}
