@@ -1,4 +1,4 @@
-package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
+package com.agtinternational.iotcrawler.graphqlEnabler.fetching;
 
 /*-
  * #%L
@@ -22,6 +22,8 @@ package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
 
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.Context;
+import com.agtinternational.iotcrawler.graphqlEnabler.resolution.BottomUpStrategy;
+import com.agtinternational.iotcrawler.graphqlEnabler.resolution.TopDownStrategy;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
 import graphql.schema.*;
 import org.dataloader.DataLoader;
@@ -33,9 +35,8 @@ import java.util.concurrent.CompletableFuture;
 
 import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.CORE_TYPES;
 
-public class UniversalDataFetcher {
-    static Logger LOGGER = LoggerFactory.getLogger(UniversalDataFetcher.class);
-    static List<String> coreTypes = Arrays.asList(CORE_TYPES);
+public class RecursiveDataFetcher {
+    static Logger LOGGER = LoggerFactory.getLogger(RecursiveDataFetcher.class);
 
     public static DataFetcher get(String concept) {
 
@@ -80,7 +81,7 @@ public class UniversalDataFetcher {
 
             if(!requestedIds.isEmpty()){
                 //if (calledRecursively){
-                List<Object> entities = NGSILD_Client_Wrapper.serveGetEntityByIdQuery(requestedIds, concept);
+                List<Object> entities = QueryExecutor.getEntityByIdQuery(requestedIds, concept);
 
                 String type = null;
                 try {
@@ -131,6 +132,10 @@ public class UniversalDataFetcher {
                     e.printStackTrace();
                     return null;
                 }
+                //if bottom-up strategy returned nothing for a given agruments, when trying to apply them directly
+                //required when we fetch entities from rules
+                if(query.size()==0)
+                    query.putAll(argumentsToResolve);
             }
 
             //environment.getGraphQLSchema().getType(concept)
@@ -146,21 +151,21 @@ public class UniversalDataFetcher {
 
             List entities = new ArrayList();
             try {
-                entities = new ArrayList(NGSILD_Client_Wrapper.serveGetEntitiesQuery(typeURI, query, ranking, offset, limit));
+                entities = new ArrayList(QueryExecutor.getEntities(typeURI, query, ranking, offset, limit));
             }catch (Exception e) {
                 //LOGGER.error("Failed to get entities for query {}: {}", query, e.getLocalizedMessage());
             }
 
-            if(!coreTypes.contains(concept)) //if additional resolution might be required
+            if(!CORE_TYPES.contains(concept)) //if additional resolution might be required
             {
-                List<String> childTypes = getTopdownTypesAsList(concept);
+                List<String> childTypes = TopDownStrategy.getTopdownTypesAsList(concept);
                 List<String> forBottomUpResolution = new ArrayList<>();
                 forBottomUpResolution.add(concept);
                 forBottomUpResolution.addAll(childTypes);
-                Map<String, List<String>> typesWithFilters = resolveBottomUpType(forBottomUpResolution.toArray(new String[0]));
+                Map<String, List<String>> typesWithFilters = BottomUpStrategy.resolveBottomUpType(forBottomUpResolution.toArray(new String[0]));
 
-                List<EntityLD> resolvedEntities = serveResolvedEntities(typesWithFilters, query, environment);
-                entities.addAll(resolvedEntities);
+                List<EntityLD> adjacentEntities = fetchAdjacentConcepts(typesWithFilters, query, environment);
+                entities.addAll(adjacentEntities);
                 String abc = "123";
 
             }
@@ -186,91 +191,7 @@ public class UniversalDataFetcher {
 
 
 
-
-    static List<String> getTopdownTypesAsList(String concept){
-        List<String> ret = new ArrayList<>();
-        List<String> typesToTry  = new ArrayList();
-        typesToTry.add(concept);
-        List<String> triedTypes = new ArrayList<>();
-        while (typesToTry.size()>0) {
-            String typeToTry = typesToTry.iterator().next();
-
-            //if(coreTypes.contains(typeToTry) && !ret.contains(typeToTry))
-            if(!typeToTry.equals(concept))
-                if(!ret.contains(typeToTry))
-                    ret.add(typeToTry);
-
-            if (HierarchicalWiring.getTopDownInheritance().containsKey(typeToTry))  //adding sensors/actuators/samples
-                HierarchicalWiring.getTopDownInheritance().get(typeToTry).forEach(t2 -> {
-                    if (!triedTypes.contains(t2))
-                        ret.add(t2);
-                    //typesToTry.add(t2);
-                });
-            triedTypes.add(typeToTry);
-            typesToTry.remove(typeToTry);
-        }
-        return ret;
-    }
-
-    static Map<String, List<String>> resolveBottomUpType(String[] concepts){
-        Map<String, List<String>> ret = new HashMap<>();
-        for(String concept: concepts){
-
-            Map<String, String> typesToTry = new LinkedHashMap<>();
-
-            typesToTry.put(concept, null);
-            List<String> triedTypes = new ArrayList<>();
-            while (typesToTry.keySet().size() > 0) {
-                String typeToTry = typesToTry.keySet().iterator().next();
-                String altType = typesToTry.get(typeToTry);
-
-                triedTypes.add(typeToTry);
-
-                String altType2 = (altType!=null?altType:typeToTry);
-                if (coreTypes.contains(typeToTry)) {
-                    appendMapToList(ret, typeToTry, altType);
-                }else if (HierarchicalWiring.getBottomUpHierarchy().containsKey(typeToTry)) { //adding more generic type
-                    HierarchicalWiring.getBottomUpHierarchy().get(typeToTry).forEach(t2 -> {
-                        if (!triedTypes.contains(t2)) {
-                            if(coreTypes.contains(t2)) {
-                                appendMapToList(ret, t2, altType2);
-//                                List<String> conditions = (ret.containsKey(t2)?ret.get(t2):new ArrayList<>());
-//                                if(!conditions.contains(altType2)){
-//                                    conditions.add(altType2);
-//                                }
-//                                ret.put(t2, conditions);
-                            }else {
-                                Map<String, List<String>> ret2 = resolveBottomUpType(new String[]{t2});
-                                for(String resolvedType: ret2.keySet()) {
-                                    //appending propagatedType
-                                    appendMapToList(ret, resolvedType, altType2);
-//                                    for (String condition : ret2.get(resolvedType))
-//                                        appendMapToList(ret, resolvedType, altType2);
-                                }
-
-                            }
-
-                        }
-                    });
-                }//else
-                // throw new NotImplementedException("Unsupported type which cannot be resolved to any");
-
-                //triedTypes.add(typeToTry);
-                typesToTry.remove(typeToTry);
-            }
-        }
-        return ret;
-    }
-
-    private static void appendMapToList(Map<String, List<String>> map, String key, String value){
-        List<String> list = (map.containsKey(key)?map.get(key):new ArrayList<>());
-        if(!list.contains(value)){
-            list.add(value);
-        }
-        map.put(key, list);
-    }
-
-    static List<EntityLD> serveResolvedEntities(Map<String, List<String>> adjacentConcepts, Map<String,Object> query, DataFetchingEnvironment environment){
+    static List<EntityLD> fetchAdjacentConcepts(Map<String, List<String>> adjacentConcepts, Map<String,Object> query, DataFetchingEnvironment environment){
         List<EntityLD> ret = new ArrayList<>();
 
         for(String adjacentConcept: adjacentConcepts.keySet()){
@@ -281,41 +202,46 @@ public class UniversalDataFetcher {
                 if(filter!=null)
                     arguments.put("subClassOf",filter);
 
-                DataFetcher dataFetcher = UniversalDataFetcher.get(adjacentConcept);
-                DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
-                        environment.getSource(),
-                        (Map) arguments,
-                        environment.getContext(),
-                        environment.getRoot(),
-
-                        //fieldDefinition,
-                        environment.getFieldDefinition(),
-                        //fields,
-                        environment.getFields(),
-                        environment.getFieldType(),
-                        //graphQLType,
-
-                        environment.getParentType(),
-                        environment.getGraphQLSchema(),
-                        environment.getFragmentsByName(),
-                        environment.getExecutionId(),
-                        environment.getSelectionSet(),
-                        environment.getFieldTypeInfo(),
-                        //fieldTypeInfo,
-                        environment.getExecutionContext()
-                );
-                CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
-                try {
-                    LOGGER.debug("Executing adjacent {} fetcher with args {}", adjacentConcept, arguments.toString());
-                    List<EntityLD> ret2 = (List<EntityLD>)future.get();
-                    ret.addAll(ret2);
-                }
-                catch (Exception e){
-                    LOGGER.error("Failed to execute adjacent fetcher for {}: {}", adjacentConcept, e.getLocalizedMessage());
-                }
-
+                List<EntityLD> entities = fetch(adjacentConcept, arguments, environment);
+                ret.addAll(entities);
             }
         }
         return ret;
+    }
+
+    public static List<EntityLD> fetch(String concept, Map arguments, DataFetchingEnvironment environment){
+        DataFetcher dataFetcher = RecursiveDataFetcher.get(concept);
+        DataFetchingEnvironment environment2 = new DataFetchingEnvironmentImpl(
+                environment.getSource(),
+                (Map) arguments,
+                environment.getContext(),
+                environment.getRoot(),
+
+                //fieldDefinition,
+                environment.getFieldDefinition(),
+                //fields,
+                environment.getFields(),
+                environment.getFieldType(),
+                //graphQLType,
+
+                environment.getParentType(),
+                environment.getGraphQLSchema(),
+                environment.getFragmentsByName(),
+                environment.getExecutionId(),
+                environment.getSelectionSet(),
+                environment.getFieldTypeInfo(),
+                //fieldTypeInfo,
+                environment.getExecutionContext()
+        );
+        CompletableFuture future = (CompletableFuture) dataFetcher.get(environment2);
+        try {
+            LOGGER.debug("Executing {} fetcher with args {}", concept, arguments.toString());
+            List<EntityLD> ret = (List<EntityLD>)future.get();
+            return ret;
+        }
+        catch (Exception e){
+            LOGGER.error("Failed to execute {} fetcher for {}: {}", concept, arguments.toString(), e.getLocalizedMessage());
+        }
+        return null;
     }
 }

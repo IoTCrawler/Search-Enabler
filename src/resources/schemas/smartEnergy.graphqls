@@ -71,7 +71,6 @@ type EnergyStream @resource(class : "http://purl.org/iot/ontology/iot-stream#Ene
 
 type EnergySensor @resource(class : "http://www.w3.org/ns/sosa/EnergySensor", subClassOf: ["Sensor"]){
     label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
-
 }
 
 

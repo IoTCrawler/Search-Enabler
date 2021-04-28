@@ -217,7 +217,11 @@ public class TestsCore extends TestUtils {
         executeQuery(Paths.get("queries","core","getPlatforms"));
     }
 
+    @Test
+    public void getPlatformsWithContextFilterTest() throws Exception {
 
+        executeQuery(Paths.get("queries","core","getPlatformsWithContextFilter"));
+    }
 
     @Test
     public void getObservablePropertyByIdTest() throws Exception {

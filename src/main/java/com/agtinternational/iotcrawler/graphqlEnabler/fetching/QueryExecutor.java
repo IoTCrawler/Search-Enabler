@@ -1,4 +1,4 @@
-package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
+package com.agtinternational.iotcrawler.graphqlEnabler.fetching;
 
 /*-
  * #%L
@@ -37,9 +37,9 @@ import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
 import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.GRAPHQL_ENDPOINT_URL;
 
-public class NGSILD_Client_Wrapper {
+public class QueryExecutor {
 
-    static Logger LOGGER = LoggerFactory.getLogger(NGSILD_Client_Wrapper.class);
+    static Logger LOGGER = LoggerFactory.getLogger(QueryExecutor.class);
     static IoTCrawlerClient iotCrawlerClient;
     static long totalQueryExectionTime = 0;
     static List<String> totalQueryExectionTimeList = new ArrayList<>();
@@ -68,7 +68,7 @@ public class NGSILD_Client_Wrapper {
         return iotCrawlerClient;
     }
 
-    public static List<Object> serveGetEntitiesQuery(String typeURI, Map<String, Object> query, Map<String, Number> ranking, int offset, int limit){
+    public static List<Object> getEntities(String typeURI, Map<String, Object> query, Map<String, Number> ranking, int offset, int limit){
         List ret = new ArrayList();
 
         if (query == null || query.size() == 0)
@@ -179,8 +179,7 @@ public class NGSILD_Client_Wrapper {
         return ret;
     }
 
-
-    public static List<Object> serveGetEntityByIdQuery(List<String> ids, String concept){
+    public static List<Object> getEntityByIdQuery(List<String> ids, String concept){
         List ret = new ArrayList();
 
         String typeURI = null;

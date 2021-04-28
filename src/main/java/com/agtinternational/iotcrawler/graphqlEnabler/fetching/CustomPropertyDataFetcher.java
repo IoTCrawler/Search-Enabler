@@ -1,4 +1,4 @@
-package com.agtinternational.iotcrawler.graphqlEnabler;
+package com.agtinternational.iotcrawler.graphqlEnabler.fetching;
 
 /*-
  * #%L
@@ -21,15 +21,8 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
-import graphql.GraphQLException;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLOutputType;
-import graphql.schema.PropertyDataFetcher;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
 
 import graphql.Assert;
 import graphql.PublicApi;

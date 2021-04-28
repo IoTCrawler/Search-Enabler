@@ -21,7 +21,9 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
-import com.agtinternational.iotcrawler.graphqlEnabler.resolving.UniversalDataFetcher;
+import com.agtinternational.iotcrawler.graphqlEnabler.fetching.RecursiveDataFetcher;
+import com.agtinternational.iotcrawler.graphqlEnabler.rule.Condition;
+import com.agtinternational.iotcrawler.graphqlEnabler.rule.ContextRule;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.MultipleSchemasWiring;
 import graphql.GraphQL;
@@ -34,6 +36,7 @@ import graphql.scalars.ExtendedScalars;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.*;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.DataLoaderRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +65,7 @@ public class GraphQLProvider {
 
     TypeDefinitionRegistry typeRegistry;
     Map<String, String> bindingRegistry = new LinkedHashMap<>();
+    Map<String, List<ContextRule>> ifThenRulesRegistry = new LinkedHashMap<>();
     Map<String, List<String>> topDownInheritance = new LinkedHashMap<>();
     Map<String, List<String>> bottomUpHierarchy = new LinkedHashMap<>();
     //List<String> coreTypes = new ArrayList<>();
@@ -100,6 +104,7 @@ public class GraphQLProvider {
 
         wiring.setRuntimeWiringBuilder(runtimeWiringBuilder);
         wiring.setBindingRegistry(bindingRegistry);
+        wiring.setDirectivesRegistry(ifThenRulesRegistry);
         wiring.setInheritanceRegistry(topDownInheritance);
         wiring.setBottomUpHierarchy(bottomUpHierarchy);
         //wiring.setCoreTypes(coreTypes);
@@ -131,7 +136,7 @@ public class GraphQLProvider {
                 .build();
     }
 
-    private TypeDefinitionRegistry mergeSchemas(Map<String, String> schemas){
+    private TypeDefinitionRegistry mergeSchemas(Map<String, String> schemas) throws Exception {
         LOGGER.debug("Merging schemas");
         TypeDefinitionRegistry mergedTypeRegistry = new TypeDefinitionRegistry();
         for (String schemaName:schemas.keySet()) {
@@ -141,7 +146,7 @@ public class GraphQLProvider {
                 schemaTypeRegistry = new SchemaParser().parse(schemaStr);
             } catch (Exception e) {
                 LOGGER.error("Failed to parse schema {}: {}", schemaName, e.getLocalizedMessage());
-                continue;
+                throw new Exception("Failed to parse schema "+ schemaName+": "+e.getLocalizedMessage());
             }
 
             LOGGER.debug("Merging schema {}",schemaName);
@@ -243,20 +248,22 @@ public class GraphQLProvider {
     private List<String> processTypeDirectives(String typeName, List<Directive> directives){
         List<String> topLevelTypes = new ArrayList<>();
         for (Directive directive : directives){
-            if (directive.getArgument("subClassOf") != null){
-                Value value = directive.getArgument("subClassOf").getValue();
-                List<String> parentTypeNames = Utils.extractValues(value);
+            if(directive.getName().equals("resource")) {
+                if (directive.getArgument("subClassOf") != null) {
+                    Value value = directive.getArgument("subClassOf").getValue();
+                    List<String> parentTypeNames = Utils.extractValues(value);
 
-                for(String parentTypeName: parentTypeNames){
-                    List<String> childClasses = (topDownInheritance.containsKey(parentTypeName) ? topDownInheritance.get(parentTypeName) : new ArrayList<>());
-                    childClasses.add(typeName);
-                    topDownInheritance.put(parentTypeName, childClasses);
+                    for (String parentTypeName : parentTypeNames) {
+                        List<String> childClasses = (topDownInheritance.containsKey(parentTypeName) ? topDownInheritance.get(parentTypeName) : new ArrayList<>());
+                        childClasses.add(typeName);
+                        topDownInheritance.put(parentTypeName, childClasses);
 
-                    List<String> parentClasses = (bottomUpHierarchy.containsKey(typeName) ? topDownInheritance.get(typeName) : new ArrayList<>());
-                    parentClasses.add(parentTypeName);
-                    bottomUpHierarchy.put(typeName, parentClasses);
-                }
-            }else topLevelTypes.add(typeName);
+                        List<String> parentClasses = (bottomUpHierarchy.containsKey(typeName) ? topDownInheritance.get(typeName) : new ArrayList<>());
+                        parentClasses.add(parentTypeName);
+                        bottomUpHierarchy.put(typeName, parentClasses);
+                    }
+                } else topLevelTypes.add(typeName);
+            }
         }
         return topLevelTypes;
     }
@@ -268,25 +275,30 @@ public class GraphQLProvider {
             if (typeDefinition0 instanceof ObjectTypeDefinition){
 
                 ObjectTypeDefinition typeDefinition = ((ObjectTypeDefinition) typeDefinition0);
-                String typeName = typeDefinition.getName();
-                wiring.registerDataloaderConcept(typeName);
+                String typeDefinitionName = typeDefinition.getName();
+                wiring.registerDataloaderConcept(typeDefinitionName);
                 //dataLoaderRegistry.register(typeDefinition.getName(), new DataLoader(new GenericMDRWiring.GenericLoader(typeDefinition.getName())));
 
-                List<Directive> directives = ((ObjectTypeDefinition) typeDefinition).getDirectives();
-                List<String> appendToTopLevelTypes = processTypeDirectives(typeName, directives);
+                List<Directive> resourceDirectives = ((ObjectTypeDefinition) typeDefinition).getDirectives().stream().filter(directive -> directive.getName().equals("resource")).collect(Collectors.toList());
+                List<String> appendToTopLevelTypes = processTypeDirectives(typeDefinitionName, resourceDirectives);
                 appendToTopLevelTypes.forEach(type->{
                     if(!topLevelTypes.contains(type));
                     topLevelTypes.add(type);
                 });
 
+                List<Directive> contextDirectives = ((ObjectTypeDefinition) typeDefinition).getDirectives().stream().filter(directive -> directive.getName().equals("context")).collect(Collectors.toList());
+                processContextDirectives(contextDirectives, typeDefinitionName);
+
                 for (FieldDefinition fieldDefinition : ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions()) {
-                    String name2 = fieldDefinition.getName();
+                    String fieldDefinitionName = fieldDefinition.getName();
 
                     //extending parent type with child properties
 //                        if (parentTypeDefinition != null && !parentTypeDefinition.getFieldDefinitions().contains(fieldDefinition))
 //                            parentTypeDefinition.getFieldDefinitions().add(fieldDefinition);
+                    List<Directive> fieldContextDirectives = fieldDefinition.getDirectives().stream().filter(directive -> directive.getName().equals("context")).collect(Collectors.toList());
+                    processContextDirectives(fieldContextDirectives, typeDefinitionName+"."+fieldDefinitionName);
 
-                    if (typeName.toLowerCase().equals("query")) {
+                    if (typeDefinitionName.toLowerCase().equals("query")) {
                         Object type = fieldDefinition.getType();
                         String fieldTypeName = null;
                         if (type instanceof ListType)
@@ -296,14 +308,14 @@ public class GraphQLProvider {
                             fieldTypeName = ((TypeName) type).getName();
                         else
                             throw new NotImplementedException(type.getClass().getCanonicalName());
-                        wiringBuilder.dataFetcher(name2, UniversalDataFetcher.get(fieldTypeName));
+                        wiringBuilder.dataFetcher(fieldDefinitionName, RecursiveDataFetcher.get(fieldTypeName));
                     }
 
                 }
 
             }else if(typeDefinition0 instanceof InputObjectTypeDefinition){
                 InputObjectTypeDefinition inputObjectTypeDefinition = ((InputObjectTypeDefinition) typeDefinition0);
-                List<Directive> directives = inputObjectTypeDefinition.getDirectives();
+                List<Directive> directives = inputObjectTypeDefinition.getDirectives().stream().filter(directive -> directive.getName().equals("resource")).collect(Collectors.toList());
                 List<String> appendToTopLevelTypes = processTypeDirectives(typeDefinition0.getName(), directives);
                 appendToTopLevelTypes.forEach(type->{
                     if(!topLevelTypes.contains(type));
@@ -316,10 +328,69 @@ public class GraphQLProvider {
         }
         for(String parentTypeName: topLevelTypes)
             addParentClassProperties(parentTypeName);
-
-        String abc ="123";
     }
 
+    public void processContextDirectives(List<Directive> contextDirectives, String typeDefinitionName){
+            Map<String, List<Pair<String[], String[]>>> ifThenRules = new HashMap<>();
+            for(Directive contextRuleDirective: contextDirectives){
+                Argument argument = contextRuleDirective.getArgument("rules");
+
+                for(Value rule: ((ArrayValue)argument.getValue()).getValues()){
+//                    String conditionFieldName = null;
+//                    String conditionValue=null;
+                    Condition conditionToBeMet=null;
+                    String consequencePropertyName=null;
+                    String consequenceFieldName=null;
+                    Condition conditionToBeApplied= null;
+
+                    String[] splitted0 = typeDefinitionName.replace(".", "#").split("#");
+                    typeDefinitionName = splitted0[0];
+                    String propertyName = splitted0[1];
+
+                    for(ObjectField field: ((ObjectValue)rule).getObjectFields()){
+                        String expressionString = ((StringValue)field.getValue()).getValue();
+                        String[] keyAndValue = expressionString.split("=");
+
+                        if(field.getName().equals("if")) {
+
+                            String conditionFieldName = keyAndValue[0];
+                            String conditionValue = keyAndValue[1];
+                            if(conditionFieldName.contains("."))
+                                conditionFieldName = conditionFieldName.replace(".","#").split("#")[1];
+
+                            conditionToBeMet = new Condition(propertyName, conditionFieldName, conditionValue);
+                        }else {
+                            consequenceFieldName = keyAndValue[0];
+                            if(consequenceFieldName.contains(".")){
+                                List<String> splitted2 = Arrays.asList(consequenceFieldName.replace(".", "#").split("#"));
+                                consequencePropertyName = splitted2.get(splitted2.size()-2);
+                                //consequencePropertyName = String.join(".", splitted2.subList(0, splitted2.size()-1));// splitted2[splitted2.length-2];
+                                if(consequencePropertyName.endsWith("*"))
+                                    consequencePropertyName = consequencePropertyName.substring(0, consequencePropertyName.length()-1);
+                                consequenceFieldName = splitted2.get(splitted2.size()-1);
+                            }
+                            String consequenceValue = keyAndValue[1];
+                            conditionToBeApplied = new Condition(consequencePropertyName, consequenceFieldName, consequenceValue);
+                        }
+                    }
+                    String key =  typeDefinitionName;
+                    if(!key.contains(".")){ // when directive applied to type, when field name should be appended
+                        key+="."+propertyName;
+                    }
+
+                    ContextRule contextRule = new ContextRule(typeDefinitionName, conditionToBeMet, conditionToBeApplied);
+                    List<ContextRule> list = new ArrayList<>();
+
+                    if(ifThenRulesRegistry.containsKey(key))
+                        list = ifThenRulesRegistry.get(key);
+                    list.add(contextRule);
+                    ifThenRulesRegistry.put(key, list);
+                }
+            }
+
+
+
+    }
 
     public void addParentClassProperties(String parentTypeName){
         if(!topDownInheritance.containsKey(parentTypeName))

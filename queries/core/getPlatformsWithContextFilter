@@ -11,5 +11,12 @@
            id,
            #label,
            #location
+           inferredHosts{
+                id
+                label
+                observes{
+                    id
+                }
+           }
    }
 }

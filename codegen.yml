@@ -1,0 +1,5 @@
+schema: http://localhost:8081/graphql
+generates:
+  src/main/java/com/agtinternational/iotcrawler/Resolvers.java:
+    plugins:
+      - java-resolvers
