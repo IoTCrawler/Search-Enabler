@@ -1,4 +1,4 @@
-package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
+package com.agtinternational.iotcrawler.graphqlEnabler.resolution;
 
 /*-
  * #%L
@@ -22,6 +22,7 @@ package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
 
 import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
+import com.agtinternational.iotcrawler.graphqlEnabler.fetching.RecursiveDataFetcher;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
 import graphql.execution.ExecutionTypeInfo;
 import graphql.language.*;
@@ -35,10 +36,12 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.CORE_TYPES;
+
 public class BottomUpStrategy {
     static Logger LOGGER = LoggerFactory.getLogger(BottomUpStrategy.class);
 
-    public static Map resolveQuery(DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve) throws Exception {
+    public static Map resolveFilters(DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve) throws Exception {
         Map<String, Object> query = new HashMap<>();
         LOGGER.debug("Amending query by resolving the filters "+argumentsToResolve.toString());
         //setting alternative type as a condition
@@ -176,7 +179,7 @@ public class BottomUpStrategy {
                         GraphQLFieldDefinition fieldDefinitionForEnvironment = environment.getGraphQLSchema().getQueryType().getFieldDefinition(fieldDefinitionList.get(0).getName());
 
                         String fetcherName = targetInputType.getName();
-                        DataFetcher dataFetcher = UniversalDataFetcher.get(fetcherName);
+                        DataFetcher dataFetcher = RecursiveDataFetcher.get(fetcherName);
 
                         ExecutionTypeInfo fieldTypeInfo = ExecutionTypeInfo.newTypeInfo()
                                 .field(argumentValueObjectField)
@@ -242,5 +245,63 @@ public class BottomUpStrategy {
                 }
 
         return query;
+    }
+
+    public static Map<String, List<String>> resolveBottomUpType(String[] concepts){
+        Map<String, List<String>> ret = new HashMap<>();
+        for(String concept: concepts){
+
+            Map<String, String> typesToTry = new LinkedHashMap<>();
+
+            typesToTry.put(concept, null);
+            List<String> triedTypes = new ArrayList<>();
+            while (typesToTry.keySet().size() > 0) {
+                String typeToTry = typesToTry.keySet().iterator().next();
+                String altType = typesToTry.get(typeToTry);
+
+                triedTypes.add(typeToTry);
+
+                String altType2 = (altType!=null?altType:typeToTry);
+                if (CORE_TYPES.contains(typeToTry)) {
+                    appendMapToList(ret, typeToTry, altType);
+                }else if (HierarchicalWiring.getBottomUpHierarchy().containsKey(typeToTry)) { //adding more generic type
+                    HierarchicalWiring.getBottomUpHierarchy().get(typeToTry).forEach(t2 -> {
+                        if (!triedTypes.contains(t2)) {
+                            if(CORE_TYPES.contains(t2)) {
+                                appendMapToList(ret, t2, altType2);
+//                                List<String> conditions = (ret.containsKey(t2)?ret.get(t2):new ArrayList<>());
+//                                if(!conditions.contains(altType2)){
+//                                    conditions.add(altType2);
+//                                }
+//                                ret.put(t2, conditions);
+                            }else {
+                                Map<String, List<String>> ret2 = resolveBottomUpType(new String[]{t2});
+                                for(String resolvedType: ret2.keySet()) {
+                                    //appending propagatedType
+                                    appendMapToList(ret, resolvedType, altType2);
+//                                    for (String condition : ret2.get(resolvedType))
+//                                        appendMapToList(ret, resolvedType, altType2);
+                                }
+
+                            }
+
+                        }
+                    });
+                }//else
+                // throw new NotImplementedException("Unsupported type which cannot be resolved to any");
+
+                //triedTypes.add(typeToTry);
+                typesToTry.remove(typeToTry);
+            }
+        }
+        return ret;
+    }
+
+    private static void appendMapToList(Map<String, List<String>> map, String key, String value){
+        List<String> list = (map.containsKey(key)?map.get(key):new ArrayList<>());
+        if(!list.contains(value)){
+            list.add(value);
+        }
+        map.put(key, list);
     }
 }

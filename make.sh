@@ -50,3 +50,7 @@ if [ "$1" = "push-image" ]; then
   #echo "# push ${CI_APPLICATION_REPOSITORY}:latest"
   #docker push "${CI_APPLICATION_REPOSITORY}:latest"
 fi
+
+if [ "$1" = "generate" ]; then
+  yarn generate
+fi

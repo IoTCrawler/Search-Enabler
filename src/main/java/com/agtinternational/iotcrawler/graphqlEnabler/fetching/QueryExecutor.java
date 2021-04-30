@@ -1,4 +1,4 @@
-package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
+package com.agtinternational.iotcrawler.graphqlEnabler.fetching;
 
 /*-
  * #%L
@@ -22,34 +22,24 @@ package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
 
 import com.agtinternational.iotcrawler.core.clients.IoTCrawlerRESTClient;
 import com.agtinternational.iotcrawler.core.interfaces.IoTCrawlerClient;
-import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
 import com.agtinternational.iotcrawler.fiware.models.EntityLD;
 import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
-import graphql.execution.ExecutionTypeInfo;
-import graphql.language.Argument;
-import graphql.language.Field;
-import graphql.language.ObjectField;
-import graphql.language.ObjectValue;
-import graphql.schema.*;
-import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import static com.agtinternational.iotcrawler.core.Constants.CUT_TYPE_URIS;
 import static com.agtinternational.iotcrawler.core.Constants.IOTCRAWLER_ORCHESTRATOR_URL;
 import static com.agtinternational.iotcrawler.graphqlEnabler.Constants.GRAPHQL_ENDPOINT_URL;
 
-public class QueryResolver {
+public class QueryExecutor {
 
-    static Logger LOGGER = LoggerFactory.getLogger(QueryResolver.class);
+    static Logger LOGGER = LoggerFactory.getLogger(QueryExecutor.class);
     static IoTCrawlerClient iotCrawlerClient;
     static long totalQueryExectionTime = 0;
     static List<String> totalQueryExectionTimeList = new ArrayList<>();
@@ -78,7 +68,7 @@ public class QueryResolver {
         return iotCrawlerClient;
     }
 
-    public static List<Object> serveGetEntitiesQuery(String typeURI, Map<String, Object> query, Map<String, Number> ranking, int offset, int limit){
+    public static List<Object> getEntities(String typeURI, Map<String, Object> query, Map<String, Number> ranking, int offset, int limit){
         List ret = new ArrayList();
 
         if (query == null || query.size() == 0)
@@ -189,8 +179,7 @@ public class QueryResolver {
         return ret;
     }
 
-
-    public static List<Object> serveGetEntityByIdQuery(List<String> ids, String concept){
+    public static List<Object> getEntityByIdQuery(List<String> ids, String concept){
         List ret = new ArrayList();
 
         String typeURI = null;
@@ -234,6 +223,8 @@ public class QueryResolver {
         long started = System.currentTimeMillis();
         try {
             executorService.invokeAll(tasks);
+            //filling with entities and nulls(if nothing was found)
+            // Order of entities is utterly important!!!!
             for(String id : ids) {
                 ret.add(enitities.get(id));
             }
@@ -247,14 +238,6 @@ public class QueryResolver {
         totalQueryExectionTimeList.add(String.valueOf(took/1000.0));
         LOGGER.debug("Plus "+(System.currentTimeMillis() - started) +"ms for "+ tasks.size()+" queries of get entity By ID("+concept+")");
         totalQueriesPerformed+=tasks.size();
-
-        if(ids.size()!=ret.size()) {
-            int delta = ids.size() - ret.size();
-            for (int i = 0; i < delta; i++) {
-                ret.add(null);   //filling missing results
-                LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
-            }
-        }
         return ret;
     }
 

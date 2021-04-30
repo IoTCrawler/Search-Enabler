@@ -1,5 +1,5 @@
 {
-   platforms(limit:2)
+   platforms
    #platforms(
    #         hosts: {
    #                 observes: {
@@ -11,5 +11,12 @@
            id,
            #label,
            #location
+           inferredHosts{
+                id
+                label
+                observes{
+                    id
+                }
+           }
    }
 }

@@ -1,0 +1,6 @@
+{
+    ePlatforms(category: "Battery"){
+      id,
+      category
+    }
+}

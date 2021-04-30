@@ -21,10 +21,10 @@ package com.agtinternational.iotcrawler.graphqlEnabler;
  */
 
 
+import com.agtinternational.iotcrawler.graphqlEnabler.fetching.CustomPropertyDataFetcher;
 import graphql.Assert;
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLScalarType;
-import graphql.schema.PropertyDataFetcher;
 import graphql.schema.TypeResolver;
 import graphql.schema.idl.*;
 

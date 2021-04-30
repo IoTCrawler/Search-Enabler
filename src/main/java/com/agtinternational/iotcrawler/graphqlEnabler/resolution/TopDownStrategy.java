@@ -1,4 +1,4 @@
-//package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
+package com.agtinternational.iotcrawler.graphqlEnabler.resolution;//package com.agtinternational.iotcrawler.graphqlEnabler.resolving;
 
 /*-
  * #%L
@@ -9,9 +9,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,28 +20,53 @@
  * #L%
  */
 //
-//import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
-//import com.agtinternational.iotcrawler.fiware.models.EntityLD;
-//import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
-//import graphql.execution.ExecutionTypeInfo;
-//import graphql.language.*;
-//import graphql.schema.*;
-//import org.apache.commons.lang.NotImplementedException;
-//import org.apache.commons.lang3.tuple.Pair;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//
-//import java.util.ArrayList;
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.Map;
-//import java.util.concurrent.CompletableFuture;
-//import java.util.stream.Collectors;
-//
-//public class TopDownStrategy {
-//
-//    static Logger LOGGER = LoggerFactory.getLogger(BottomUpStrategy.class);
-//
+import com.agtinternational.iotcrawler.core.ontologies.NGSI_LD;
+import com.agtinternational.iotcrawler.fiware.models.EntityLD;
+import com.agtinternational.iotcrawler.graphqlEnabler.wiring.HierarchicalWiring;
+import graphql.execution.ExecutionTypeInfo;
+import graphql.language.*;
+import graphql.schema.*;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+public class TopDownStrategy {
+
+    static Logger LOGGER = LoggerFactory.getLogger(TopDownStrategy.class);
+
+    public static List<String> getTopdownTypesAsList(String concept){
+        List<String> ret = new ArrayList<>();
+        List<String> typesToTry  = new ArrayList();
+        typesToTry.add(concept);
+        List<String> triedTypes = new ArrayList<>();
+        while (typesToTry.size()>0) {
+            String typeToTry = typesToTry.iterator().next();
+
+            //if(coreTypes.contains(typeToTry) && !ret.contains(typeToTry))
+            if(!typeToTry.equals(concept))
+                if(!ret.contains(typeToTry))
+                    ret.add(typeToTry);
+
+            if (HierarchicalWiring.getTopDownInheritance().containsKey(typeToTry))  //adding sensors/actuators/samples
+                HierarchicalWiring.getTopDownInheritance().get(typeToTry).forEach(t2 -> {
+                    if (!triedTypes.contains(t2))
+                        ret.add(t2);
+                    //typesToTry.add(t2);
+                });
+            triedTypes.add(typeToTry);
+            typesToTry.remove(typeToTry);
+        }
+        return ret;
+    }
+
 //    public static Map resolveQuery(DataFetchingEnvironment environment, Map<String, Object> argumentsToResolve) throws Exception {
 //        Map<String, Object> query = new HashMap<>();
 //        LOGGER.debug("Amending query by resolving the filters "+argumentsToResolve.toString());
@@ -227,5 +252,5 @@
 //
 //        return query;
 //    }
-//
-//}
+
+}

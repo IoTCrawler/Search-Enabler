@@ -23,7 +23,8 @@ package com.agtinternational.iotcrawler.graphqlEnabler.wiring;
 
 import com.agtinternational.iotcrawler.graphqlEnabler.*;
 
-import com.agtinternational.iotcrawler.graphqlEnabler.resolving.QueryResolver;
+import com.agtinternational.iotcrawler.graphqlEnabler.fetching.QueryExecutor;
+import com.agtinternational.iotcrawler.graphqlEnabler.rule.ContextRule;
 import graphql.schema.idl.*;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
@@ -42,13 +43,14 @@ public class HierarchicalWiring implements Wiring {
     static Logger LOGGER = LoggerFactory.getLogger(HierarchicalWiring.class);
     public static final DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
 
+
     private Map<String, String> schemas;
     private RuntimeWiring.Builder runtimeWiringBuilder;
 
     private static Map<String, String> bindingRegistry = new HashMap<>();
     private static Map<String, List<String>> topDownInheritance = new HashMap<>();
     private static Map<String, List<String>> bottomUpHierarchy = new HashMap<>();
-
+    private static Map<String, List<ContextRule>> ifThenRulesRegistry =new HashMap<>();
 
     public void setSchemaString(Map<String, String> schemas) {
         this.schemas = schemas;
@@ -62,6 +64,10 @@ public class HierarchicalWiring implements Wiring {
         HierarchicalWiring.bindingRegistry = bindingRegistry;
     }
 
+    public void setDirectivesRegistry(Map<String, List<ContextRule>> ifThenRulesRegistry) {
+        HierarchicalWiring.ifThenRulesRegistry = ifThenRulesRegistry;
+    }
+
     public void registerDataloaderConcept(String concept){
         dataLoaderRegistry.register(concept, new DataLoader(new GenericLoader(concept)));
     }
@@ -72,10 +78,11 @@ public class HierarchicalWiring implements Wiring {
         return dataLoaderRegistry;
     }
 
+    public static  Map<String, List<ContextRule>> getIfThenRulesRegistry() {
+        return ifThenRulesRegistry;
+    }
 
-
-
-//    TypeResolver typesResolver = environment -> {
+    //    TypeResolver typesResolver = environment -> {
 //        Object object = environment.getObject();
 //
 //        GraphQLObjectType ret = null;
@@ -153,7 +160,7 @@ public class HierarchicalWiring implements Wiring {
         @Override
         public CompletionStage<List> load(List list) {
             return CompletableFuture.supplyAsync(() ->
-                    QueryResolver.serveGetEntityByIdQuery(list, concept));
+                    QueryExecutor.getEntityByIdQuery(list, concept));
         }
     }
 

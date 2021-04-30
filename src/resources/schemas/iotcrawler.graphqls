@@ -8,6 +8,14 @@ schema {
 
 directive @resource(class : String, subClassOf : [String]) on OBJECT | INPUT_OBJECT
 directive @attribute(uri : String!) on FIELD_DEFINITION
+directive @context(rules: [Rule]) on FIELD_DEFINITION
+directive @exclude on INPUT_OBJECT
+
+
+input Rule @exclude{
+    if : String!,
+    then : String!
+}
 
 input SystemInput {
      id: String
@@ -18,9 +26,9 @@ input SystemInput {
 }
 
 input IoTStreamInput{
-     id: String
+     id: [String]
      label: String
-     generatedBy: SensorInput
+     generatedBy: [SensorInput]
      observes: ObservablePropertyInput
      alternativeType: String
  }
@@ -76,7 +84,7 @@ input SimpleResultFilter {
 
 
 type Query {
-    streams(id: String, alternativeType: String, ranking: [RankingCriteria], label: String, generatedBy: SensorInput, dataProvider: String, offset: Int = 0, limit: Int = 0): [IoTStream]
+    streams(id: String, filter: IoTStreamInput, alternativeType: String, ranking: [RankingCriteria], label: String, generatedBy: SensorInput, dataProvider: String, offset: Int = 0, limit: Int = 0): [IoTStream]
     sensors(id: String, alternativeType: String, label: String, madeObservation: StreamObservationInput, isHostedBy: PlatformInput, observes: ObservablePropertyInput, offset: Int = 0, limit: Int = 0): [Sensor]
     systems(id: String, alternativeType: String, label: String, isHostedBy: PlatformInput, offset: Int = 0, limit: Int = 0): [System]
     platforms(id: String,  alternativeType: String, label: String, hosts: SensorInput, offset: Int = 0, limit: Int = 0): [Platform]
@@ -100,7 +108,6 @@ type System @resource(class : "http://www.w3.org/ns/ssn/System"){
     type: String!
     label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
     isHostedBy: Platform    @attribute(uri : "http://www.w3.org/ns/sosa/isHostedBy")
-
 }
 
 type Sensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", subClassOf: ["System"]){
@@ -115,7 +122,8 @@ type Actuator @resource(class : "http://www.w3.org/ns/sosa/Actuator", subClassOf
     id: String!
 }
 
-type Platform @resource(class : "http://www.w3.org/ns/sosa/Platform"){
+
+type Platform @resource(class : "http://www.w3.org/ns/sosa/Platform") {
     id: String!
     type: String!
     label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
@@ -123,6 +131,8 @@ type Platform @resource(class : "http://www.w3.org/ns/sosa/Platform"){
     name: String  @attribute(uri : "http://schema.org/name")
     location: String  @attribute(uri : "http://www.agtinternational.com/ontologies/devices/locations")
     alternativeType: String  @attribute(uri : "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType")
+    includes: [Sensor] @attribute(uri : "http://www.w3.org/ns/sosa/includes")
+    inferredHosts: [Sensor] @attribute(uri : "http://www.w3.org/ns/sosa/inferredHosts") @context(rules: [{ if: "Platform.alternativeType=http://www.agtinternational.com/ontologies/devices#Device", then: "Platform.hosts*.observes=urn:ngsi-ld:ThermodynamicTemperature"} ])
 }
 
 type ObservableProperty @resource(class : "http://www.w3.org/ns/sosa/ObservableProperty"){
