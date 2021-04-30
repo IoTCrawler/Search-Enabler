@@ -223,6 +223,8 @@ public class QueryExecutor {
         long started = System.currentTimeMillis();
         try {
             executorService.invokeAll(tasks);
+            //filling with entities and nulls(if nothing was found)
+            // Order of entities is utterly important!!!!
             for(String id : ids) {
                 ret.add(enitities.get(id));
             }
@@ -236,14 +238,6 @@ public class QueryExecutor {
         totalQueryExectionTimeList.add(String.valueOf(took/1000.0));
         LOGGER.debug("Plus "+(System.currentTimeMillis() - started) +"ms for "+ tasks.size()+" queries of get entity By ID("+concept+")");
         totalQueriesPerformed+=tasks.size();
-
-        if(ids.size()!=ret.size()) {
-            int delta = ids.size() - ret.size();
-            for (int i = 0; i < delta; i++) {
-                ret.add(null);   //filling missing results
-                LOGGER.warn("Failed to return exact amount of entnties({}). Adding null entity to the result", concept);
-            }
-        }
         return ret;
     }
 

@@ -50,12 +50,14 @@ input RankingCriteria {
     value: Float
 }
 
+
 type Query {
     eStreams(id: String, ranking: [RankingCriteria], label: String, generatedBy: SensorInput, max: String, min: String, mean: String, std: String, sax_24h_1h: String, paa_24h_1h: String, offset: Int = 0, limit: Int = 0): [EnergyStream]
     ePlatforms(id: String, label: String, hosts: eSensorInput, location: String, category: String, deviceState: String, simulated: Boolean, offset: Int = 0, limit: Int = 0): [EnergyPlatform]
     eSensors(id: String, label: String, madeObservation: eStreamObservationInput, isHostedBy: ePlatformInput, observes: eObservablePropertyInput, offset: Int = 0, limit: Int = 0): [EnergySensor]
     eObservableProperties(id: String, label: String, offset: Int = 0, limit: Int = 0): [EnergyObservableProperty]
     eStreamObservations(id: String,  madeBySensor: eSensorInput, belongsTo: eIoTStreamInput, offset: Int = 0, limit: Int = 0): [EnergyStreamObservation]
+    areasOfInterest(id: String, offset: Int = 0, limit: Int = 0): [AreaOfInterest]
 }
 
 type EnergyStream @resource(class : "http://purl.org/iot/ontology/iot-stream#EnergyIotStream", subClassOf: ["IoTStream"]){
@@ -92,4 +94,15 @@ type EnergyStreamObservation @resource(class : "http://purl.org/iot/ontology/iot
 
 type EnergyObservableProperty @resource(class : "http://www.w3.org/ns/sosa/ObservableProperty", subClassOf: ["ObservableProperty"]){
     isObservedBy: [EnergySensor]  @attribute(uri : "http://www.w3.org/ns/sosa/isObservedBy")
+}
+
+type AreaOfInterest @resource(class : "http://www.siemens.com/iotcrawler/ontologies#AreaOfInterest"){
+    id: String!
+    name: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#name")
+    # Enum of weatherState: Rain, Clear, Clouds
+    weatherState: String  @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#weatherState")
+    windSpeed: String  @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#windSpeed")
+    timezoneDiff: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#timezoneDiff")
+    assigned: [Platform] @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#assigned")
+    inferredAssigned: [EnergyPlatform] @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#inferredAssigned")  @context(rules: [{ if: "AreaOfInterest.weatherState=Clouds", then: "AreaOfInterest.assigned*.category=Battery"} ])
 }

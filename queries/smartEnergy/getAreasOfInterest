@@ -1,0 +1,8 @@
+{
+     areasOfInterest{
+      id
+      inferredAssigned{
+        id
+      }
+    }
+}

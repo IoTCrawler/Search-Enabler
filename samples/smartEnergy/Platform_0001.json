@@ -1,0 +1,51 @@
+{
+  "id": "urns:Platform_0001",
+  "type": "http://www.w3.org/ns/sosa/Platform",
+  "http://www.siemens.com/iotcrawler/ontologies#category": {
+    "type": "Property",
+    "value": "Battery"
+  },
+  "http://www.agtinternational.com/ontologies/ngsi-ld#alternativeType": {
+    "type": "Property",
+    "value": "http://www.w3.org/ns/sosa/EnergyPlatform"
+  },
+  "http://www.siemens.com/iotcrawler/ontologies#deviceState": {
+    "type": "Property",
+    "value": "1"
+  },
+  "http://www.siemens.com/iotcrawler/ontologies#ipAddress": {
+    "type": "Property",
+    "value": "127.0.0.5"
+  },
+  "http://www.siemens.com/iotcrawler/ontologies#modelName": {
+    "type": "Property",
+    "value": "Model 1a"
+  },
+  "http://www.w3.org/ns/sosa/hosts": [
+    {
+      "type": "Relationship",
+      "object": "urns:Sensor_0001_1"
+    },
+    {
+      "type": "Relationship",
+      "object": "urns:Sensor_0001_2"
+    },
+    {
+      "type": "Relationship",
+      "object": "urns:Sensor_0001_3"
+    }
+  ],
+  "location": {
+    "type": "GeoProperty",
+    "value": {
+      "type": "Point",
+      "coordinates": [
+        41.418889,
+        -3.691944
+      ]
+    }
+  },
+  "@context": [
+    "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+  ]
+}

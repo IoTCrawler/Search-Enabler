@@ -1,5 +1,5 @@
 {
-   platforms(limit:2)
+   platforms
    #platforms(
    #         hosts: {
    #                 observes: {

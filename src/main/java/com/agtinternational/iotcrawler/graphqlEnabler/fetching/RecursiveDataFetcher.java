@@ -72,7 +72,7 @@ public class RecursiveDataFetcher {
             if(environment.getArgument("id")!=null){
                 Object id = environment.getArgument("id");
                 if(!(id instanceof Iterable))
-                    requestedIds = Arrays.asList(new String[]{ requestedIds.toString() });
+                    requestedIds = Arrays.asList(new String[]{ id.toString() });
                 else
                     requestedIds = (List<String>)id;
                 argumentsToResolve.remove("id");
@@ -83,27 +83,32 @@ public class RecursiveDataFetcher {
                 //if (calledRecursively){
                 List<Object> entities = QueryExecutor.getEntityByIdQuery(requestedIds, concept);
 
-                String type = null;
-                try {
-                    type = HierarchicalWiring.findURI(concept);
-                } catch (Exception e) {
-                    LOGGER.error("Failed to find URI for type {}", concept);
-                    e.printStackTrace();
-                }
+//                String type = null;
+//                try {
+//                    type = HierarchicalWiring.findURI(concept);
+//                } catch (Exception e) {
+//                    LOGGER.error("Failed to find URI for type {}", concept);
+//                    e.printStackTrace();
+//                }
 //                final List<String> finalId = idsAsList;
 //                final String finalType = type;
-
+                    List<String> returnedIds = new ArrayList<>();
+                    //filling with found results and nulls (if not found)
+                   //filling order is utterly important!!
                     requestedIds.forEach(id->{
                         Optional<Object> firstElement = entities.stream().filter(e->e!=null && ((EntityLD)e).getId().equals(id)).findFirst();
                         Object entityLD = (firstElement.isPresent()? firstElement.get(): null);
                         loader.prime(id, entityLD);
+                        if(entityLD!=null) {
+                            returnedIds.add(id);
+                        }
                     });
 //                    entities.stream().filter(e->e instanceof EntityLD).forEach(entity0 -> { //this might be null if non-existing id requested
-//                        String id = ((EntityLD)entity0).getId();
-//                        loader.prime(id, ((EntityLD)entity0).getId());
-//                            ids.add(finalId);
-//                    });
-                    CompletableFuture future = loader.loadMany(requestedIds);
+////                        String id = ((EntityLD)entity0).getId();
+////                        loader.prime(id, ((EntityLD)entity0).getId());
+////                            ids.add(finalId);
+////                    });
+                    CompletableFuture future = loader.loadMany(returnedIds);
                      if(argumentsToResolve.size()==0)
                         return future;
                 //}
@@ -164,7 +169,7 @@ public class RecursiveDataFetcher {
                 forBottomUpResolution.addAll(childTypes);
                 Map<String, List<String>> typesWithFilters = BottomUpStrategy.resolveBottomUpType(forBottomUpResolution.toArray(new String[0]));
 
-                List<EntityLD> adjacentEntities = fetchAdjacentConcepts(typesWithFilters, query, environment);
+                List<EntityLD> adjacentEntities = fetchChildTypeConcepts(typesWithFilters, query, environment);
                 entities.addAll(adjacentEntities);
                 String abc = "123";
 
@@ -191,7 +196,7 @@ public class RecursiveDataFetcher {
 
 
 
-    static List<EntityLD> fetchAdjacentConcepts(Map<String, List<String>> adjacentConcepts, Map<String,Object> query, DataFetchingEnvironment environment){
+    static List<EntityLD> fetchChildTypeConcepts(Map<String, List<String>> adjacentConcepts, Map<String,Object> query, DataFetchingEnvironment environment){
         List<EntityLD> ret = new ArrayList<>();
 
         for(String adjacentConcept: adjacentConcepts.keySet()){

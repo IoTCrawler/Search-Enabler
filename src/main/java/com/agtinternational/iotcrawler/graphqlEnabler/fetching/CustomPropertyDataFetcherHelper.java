@@ -163,49 +163,51 @@ public class CustomPropertyDataFetcherHelper {
                     for (ContextRule contextRule : contextRules) {
                         String conditionPropertyURI = HierarchicalWiring.findURI(environmentTypeName, contextRule.getConditionToMeet().getKey());
                         Attribute attributeToMeet = (Attribute) entityLD.getAttribute(conditionPropertyURI);
-                        Object value = attributeToMeet.getValue();
-                        if (value != null && contextRule.getConditionToMeet().meets(value.toString())) {
-                            conditionPropertyURI = HierarchicalWiring.findURI(environmentTypeName, contextRule.getConditionToApply().getDefinesField());
-                            Object originalValue = entityLD.getAttribute(conditionPropertyURI);
-                            if (originalValue != null) {
+                        if(attributeToMeet!=null){
+                            Object value = attributeToMeet.getValue();
+                            if (value != null && contextRule.getConditionToMeet().meets(value.toString())) {
+                                conditionPropertyURI = HierarchicalWiring.findURI(environmentTypeName, contextRule.getConditionToApply().getDefinesField());
+                                Object originalValue = entityLD.getAttribute(conditionPropertyURI);
+                                if (originalValue != null) {
 
-                                Map arguments = new HashMap();
-                                conditionPropertyURI = HierarchicalWiring.findURI(unwrappedPropertyType.getName(), contextRule.getConditionToApply().getKey());
-                                arguments.put(conditionPropertyURI, contextRule.getConditionToApply().getValue());
-                                List<EntityLD> entitiesMatchingCondition = RecursiveDataFetcher.fetch(unwrappedPropertyType.getName(), arguments, environment);
-                                List<String> idsMatchingTheRule = entitiesMatchingCondition.stream().map(entityLD1 -> entityLD1.getId()).collect(Collectors.toList());
+                                    Map arguments = new HashMap();
+                                    conditionPropertyURI = HierarchicalWiring.findURI(unwrappedPropertyType.getName(), contextRule.getConditionToApply().getKey());
+                                    arguments.put(conditionPropertyURI, "\""+contextRule.getConditionToApply().getValue()+"\"");
+                                    List<EntityLD> entitiesMatchingCondition = RecursiveDataFetcher.fetch(unwrappedPropertyType.getName(), arguments, environment);
+                                    List<String> idsMatchingTheRule = entitiesMatchingCondition.stream().map(entityLD1 -> entityLD1.getId()).collect(Collectors.toList());
 
-                                Object originalValueAsList = originalValue;
-                                boolean convertedToList = false;
-                                if (!(originalValueAsList instanceof Iterable)) {
-                                    List list = new ArrayList();
-                                    list.add(originalValue);
-                                    originalValueAsList = list;
-                                    convertedToList = true;
+                                    Object originalValueAsList = originalValue;
+                                    boolean convertedToList = false;
+                                    if (!(originalValueAsList instanceof Iterable)) {
+                                        List list = new ArrayList();
+                                        list.add(originalValue);
+                                        originalValueAsList = list;
+                                        convertedToList = true;
+                                    }
+                                    Iterator iterator1 = ((Iterable) originalValueAsList).iterator();
+
+                                    while (iterator1.hasNext()) {
+                                        attributeValue = iterator1.next();
+                                        if (attributeValue instanceof Attribute) {
+                                            valueToReturn = ((Attribute) attributeValue).getValue();
+                                            if (((Attribute) attributeValue).getType().get().equals("Relationship")) {
+                                                if (valueToReturn instanceof List) {
+                                                    for (Object referenceId : (List) valueToReturn)
+                                                        if (idsMatchingTheRule.contains(referenceId))
+                                                            referenceIDs.add(referenceId);
+                                                } else if (idsMatchingTheRule.contains(valueToReturn))
+                                                    referenceIDs.add(valueToReturn);
+                                            } else {
+                                                if (convertedToList)
+                                                    return valueToReturn;
+                                                return attributeValue; //return the whole array instead of one value
+                                            }
+                                        } else
+                                            throw new NotImplementedException(attributeValue.getClass().getCanonicalName() + " as attribute type");
+                                    }
                                 }
-                                Iterator iterator1 = ((Iterable) originalValueAsList).iterator();
 
-                                while (iterator1.hasNext()) {
-                                    attributeValue = iterator1.next();
-                                    if (attributeValue instanceof Attribute) {
-                                        valueToReturn = ((Attribute) attributeValue).getValue();
-                                        if (((Attribute) attributeValue).getType().get().equals("Relationship")) {
-                                            if (valueToReturn instanceof List) {
-                                                for (Object referenceId : (List) valueToReturn)
-                                                    if (idsMatchingTheRule.contains(referenceId))
-                                                        referenceIDs.add(referenceId);
-                                            } else if (idsMatchingTheRule.contains(valueToReturn))
-                                                referenceIDs.add(valueToReturn);
-                                        } else {
-                                            if (convertedToList)
-                                                return valueToReturn;
-                                            return attributeValue; //return the whole array instead of one value
-                                        }
-                                    } else
-                                        throw new NotImplementedException(attributeValue.getClass().getCanonicalName() + " as attribute type");
-                                }
                             }
-
                         }
                     }
                 } else {
