@@ -410,6 +410,13 @@ public class GraphQLProvider {
                     typeDefinitionName = splitted0[0];
                     String propertyName = splitted0[1];
 
+                    // PS: Added more robust parsing of rules, so several IF-THEN rules are comma separated definable
+                    String key =  typeDefinitionName;
+                    if(!key.contains(".")){ // when directive applied to type, when field name should be appended
+                        key+="."+propertyName;
+                    }
+
+
                     for(ObjectField field: ((ObjectValue)rule).getObjectFields()){
                         String expressionString = ((StringValue)field.getValue()).getValue();
                         String[] keyAndValue = expressionString.split("=");
@@ -422,7 +429,8 @@ public class GraphQLProvider {
                                 conditionFieldName = conditionFieldName.replace(".","#").split("#")[1];
 
                             conditionToBeMet = new Condition(propertyName, conditionFieldName, conditionValue);
-                        }else {
+                        // }else {
+                        } else if(field.getName().equals("then")) {
                             consequenceFieldName = keyAndValue[0];
                             if(consequenceFieldName.contains(".")){
                                 List<String> splitted2 = Arrays.asList(consequenceFieldName.replace(".", "#").split("#"));
@@ -434,20 +442,32 @@ public class GraphQLProvider {
                             }
                             String consequenceValue = keyAndValue[1];
                             conditionToBeApplied = new Condition(consequencePropertyName, consequenceFieldName, consequenceValue);
+
+                            if(conditionToBeMet!=null && conditionToBeApplied!=null) {
+                                ContextRule contextRule = new ContextRule(typeDefinitionName, conditionToBeMet, conditionToBeApplied);
+                                List<ContextRule> list = new ArrayList<>();
+
+                                if (ifThenRulesRegistry.containsKey(key))
+                                    list = ifThenRulesRegistry.get(key);
+                                list.add(contextRule);
+                                ifThenRulesRegistry.put(key, list);
+
+                                conditionToBeMet=null; conditionToBeApplied=null;
+                            }
                         }
                     }
-                    String key =  typeDefinitionName;
-                    if(!key.contains(".")){ // when directive applied to type, when field name should be appended
-                        key+="."+propertyName;
-                    }
+                    //String key =  typeDefinitionName;
+                    //if(!key.contains(".")){ // when directive applied to type, when field name should be appended
+                    //    key+="."+propertyName;
+                    //}
 
-                    ContextRule contextRule = new ContextRule(typeDefinitionName, conditionToBeMet, conditionToBeApplied);
-                    List<ContextRule> list = new ArrayList<>();
+                    //ContextRule contextRule = new ContextRule(typeDefinitionName, conditionToBeMet, conditionToBeApplied);
+                    //List<ContextRule> list = new ArrayList<>();
 
-                    if(ifThenRulesRegistry.containsKey(key))
-                        list = ifThenRulesRegistry.get(key);
-                    list.add(contextRule);
-                    ifThenRulesRegistry.put(key, list);
+                    //if(ifThenRulesRegistry.containsKey(key))
+                    //    list = ifThenRulesRegistry.get(key);
+                    //list.add(contextRule);
+                    //ifThenRulesRegistry.put(key, list);
                 }
             }
 

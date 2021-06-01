@@ -27,6 +27,7 @@ input eSensorInput{
 input ePlatformInput {
     id: String
     label: String
+    category: String
     hosts: SensorInput
     location: String
     simulated: Boolean
@@ -45,11 +46,6 @@ input eStreamObservationInput {
     hasSimpleResult: String
 }
 
-input RankingCriteria {
-    name: String
-    value: Float
-}
-
 
 type Query {
     eStreams(id: String, ranking: [RankingCriteria], label: String, generatedBy: SensorInput, max: String, min: String, mean: String, std: String, sax_24h_1h: String, paa_24h_1h: String, offset: Int = 0, limit: Int = 0): [EnergyStream]
@@ -57,10 +53,10 @@ type Query {
     eSensors(id: String, label: String, madeObservation: eStreamObservationInput, isHostedBy: ePlatformInput, observes: eObservablePropertyInput, offset: Int = 0, limit: Int = 0): [EnergySensor]
     eObservableProperties(id: String, label: String, offset: Int = 0, limit: Int = 0): [EnergyObservableProperty]
     eStreamObservations(id: String,  madeBySensor: eSensorInput, belongsTo: eIoTStreamInput, offset: Int = 0, limit: Int = 0): [EnergyStreamObservation]
-    areasOfInterest(id: String, offset: Int = 0, limit: Int = 0): [AreaOfInterest]
+    areasOfInterest(id: String, name: String, weatherState: String, assigned: ePlatformInput, offset: Int = 0, limit: Int = 0): [AreaOfInterest]
 }
 
-type EnergyStream @resource(class : "http://purl.org/iot/ontology/iot-stream#EnergyIotStream", subClassOf: ["IoTStream"]){
+type EnergyStream @resource(class : "http://purl.org/iot/ontology/iot-stream#IotStream", subClassOf: ["IoTStream"]){
     rankScore: String @attribute(uri : "http://iotcrawler.eu/rankScore")
     max: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#stats-max")
     min: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#stats-min")
@@ -71,13 +67,12 @@ type EnergyStream @resource(class : "http://purl.org/iot/ontology/iot-stream#Ene
 }
 
 
-type EnergySensor @resource(class : "http://www.w3.org/ns/sosa/EnergySensor", subClassOf: ["Sensor"]){
+type EnergySensor @resource(class : "http://www.w3.org/ns/sosa/Sensor", subClassOf: ["Sensor"]){
     label: String   @attribute(uri : "http://www.w3.org/2000/01/rdf-schema#label")
 }
 
 
-type EnergyPlatform @resource(class : "http://www.w3.org/ns/sosa/EnergyPlatform", subClassOf: ["Platform"]){
-    hosts: [EnergySensor] @attribute(uri : "http://www.w3.org/ns/sosa/hosts")
+type EnergyPlatform @resource(class : "http://www.w3.org/ns/sosa/Platform", subClassOf: ["Platform"]){
     category: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#category")
     deviceState: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#deviceState")
     ipAddress: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#ipAddress")
@@ -103,6 +98,6 @@ type AreaOfInterest @resource(class : "http://www.siemens.com/iotcrawler/ontolog
     weatherState: String  @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#weatherState")
     windSpeed: String  @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#windSpeed")
     timezoneDiff: String @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#timezoneDiff")
-    assigned: [Platform] @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#assigned")
-    inferredAssigned: [EnergyPlatform] @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#inferredAssigned")  @context(rules: [{ if: "AreaOfInterest.weatherState=Clouds", then: "AreaOfInterest.assigned*.category=Battery"} ])
+    assigned: [EnergyPlatform] @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#assigned")
+    inferredAssigned: [EnergyPlatform] @attribute(uri : "http://www.siemens.com/iotcrawler/ontologies#inferredAssigned")  @context(rules: [{ if: "AreaOfInterest.weatherState=Clouds", then: "AreaOfInterest.assigned*.category=Battery", if: "AreaOfInterest.weatherState=Sunny", then: "AreaOfInterest.assigned*.category=Solarpanel", if: "AreaOfInterest.weatherState=Sunny", then: "AreaOfInterest.assigned*.category=Windpower"},  ])
 }
